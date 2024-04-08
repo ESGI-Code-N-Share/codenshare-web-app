@@ -1,12 +1,19 @@
 <script lang="ts" setup>
 
+import {onMounted, ref} from "vue";
 
+const baseUrl = ref(import.meta.env.VITE_API_URL);
+const mode = ref(import.meta.env.MODE);
+
+onMounted(() => {
+  console.log(import.meta.env);
+});
 </script>
 
 <template>
   <div>
     <h1>Home Page</h1>
-    <p>Home page content goes here</p>
+    <p>codenshare in {{mode}} mode. ({{baseUrl ?? "x"}})</p>
     <Button label="Click me" @click="$router.push('/login')" />
   </div>
 </template>
