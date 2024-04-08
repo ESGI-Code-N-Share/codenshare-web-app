@@ -26,3 +26,5 @@ dist-ssr
 /.stage.env
 /.firebaserc
 /.firebase/
+/.env.production
+/.env.stage
