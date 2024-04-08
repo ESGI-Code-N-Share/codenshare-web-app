@@ -24,3 +24,5 @@ dist-ssr
 *.sw?
 /.production.env
 /.stage.env
+/.firebaserc
+/.firebase/

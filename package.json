@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
   "author": "",
   "homepage": "https://github.com/ESGI-Code-N-Share/codenshare-web-app#readme",
   "repository": {
@@ -15,8 +14,10 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc && vite build",
+    "build": "vite build",
     "preview": "vite preview",
+    "deploy:prod": "npm run build && firebase deploy --only hosting --project codenshare-51ec0",
+    "deploy:stage": "npm run build && firebase deploy --only hosting --project test-codenshare",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "ISC",
