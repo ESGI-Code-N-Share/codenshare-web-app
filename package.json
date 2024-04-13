@@ -21,6 +21,7 @@
     "preview": "vite --mode stage preview",
     "deploy:prod": "npm run build && firebase deploy --only hosting --project codenshare-51ec0",
     "deploy:stage": "npm run build:stage && firebase deploy --only hosting --project test-codenshare",
+    "deploy:dev": "npm run build && firebase deploy --only hosting --project local-codenshare",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "license": "ISC",

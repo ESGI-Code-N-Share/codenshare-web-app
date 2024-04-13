@@ -11,14 +11,29 @@ const checked = ref(false);
 const email = ref('');
 const password = ref('');
 
-function onClickedSignIn() {
-  authService.signIn(email.value, password.value)
-      .then(async () => {
-        console.log("Connected")
+function onClickedSignUp() {
+  authService.signUp(email.value, password.value)
+      .then(async (link) => {
+        console.log("User created")
+        console.log(`Un mail vous a été envoyé pour confirmer votre adresse mail : ${link}`)
       })
       .catch((error) => {
-        if(error.code == FirebaseErrorMessage.INVALID_CREDENTIALS || error.code == FirebaseErrorMessage.INVALID_EMAIL || error.code == FirebaseErrorMessage.MISSING_PASSWORD)
-        console.error(ErrorMessage.INVALID_CREDENTIALS)
+        if(error.message == FirebaseErrorMessage.EMAIL_ALREADY_EXISTS) {
+          console.error(ErrorMessage.EMAIL_ALREADY_EXISTS)
+        }
+
+        if(error.message == FirebaseErrorMessage.INVALID_EMAIL) {
+          console.error(ErrorMessage.INVALID_EMAIL)
+        }
+
+        if(error.message == ErrorMessage.INVALID_INFORMATIONS) {
+          console.error(ErrorMessage.INVALID_INFORMATIONS)
+        }
+
+        if(error.message == FirebaseErrorMessage.INVALID_PASSWORD) {
+          console.error(ErrorMessage.INVALID_INFORMATIONS)
+        }
+
       })
 }
 
@@ -29,9 +44,9 @@ function onClickedSignIn() {
     <div class="surface-card p-4 shadow-2 border-round w-full md:w-6 md:p-6 lg:p-8 ">
       <div class="text-center mb-5">
         <img alt="Image" class="mb-3" height="50" src="/src/assets/vue.svg"/>
-        <div class="text-900 text-3xl font-medium mb-3">Welcome Back</div>
-        <span class="text-600 font-medium line-height-3">Don't have an account?</span>
-        <a class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Create today!</a>
+        <div class="text-900 text-3xl font-medium mb-3">Welcome</div>
+        <span class="text-600 font-medium line-height-3">Already have an account?</span>
+        <a class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Sign in here!</a>
       </div>
 
       <div>
@@ -49,7 +64,7 @@ function onClickedSignIn() {
           <a class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer">Forgot password?</a>
         </div>
 
-        <Button class="w-full" icon="pi pi-user" label="Sign In" @click="onClickedSignIn()"></Button>
+        <Button class="w-full" icon="pi pi-user" label="Sign Up" @click="onClickedSignUp()"></Button>
       </div>
     </div>
   </div>
