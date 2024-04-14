@@ -92,7 +92,7 @@ async function onSubmitRegisterForm() {
 </script>
 
 <template>
-  <section class="h-screen w-screen px-3 py-8 md:p-3 scroll">
+  <section class="h-screen w-screen px-3 py-8 md:p-3">
     <div class="container surface-card border-round-3xl p-3 h-full">
       <Toast class="sm:w-auto" position="top-right" style="width: 85%;"/>
       <div class="flex h-full align-items-center">
