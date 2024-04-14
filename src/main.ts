@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import {createApp} from 'vue'
 import PrimeVue from 'primevue/config';
 
 // styles
@@ -13,19 +13,61 @@ import 'primeicons/primeicons.css';
 import router from "./router";
 
 import App from './App.vue'
+
+import ToastService from 'primevue/toastservice';
+import Tooltip from "primevue/tooltip";
+
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
+import Image from "primevue/image";
+import Card from "primevue/card";
+import Calendar from "primevue/calendar";
+import Password from "primevue/password";
+import Toast from "primevue/toast";
 
 const app = createApp(App)
+    // directives
+    .directive('tooltip', Tooltip)
+
     // plugins
-    .use(PrimeVue, { ripple: true })
     .use(router)
+    .use(PrimeVue, {
+        ripple: true,
+        inputStyle: "filled",
+        pt: {
+            tooltip: {
+                root: 'text-sm'
+            },
+            input: {
+                root: 'w-full'
+            },
+            password: {
+                input: {
+                    root: 'w-full'
+                }
+            },
+            card: {
+                body: {
+                    style: 'height: 100%'
+                },
+                content: {
+                    style: 'height: 100%'
+                }
+            }
+        }
+    })
+    .use(ToastService)
 
     // components
     .component('Button', Button)
     .component('InputText', InputText)
+    .component('Calendar', Calendar)
     .component('Checkbox', Checkbox)
+    .component('Image', Image)
+    .component('Card', Card)
+    .component('Password', Password)
+    .component('Toast', Toast)
 
 
 app.mount("#app");
