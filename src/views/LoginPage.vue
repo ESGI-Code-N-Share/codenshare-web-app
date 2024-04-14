@@ -12,9 +12,10 @@ const checked = ref(false);
     <div class="surface-card p-4 shadow-2 border-round w-full md:w-6 md:p-6 lg:p-8 ">
       <div class="text-center mb-5">
         <img alt="Image" class="mb-3" height="50" src="/src/assets/vue.svg"/>
-        <div class="text-900 text-3xl font-medium mb-3">Welcome Back</div>
-        <span class="text-600 font-medium line-height-3">Don't have an account?</span>
-        <a class="font-medium no-underline ml-2 text-blue-500 cursor-pointer">Create today!</a>
+        <div class="text-900 text-3xl font-medium mb-3">Content de te revoir</div>
+        <span class="text-600 font-medium line-height-3">Pas encore de compte ?</span>
+        <a class="font-medium no-underline ml-2 gradient-text-primary cursor-pointer"
+           @click="$router.push('/register')">Créer en un maintenant !</a>
       </div>
 
       <div>
