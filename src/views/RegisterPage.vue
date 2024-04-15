@@ -100,7 +100,7 @@ async function onSubmitRegisterForm() {
           <div>
             <h1 class="text-4xl lg:text-5xl mb-4 lg:col-8 p-0">Créer ton compte</h1>
             <div class="text-white-alpha-50 text-lg font-semibold mb-2">
-              <span class="mr-1">Déjà connecté ?</span>
+              <span class="mr-1">Déjà inscrit ?</span>
               <span class="gradient-text-primary hover:underline text-base"
                     @click="$router.push('/login')">Connecte-toi.</span>
             </div>
@@ -182,7 +182,7 @@ async function onSubmitRegisterForm() {
         <div class="p-0 h-full col-0 md:col-6 lg:col-7">
           <img
               alt="Image"
-              class="h-full border-round-3xl"
+              class="h-full w-full border-round-3xl"
               src="/src/assets/images/meeting-office.png"
               style="max-width: 100%; object-fit: cover;"
           />

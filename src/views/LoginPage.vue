@@ -4,11 +4,13 @@ import {ref} from "vue";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import {useRouter} from "vue-router";
+import ResetPasswordRequestDialog from "@/components/dialogs/ResetPasswordRequestDialog.vue";
 
 const toastNotifications = new ToastService(useToast());
 const router = useRouter();
 
 const loading = ref(false);
+const openResetPasswordDialog = ref(false);
 
 const email = ref('');
 const password = ref('');
@@ -68,9 +70,6 @@ async function onSubmitLoginForm() {
 }
 
 
-function openResetPasswordDialog() {
-}
-
 </script>
 
 <template>
@@ -80,16 +79,17 @@ function openResetPasswordDialog() {
       <div class="h-full w-full px-2 py-6 sm:p-6 sm:max-w-max">
         <div class="text-center mb-5">
           <img alt="Image" class="mb-3" height="50" src="/src/assets/vue.svg"/>
-          <div class="text-900 text-2xl sm:text-3xl font-medium mb-3">Content de te revoir</div>
+          <div class="text-900 text-2xl sm:text-3xl font-medium mb-3">Content de te revoir !</div>
           <span class="text-600 font-medium line-height-3">Pas encore de compte ?</span>
-          <a class="font-medium no-underline ml-2 gradient-text-primary cursor-pointer"
-             @click="$router.push('/register')">Créer en un maintenant !</a>
+          <a class="font-medium ml-2 gradient-text-primary cursor-pointer"
+             @click="$router.push('/register')">Par ici.</a>
         </div>
 
         <form ref="registerFormRef" class="flex flex-column gap-3">
           <InputText
               v-model="email"
               v-tooltip.bottom="emailError"
+              inputmode="email"
               :invalid="!!emailError"
               class="w-full"
               placeholder="john.doe@email.com"
@@ -119,7 +119,7 @@ function openResetPasswordDialog() {
               />
               <label class="text-sm" for="cgu">Rester connecté</label>
             </div>
-            <div class="text-sm text-blue-600" @click="openResetPasswordDialog()">Mot de passe oublié ?</div>
+            <div class="text-sm text-blue-600" @click="openResetPasswordDialog = true">Mot de passe oublié ?</div>
           </div>
 
           <Button
@@ -132,6 +132,7 @@ function openResetPasswordDialog() {
         </form>
       </div>
     </div>
+    <ResetPasswordRequestDialog v-model:isOpen="openResetPasswordDialog"/>
   </section>
 </template>
 
