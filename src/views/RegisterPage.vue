@@ -96,7 +96,7 @@ async function onSubmitRegisterForm() {
     <div class="container surface-card border-round-3xl p-3 h-full">
       <Toast class="sm:w-auto" position="top-right" style="width: 85%;"/>
       <div class="flex h-full align-items-center">
-        <div class="flex flex-column gap-5 justify-content-center col-12 md:col-6 lg:col-5 p-1 sm:p-8 md:p-5 lg:p-6">
+        <div class="flex flex-column gap-5 justify-content-center col-12 md:col-6 xl:col-5 p-1 sm:p-8 md:p-5 lg:p-6">
           <div>
             <h1 class="text-4xl lg:text-5xl mb-4 lg:col-8 p-0">Créer ton compte</h1>
             <div class="text-white-alpha-50 text-lg font-semibold mb-2">
@@ -179,7 +179,7 @@ async function onSubmitRegisterForm() {
           </div>
 
         </div>
-        <div class="p-0 h-full col-0 md:col-6 lg:col-7">
+        <div class="p-0 h-full col-0 md:col-6 xl:col-7">
           <img
               alt="Image"
               class="h-full w-full border-round-3xl"

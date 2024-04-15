@@ -22,6 +22,11 @@ const routes: Array<RouteRecordRaw> = [
         name: "login",
         component: () => import("@/views/LoginPage.vue")
     },
+    {
+        path: "/reset-password",
+        name: "reset-password",
+        component: () => import("@/views/ResetPasswordPage.vue")
+    }
 ];
 
 export default routes;
