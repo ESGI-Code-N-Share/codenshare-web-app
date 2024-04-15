@@ -1,44 +1,145 @@
 <script lang="ts" setup>
 
 import {ref} from "vue";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
+import {useRouter} from "vue-router";
 
-const checked = ref(false);
+const toastNotifications = new ToastService(useToast());
+const router = useRouter();
 
+const loading = ref(false);
+
+const email = ref('');
+const password = ref('');
+const stayLogin = ref(false);
+
+const emailError = ref('');
+const passwordError = ref('');
+const stayLoginError = ref('');
+
+function isLoginFormValid(): boolean {
+  let isValid = true;
+
+  if (!email.value) {
+    emailError.value = 'L\'email est requis';
+    isValid = false;
+  }
+
+  if (!password.value) {
+    passwordError.value = 'Le mot de passe est requis';
+    isValid = false;
+  }
+
+  if (!stayLogin.value) {
+    stayLoginError.value = 'Vous devez accepter les conditions d\'utilisation';
+    isValid = false;
+  }
+
+  return isValid;
+}
+
+function resetErrors() {
+  emailError.value = '';
+  passwordError.value = '';
+  stayLoginError.value = '';
+}
+
+
+async function onSubmitLoginForm() {
+  try {
+    loading.value = true;
+    resetErrors();
+
+    if (!isLoginFormValid()) {
+      toastNotifications.showError('Veuillez vérifier les erreurs dans le formulaire');
+      return;
+    }
+
+    // todo call api to login user
+
+    toastNotifications.showSuccess('Connexion réussie');
+    await router.push('/home');
+  } catch (e) {
+    toastNotifications.showError('Une erreur est survenue');
+  } finally {
+    loading.value = false;
+  }
+}
+
+
+function openResetPasswordDialog() {
+}
 
 </script>
 
 <template>
-  <div class="flex justify-content-center align-items-center h-full">
-    <div class="surface-card p-4 shadow-2 border-round w-full md:w-6 md:p-6 lg:p-8 ">
-      <div class="text-center mb-5">
-        <img alt="Image" class="mb-3" height="50" src="/src/assets/vue.svg"/>
-        <div class="text-900 text-3xl font-medium mb-3">Content de te revoir</div>
-        <span class="text-600 font-medium line-height-3">Pas encore de compte ?</span>
-        <a class="font-medium no-underline ml-2 gradient-text-primary cursor-pointer"
-           @click="$router.push('/register')">Créer en un maintenant !</a>
-      </div>
-
-      <div>
-        <label class="block text-900 font-medium mb-2" for="email1">Email</label>
-        <InputText id="email1" class="w-full mb-3" type="email"/>
-
-        <label class="block text-900 font-medium mb-2" for="password1">Password</label>
-        <InputText id="password1" class="w-full mb-3" type="password"/>
-
-        <div class="flex align-items-center justify-content-between mb-6">
-          <div class="flex align-items-center">
-            <Checkbox id="rememberme1" v-model="checked" :binary="true" class="mr-2"></Checkbox>
-            <label for="rememberme1">Remember me</label>
-          </div>
-          <a class="font-medium no-underline ml-2 text-blue-500 text-right cursor-pointer">Forgot password?</a>
+  <section class="h-screen w-screen px-3 py-8">
+    <div class="container surface-card border-round-3xl p-3 h-full sm:max-w-max">
+      <Toast class="sm:w-auto" position="top-right" style="width: 85%;"/>
+      <div class="h-full w-full px-2 py-6 sm:p-6 sm:max-w-max">
+        <div class="text-center mb-5">
+          <img alt="Image" class="mb-3" height="50" src="/src/assets/vue.svg"/>
+          <div class="text-900 text-2xl sm:text-3xl font-medium mb-3">Content de te revoir</div>
+          <span class="text-600 font-medium line-height-3">Pas encore de compte ?</span>
+          <a class="font-medium no-underline ml-2 gradient-text-primary cursor-pointer"
+             @click="$router.push('/register')">Créer en un maintenant !</a>
         </div>
 
-        <Button class="w-full" icon="pi pi-user" label="Sign In"></Button>
+        <form ref="registerFormRef" class="flex flex-column gap-3">
+          <InputText
+              v-model="email"
+              v-tooltip.bottom="emailError"
+              :invalid="!!emailError"
+              class="w-full"
+              placeholder="john.doe@email.com"
+              type="email"
+              @update:modelValue="emailError = ''"
+          />
+          <Password
+              v-model="password"
+              v-tooltip.bottom="passwordError"
+              :invalid="!!passwordError"
+              class="w-full"
+              placeholder="Mot de passe"
+              toggleMask
+              @update:modelValue="passwordError = ''"
+          />
+
+          <div class="flex align-items-center justify-content-between">
+            <div class="flex align-items-center">
+              <Checkbox
+                  id="cgu"
+                  v-model="stayLogin"
+                  v-tooltip.bottom="stayLoginError"
+                  :invalid="!!stayLoginError"
+                  binary
+                  class="mr-2"
+                  @update:modelValue="stayLoginError = ''"
+              />
+              <label class="text-sm" for="cgu">Rester connecté</label>
+            </div>
+            <div class="text-sm text-blue-600" @click="openResetPasswordDialog()">Mot de passe oublié ?</div>
+          </div>
+
+          <Button
+              :loading="loading"
+              class="gradient-bg-primary justify-content-center mt-1"
+              icon-pos="right"
+              label="Créer mon compte"
+              @click="onSubmitLoginForm()"
+          />
+        </form>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <style scoped>
-
+.container {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 1200px;
+  width: 100%;
+}
 </style>
