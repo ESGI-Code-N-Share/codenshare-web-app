@@ -74,9 +74,9 @@ async function onSubmitLoginForm() {
 
 <template>
   <section class="h-screen w-screen px-3 py-8">
-    <div class="container surface-card border-round-3xl p-3 h-full sm:max-w-max">
+    <div class="container surface-card border-round-3xl p-3 h-full max-w-30rem">
       <Toast class="sm:w-auto" position="top-right" style="width: 85%;"/>
-      <div class="h-full w-full px-2 py-6 sm:p-6 sm:max-w-max">
+      <div class="h-full w-full px-2 py-6 sm:p-6 m-auto">
         <div class="text-center mb-5">
           <img alt="Image" class="mb-3" height="50" src="/src/assets/vue.svg"/>
           <div class="text-900 text-2xl sm:text-3xl font-medium mb-3">Content de te revoir !</div>
