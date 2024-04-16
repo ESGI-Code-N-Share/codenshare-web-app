@@ -25,6 +25,9 @@ import Card from "primevue/card";
 import Calendar from "primevue/calendar";
 import Password from "primevue/password";
 import Toast from "primevue/toast";
+import Dialog from "primevue/dialog";
+import InlineMessage from "primevue/inlinemessage";
+import Divider from "primevue/divider";
 
 const app = createApp(App)
     // directives
@@ -68,6 +71,9 @@ const app = createApp(App)
     .component('Card', Card)
     .component('Password', Password)
     .component('Toast', Toast)
+    .component('Dialog', Dialog)
+    .component('InlineMessage', InlineMessage)
+    .component('Divider', Divider)
 
 
 app.mount("#app");
