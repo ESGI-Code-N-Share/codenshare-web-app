@@ -130,6 +130,20 @@ async function onSubmitLoginForm() {
               @click="onSubmitLoginForm()"
           />
         </form>
+
+        <Divider>
+          <span class="text-600">Ou</span>
+        </Divider>
+
+        <div>
+          <div class="flex">
+            <Button class="w-full bg-white" icon="pi pi-google" label="Se connecter avec Google"/>
+          </div>
+          <div class="flex mt-2">
+            <Button class="w-full bg-black-alpha-50 text-white" icon="pi pi-google" label="Se connecter avec Github"/>
+          </div>
+        </div>
+
       </div>
     </div>
     <ResetPasswordRequestDialog v-model:isOpen="openResetPasswordDialog"/>
