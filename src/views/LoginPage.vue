@@ -6,6 +6,7 @@ import {useToast} from "primevue/usetoast";
 import {useRouter} from "vue-router";
 import ResetPasswordRequestDialog from "@/components/dialogs/ResetPasswordRequestDialog.vue";
 import {AuthService} from "@/services/auth.service.ts";
+import AuthPage from "@/components/auth/AuthPage.vue";
 
 const authService = new AuthService();
 
@@ -15,8 +16,8 @@ const router = useRouter();
 const loading = ref(false);
 const openResetPasswordDialog = ref(false);
 
-const email = ref('melissa.laurent.jouvet@gmail.com');
-const password = ref('toto1234#Z');
+const email = ref('');
+const password = ref('');
 const stayLogin = ref(false);
 
 const emailError = ref('');
@@ -61,7 +62,6 @@ async function onSubmitLoginForm() {
       return;
     }
 
-    // todo call api to login user
     await authService.signIn(email.value, password.value)
 
     toastNotifications.showSuccess('Connexion réussie');
@@ -78,11 +78,10 @@ async function onSubmitLoginForm() {
 </script>
 
 <template>
-  <section class="h-screen w-screen px-3 py-8">
-    <div class="container surface-card border-round-3xl p-3 h-full max-w-30rem">
-      <Toast class="sm:w-auto" position="top-right" style="width: 85%;"/>
-      <div class="h-full w-full px-2 py-6 sm:p-6 m-auto">
-        <div class="text-center mb-5">
+  <AuthPage>
+    <div class="w-full h-full m-auto max-w-30rem">
+      <div class="flex flex-column justify-content-center h-full p-4 surface-card border-round-3xl">
+        <div class="text-center mb-5 sm:mb-7">
           <img alt="Image" class="mb-3" height="50" src="/src/assets/vue.svg"/>
           <div class="text-900 text-2xl sm:text-3xl font-medium mb-3">Content de te revoir !</div>
           <span class="text-600 font-medium line-height-3">Pas encore de compte ?</span>
@@ -135,17 +134,25 @@ async function onSubmitLoginForm() {
               @click="onSubmitLoginForm()"
           />
         </form>
+
+        <Divider>
+          <span class="text-600">Ou</span>
+        </Divider>
+
+        <div>
+          <div class="flex">
+            <Button class="w-full bg-white" icon="pi pi-google" label="Se connecter avec Google"/>
+          </div>
+          <div class="flex mt-2">
+            <Button class="w-full bg-black-alpha-50 text-white" icon="pi pi-google" label="Se connecter avec Github"/>
+          </div>
+        </div>
       </div>
     </div>
     <ResetPasswordRequestDialog v-model:isOpen="openResetPasswordDialog"/>
-  </section>
+  </AuthPage>
 </template>
 
 <style scoped>
-.container {
-  margin-right: auto;
-  margin-left: auto;
-  max-width: 1200px;
-  width: 100%;
-}
+
 </style>

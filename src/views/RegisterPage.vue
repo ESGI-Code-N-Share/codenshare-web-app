@@ -4,18 +4,19 @@ import {ref} from "vue";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import {AuthService} from "@/services/auth.service.ts";
+import AuthPage from "@/components/auth/AuthPage.vue";
 
 const authService = new AuthService();
 const toastNotifications = new ToastService(useToast())
 
 const loading = ref(false);
 
-const firstname = ref('John');
-const lastname = ref('Doe');
-const birthDate = ref('04/04/2024');
-const email = ref('melissa.laurent.jouvet@gmail.com');
-const password = ref('toto1234#Z');
-const cgu = ref(true);
+const firstname = ref('');
+const lastname = ref('');
+const birthDate = ref('');
+const email = ref('');
+const password = ref('');
+const cgu = ref(false);
 
 const firstnameError = ref('');
 const lastnameError = ref('');
@@ -95,111 +96,103 @@ async function onSubmitRegisterForm() {
 </script>
 
 <template>
-  <section class="h-screen w-screen px-3 py-8 md:p-3">
-    <div class="container surface-card border-round-3xl p-3 h-full">
-      <Toast class="sm:w-auto" position="top-right" style="width: 85%;"/>
-      <div class="flex h-full align-items-center">
-        <div class="flex flex-column gap-5 justify-content-center col-12 md:col-6 xl:col-5 p-1 sm:p-8 md:p-5 lg:p-6">
-          <div>
-            <h1 class="text-4xl lg:text-5xl mb-4 lg:col-8 p-0">Créer ton compte</h1>
-            <div class="text-white-alpha-50 text-lg font-semibold mb-2">
-              <span class="mr-1">Déjà inscrit ?</span>
-              <span class="gradient-text-primary hover:underline text-base"
-                    @click="$router.push('/login')">Connecte-toi.</span>
-            </div>
+  <AuthPage>
+    <div class="flex w-full h-full surface-card border-round-3xl p-4 m-autor">
+      <div class="flex flex-column gap-5 justify-content-center col-12 md:col-6 xl:col-5 p-1 sm:p-8 md:p-5 lg:p-6">
+        <div class="md:mb-4">
+          <h1 class="text-4xl lg:text-5xl mb-4 lg:col-8 p-0">Créer ton compte</h1>
+          <div class="text-white-alpha-50 text-lg font-semibold mb-2">
+            <span class="mr-1">Déjà inscrit ?</span>
+            <span class="gradient-text-primary hover:underline text-base"
+                  @click="$router.push('/login')">Connecte-toi.</span>
           </div>
-          <div>
-            <form ref="registerFormRef" class="flex flex-column gap-3">
-              <div class="flex gap-3">
-                <InputText
-                    v-model="firstname"
-                    v-tooltip.bottom="firstnameError"
-                    :invalid="!!firstnameError"
-                    class="w-full"
-                    placeholder="John"
-                    @update:modelValue="firstnameError = ''"
-                />
-                <InputText
-                    v-model="lastname"
-                    v-tooltip.bottom="lastnameError"
-                    :invalid="!!lastnameError"
-                    class="w-full"
-                    placeholder="Doe"
-                    @update:modelValue="lastnameError = ''"
-                />
-              </div>
-              <Calendar
-                  v-model="birthDate"
-                  v-tooltip.bottom="birthDateError"
-                  :invalid="!!birthDateError"
+        </div>
+        <div>
+          <form ref="registerFormRef" class="flex flex-column gap-3">
+            <div class="flex gap-3">
+              <InputText
+                  v-model="firstname"
+                  v-tooltip.bottom="firstnameError"
+                  :invalid="!!firstnameError"
                   class="w-full"
-                  placeholder="Date de naissance"
-                  @update:modelValue="birthDateError = ''"
+                  placeholder="John"
+                  @update:modelValue="firstnameError = ''"
               />
               <InputText
-                  v-model="email"
-                  v-tooltip.bottom="emailError"
-                  :invalid="!!emailError"
+                  v-model="lastname"
+                  v-tooltip.bottom="lastnameError"
+                  :invalid="!!lastnameError"
                   class="w-full"
-                  placeholder="john.doe@email.com"
-                  type="email"
-                  @update:modelValue="emailError = ''"
+                  placeholder="Doe"
+                  @update:modelValue="lastnameError = ''"
               />
-              <Password
-                  v-model="password"
-                  v-tooltip.bottom="passwordError"
-                  :invalid="!!passwordError"
-                  class="w-full"
-                  placeholder="Mot de passe"
-                  toggleMask
-                  @update:modelValue="passwordError = ''"
+            </div>
+            <Calendar
+                v-model="birthDate"
+                v-tooltip.bottom="birthDateError"
+                :invalid="!!birthDateError"
+                class="w-full"
+                placeholder="Date de naissance"
+                @update:modelValue="birthDateError = ''"
+            />
+            <InputText
+                v-model="email"
+                v-tooltip.bottom="emailError"
+                :invalid="!!emailError"
+                class="w-full"
+                placeholder="john.doe@email.com"
+                type="email"
+                @update:modelValue="emailError = ''"
+            />
+            <Password
+                v-model="password"
+                v-tooltip.bottom="passwordError"
+                :invalid="!!passwordError"
+                class="w-full"
+                placeholder="Mot de passe"
+                toggleMask
+                @update:modelValue="passwordError = ''"
+            />
+
+            <div class="flex align-items-center">
+              <Checkbox
+                  id="cgu"
+                  v-model="cgu"
+                  v-tooltip.bottom="cguError"
+                  :invalid="!!cguError"
+                  binary
+                  class="mr-2"
+                  @update:modelValue="cguError = ''"
               />
+              <label class="text-sm" for="cgu">
+                <span class="mr-1">J'accepte les</span>
+                <a class="text-blue-500 no-underline font-medium cursor-pointer">conditions d'utilisation</a>
+              </label>
+            </div>
 
-              <div class="flex align-items-center">
-                <Checkbox
-                    id="cgu"
-                    v-model="cgu"
-                    v-tooltip.bottom="cguError"
-                    :invalid="!!cguError"
-                    binary
-                    class="mr-2"
-                    @update:modelValue="cguError = ''"
-                />
-                <label class="text-sm" for="cgu">
-                  <span class="mr-1">J'accepte les</span>
-                  <a class="text-blue-500 no-underline font-medium cursor-pointer">conditions d'utilisation</a>
-                </label>
-              </div>
-
-              <Button
-                  :loading="loading"
-                  class="gradient-bg-primary justify-content-center"
-                  icon-pos="right"
-                  label="Créer mon compte"
-                  @click="onSubmitRegisterForm()"
-              />
-            </form>
-          </div>
-
+            <Button
+                :loading="loading"
+                class="gradient-bg-primary justify-content-center"
+                icon-pos="right"
+                label="Créer mon compte"
+                @click="onSubmitRegisterForm()"
+            />
+          </form>
         </div>
-        <div class="p-0 h-full col-0 md:col-6 xl:col-7">
-          <img
-              alt="Image"
-              class="h-full w-full border-round-3xl"
-              src="/src/assets/images/meeting-office.png"
-              style="max-width: 100%; object-fit: cover;"
-          />
-        </div>
+
+      </div>
+      <div class="p-0 h-full col-0 md:col-6 xl:col-7">
+        <img
+            alt="Image"
+            class="h-full border-round-3xl"
+            src="/src/assets/images/meeting-office.png"
+            style="max-width: 100%; object-fit: cover;"
+        />
       </div>
     </div>
-  </section>
+  </AuthPage>
 </template>
 
 <style scoped>
-.container {
-  margin-right: auto;
-  margin-left: auto;
-  max-width: 1200px;
-  width: 100%;
-}
+
 </style>
