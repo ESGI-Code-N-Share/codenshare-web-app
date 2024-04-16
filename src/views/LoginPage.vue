@@ -5,6 +5,9 @@ import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import {useRouter} from "vue-router";
 import ResetPasswordRequestDialog from "@/components/dialogs/ResetPasswordRequestDialog.vue";
+import {AuthService} from "@/services/auth.service.ts";
+
+const authService = new AuthService();
 
 const toastNotifications = new ToastService(useToast());
 const router = useRouter();
@@ -12,8 +15,8 @@ const router = useRouter();
 const loading = ref(false);
 const openResetPasswordDialog = ref(false);
 
-const email = ref('');
-const password = ref('');
+const email = ref('melissa.laurent.jouvet@gmail.com');
+const password = ref('toto1234#Z');
 const stayLogin = ref(false);
 
 const emailError = ref('');
@@ -59,11 +62,13 @@ async function onSubmitLoginForm() {
     }
 
     // todo call api to login user
+    await authService.signIn(email.value, password.value)
 
     toastNotifications.showSuccess('Connexion réussie');
     await router.push('/home');
   } catch (e) {
-    toastNotifications.showError('Une erreur est survenue');
+    // toastNotifications.showError('Une erreur est survenue');
+    toastNotifications.showError(e.message);
   } finally {
     loading.value = false;
   }

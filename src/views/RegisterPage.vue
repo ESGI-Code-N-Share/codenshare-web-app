@@ -3,17 +3,19 @@
 import {ref} from "vue";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import {AuthService} from "@/services/auth.service.ts";
 
+const authService = new AuthService();
 const toastNotifications = new ToastService(useToast())
 
 const loading = ref(false);
 
-const firstname = ref('');
-const lastname = ref('');
-const birthDate = ref('');
-const email = ref('');
-const password = ref('');
-const cgu = ref(false);
+const firstname = ref('John');
+const lastname = ref('Doe');
+const birthDate = ref('04/04/2024');
+const email = ref('melissa.laurent.jouvet@gmail.com');
+const password = ref('toto1234#Z');
+const cgu = ref(true);
 
 const firstnameError = ref('');
 const lastnameError = ref('');
@@ -77,12 +79,13 @@ async function onSubmitRegisterForm() {
       return toastNotifications.showError("Le formulaire contient des erreurs");
     }
 
-    //todo call api to create user
+    await authService.register(firstname.value, lastname.value, email.value, password.value)
 
     toastNotifications.showSuccess("Votre compte a été créé avec succès");
   } catch (e) {
     console.error(e);
-    toastNotifications.showError("Une erreur s'est produite lors de la création de votre compte");
+    // toastNotifications.showError("Une erreur s'est produite lors de la création de votre compte");
+    toastNotifications.showError(e.message);
   } finally {
     loading.value = false;
   }
