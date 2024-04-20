@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 
 import {onMounted, ref} from "vue";
+import PostNew from "@/components/posts/PostNew.vue";
 
 const baseUrl = ref(import.meta.env.VITE_API_URL);
 const mode = ref(import.meta.env.MODE);
@@ -12,9 +13,10 @@ onMounted(() => {
 
 <template>
   <div>
-    <h1>Home Page</h1>
     <p>codenshare in {{mode}} mode. ({{baseUrl ?? "x"}})</p>
     <Button label="Click me" @click="$router.push('/login')" />
+
+    <PostNew/>
   </div>
 </template>
 
