@@ -2,20 +2,32 @@
 
 import {onMounted, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
+import Sidebar from "primevue/sidebar";
 import {MenuItem} from "primevue/menuitem";
-import InputFile from "@/components/files/InputFile.vue";
 import ProgramListItem from "@/components/programs/ProgramListItem.vue";
+import {VAceEditor} from 'vue3-ace-editor';
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/theme-monokai';
 
 const route = useRoute();
 const router = useRouter();
 
-const programId = ref();
+const program = ref({
+  id: "1",
+  language: 'javascript',
+  name: '',
+  description: '',
+  share: false,
+  code: '',
+});
 
-const sidebarEditor = ref(false);
+const sidebarProgramEditor = ref(false);
+const sidebarProgramTest = ref(false);
 
-const code = ref('');
-const panelProgram = ref();
-const panelTest = ref();
+const languages = ref([
+  {label: 'Javascript', value: 'javascript'},
+  {label: 'Python', value: 'python'},
+]);
 
 const editProgramOptions = ref<MenuItem[]>([
   {
@@ -34,150 +46,126 @@ const editProgramOptions = ref<MenuItem[]>([
 ]);
 
 onMounted(() => {
-  panelProgram.value.toggle();
-  programId.value = route.params.program as string;
-  if (!programId.value) {
+  const programId = route.params.program as string;
+  if (!programId) {
     return router.push({name: 'programs'});
   }
 
   // todo call api to get program details
 })
 
-
-function openMenu(event: Event) {
-  // editProgramToggle(event);
-}
-
-function openPanelProgram(event: Event) {
-  panelProgram.value.toggle(event);
-  panelTest.value.toggle(event);
-}
-
-function openPanelTest(event: Event) {
-  panelTest.value.toggle(event);
-  panelProgram.value.toggle(event);
-}
 </script>
 
 <template>
-  <div class="h-full flex">
-    <!-- Editor   -->
-    <div class="col">
-      <Editor v-model="code" class="p-0 col"/>
-
-
+  <div class="w-full h-full">
+    <!-- Content -->
+    <div class="flex flex-column gap-3 md:surface-card p-2 sm:p-4 h-full border-round-xl">
+      <div class="flex justify-content-between align-items-center">
+        <h2 class="text-xl ml-2 my-0">Edition</h2>
+        <div class="flex gap-2">
+          <Button icon="pi pi-play" icon-pos="right" label="Tester" severity="secondary" style="color: #49DE80"
+                  @click="sidebarProgramTest = true"/>
+          <Button icon="pi pi-pencil" severity="secondary" style="" @click="sidebarProgramEditor = true"/>
+          <Menu ref="panelProgram" :model="editProgramOptions" popup/>
+        </div>
+      </div>
+      <div class="h-full w-full">
+        <VAceEditor
+            v-model:value="program.code"
+            lang="javascript"
+            style="height: 100%; min-height: 100%"
+            theme="monokai"/>
+      </div>
     </div>
 
-
-    <!-- Right content   -->
-    <Button class="block lg:hidden" label=">" @click="sidebarEditor = !sidebarEditor; openPanelProgram($event)"/>
-    <div class="hidden lg:block lg:col-5">
-      <!-- Program edition   -->
-      <Panel ref="panelProgram" class="border-round-xl" collapsed style="background-color: #121212">
-        <template #header>
-          <div class="flex justify-content-between align-items-center w-full" @click.stop="openPanelProgram($event)">
-            <h4 class="my-2">Nom du programme</h4>
-            <div>
-              <Button icon="pi pi-ellipsis-v" severity="contrast" text @click="openMenu($event)"/>
-              <Menu :model="editProgramOptions" popup/>
-            </div>
-          </div>
-        </template>
-
-        <!-- Drag and drop     -->
-        <InputFile class="h-5rem w-full"/>
-        <Textarea class="h-5rem w-full" placeholder="Description"/>
-      </Panel>
-
-      <!-- Test   -->
-      <Panel ref="panelTest" class="border-round-xl" collapsed style="background-color: #121212">
-        <template #header>
-          <div class="w-full" @click.stop="openPanelTest($event)">
-            <h4 class="my-2">Tester votre programme</h4>
-          </div>
-        </template>
-
-        <!-- Test     -->
-        <div class="flex flex-column align-items-stretch gap-3">
-          <div class="border-2 border-dashed border-gray-500 border-round text-center p-4 text-color-secondary">
-            <i class="pi pi-download text-5xl mb-2"/>
-            <div>Drag and drop a file</div>
-          </div>
-
-          <div class="text-center">
-            <i class="pi pi-chevron-down text-3xl gradient-text-primary"/>
-          </div>
-
-          <ProgramListItem/>
-          <Button
-              v-tooltip.bottom="'Unavailable for now'"
-              class="text-color-secondary"
-              icon="pi pi-plus"
-              icon-pos="right"
-              label="Ajouter un autre programme"
-              severity="secondary"
-          />
-          <!--        <ProgramListItemEmpty />-->
-
-
-          <div class="text-center">
-            <i class="pi pi-equals text-3xl gradient-text-primary"/>
-          </div>
-
-          <div class="border-2 border-dashed border-gray-500 border-round text-center p-4 text-color-secondary">
-            <i class="pi pi-image text-6xl"/>
-          </div>
-
-          <Button
-              class="text-center justify-content-center mt-2"
-              severity="secondary"
-              style="color: #49DE80; background: linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), #27272A;"
-          >
-            <div>Exécuter</div>
-            <i class="pi pi-play px-2"></i>
-          </Button>
+    <!-- Sidebar Program   -->
+    <Sidebar
+        v-model:visible="sidebarProgramEditor"
+        :pt="{header: 'border-bottom-1', content: 'pt-4'}"
+        class="border-0"
+        header="Configuration" modal position="right"
+        style="min-width: 350px;"
+    >
+      <div class="flex flex-column gap-3">
+        <!--  <InputFile class="h-5rem w-full" />-->
+        <div>Image</div>
+        <div class="border-2 border-dashed border-gray-500 border-round text-center p-4 text-color-secondary"
+             style="background-color: #121212;">
+          <i class="pi pi-download text-5xl mb-2"/>
+          <div>Drag and drop a file</div>
         </div>
 
-      </Panel>
-    </div>
+        <InputText v-model="program.name" placeholder="Nom du programme"/>
+        <Textarea v-model="program.description" class="h-5rem w-full text-sm" cols="30" placeholder="Description"
+                  rows="5"/>
 
-    <SideBar v-model:visible="sidebarEditor" class="block lg:hidden" header="Édition & test" position="right">
-      <div class="">
-        <!-- Program edition   -->
-        <Panel ref="panelProgram" class="border-round-xl" collapsed style="background-color: #121212">
-          <template #header>
-            <div class="flex justify-content-between align-items-center w-full" @click.stop="openPanelProgram($event)">
-              <h4 class="my-2">Nom du programme</h4>
-              <div>
-                <Button icon="pi pi-ellipsis-v" severity="contrast" text @click="openMenu($event)"/>
-                <Menu :model="editProgramOptions" popup/>
-              </div>
-            </div>
-          </template>
+        <Dropdown
+            v-model="program.language"
+            :options="languages"
+            option-label="label"
+            placeholder="Langage"
+        />
 
-          <!-- Drag and drop     -->
-          <div>
-            Drago and drop
-          </div>
-          <Textarea class="h-5rem w-full" placeholder="Description"/>
-        </Panel>
+        <div class="flex align-items-center">
+          <InputSwitch id="share" v-model="program.share" binary class="mr-2"/>
+          <label class="text-sm" for="share">{{ program.share ? 'Public' : 'Privé' }}</label>
+        </div>
 
-        <!-- Test   -->
-        <Panel ref="panelTest" class="border-round-xl" collapsed style="background-color: #121212">
-          <template #header>
-            <div class="w-full" @click.stop="openPanelTest($event)">
-              <h4 class="my-2">Tester votre programme</h4>
-            </div>
-          </template>
-
-          <!-- Drag and drop     -->
-          <div>
-            Drago and drop
-          </div>
-          <Textarea class="h-5rem w-full" placeholder="Description"/>
-        </Panel>
+        <Button icon="pi pi-save" icon-pos="right" label="Sauvegarder" severity="success"/>
       </div>
-    </SideBar>
+    </Sidebar>
+
+    <!-- Sidebar Test   -->
+    <Sidebar
+        v-model:visible="sidebarProgramTest"
+        :pt="{header: 'border-bottom-1', content: 'pt-4'}"
+        class="border-0 md:w-30rem" header="Test" modal position="right"
+        style="min-width: 350px;"
+    >
+      <div class="flex flex-column align-items-stretch gap-3">
+        <!--        <InputFile class="h-5rem w-full"/>-->
+        <div class="border-2 border-dashed border-gray-500 border-round text-center p-4 text-color-secondary"
+             style="background-color: #121212;">
+          <i class="pi pi-download text-5xl mb-2"/>
+          <div>Drag and drop a file</div>
+        </div>
+
+        <div class="text-center">
+          <i class="pi pi-chevron-down text-3xl gradient-text-primary"/>
+        </div>
+
+        <ProgramListItem/>
+        <Button
+            v-tooltip.bottom="'Unavailable for now'"
+            class="text-color-secondary"
+            icon="pi pi-plus"
+            icon-pos="right"
+            label="Ajouter un autre programme"
+            severity="secondary"
+        />
+        <!--        <ProgramListItemEmpty />-->
+
+
+        <div class="text-center">
+          <i class="pi pi-equals text-3xl gradient-text-primary"/>
+        </div>
+
+        <div class="border-2 border-dashed border-gray-500 border-round text-center p-4 text-color-secondary"
+             style="background-color: #121212;">
+          <i class="pi pi-image text-6xl"/>
+        </div>
+
+        <Button
+            class="text-center justify-content-center mt-2"
+            severity="secondary"
+            style="color: #49DE80; background: linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), #27272A;"
+        >
+          <div>Exécuter</div>
+          <i class="pi pi-play px-2"></i>
+        </Button>
+      </div>
+
+    </Sidebar>
   </div>
 </template>
 

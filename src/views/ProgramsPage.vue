@@ -14,22 +14,25 @@ function onCreateNewProgram() {
 </script>
 
 <template>
-  <div class="w-full">
-    <div class="flex justify-content-between align-items-center mt-2 mb-4">
-      <h2 class="text-2xl m-0">Mes programmes</h2>
-      <Button
-          icon="pi pi-plus"
-          icon-pos="right"
-          label="Nouveau"
-          severity="success"
-          size="small"
-          type="button"
-          @click="onCreateNewProgram()"
-      />
+  <div class="w-full h-full">
+    <!-- Content -->
+    <div class="col md:surface-card border-round-xl p-2 sm:p-4 h-full">
+      <div class="flex justify-content-between align-items-center pb-3">
+        <h2 class="text-xl ml-2 my-0">Mes programmes</h2>
+        <Button
+            icon="pi pi-plus"
+            icon-pos="right"
+            label="Nouveau"
+            severity="success"
+            @click="onCreateNewProgram"
+        />
+      </div>
+
+      <div class="grid">
+        <ProgramCard v-for="i in 8" :key="i" :program="{id: i}" class="col-12 sm:col-6 lg:col-4 p-2"/>
+      </div>
     </div>
-    <div class="grid">
-      <ProgramCard v-for="i in 10" :key="i" :program="{id: i}" class="col-12 sm:col-6 p-1"/>
-    </div>
+
   </div>
 </template>
 

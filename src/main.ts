@@ -37,6 +37,8 @@ import Menu from "primevue/menu";
 import Editor from "primevue/editor";
 import Panel from "primevue/panel";
 import FileUpload from "primevue/fileupload";
+import Dropdown from "primevue/dropdown";
+import InputSwitch from "primevue/inputswitch";
 
 
 const app = createApp(App)
@@ -93,6 +95,8 @@ const app = createApp(App)
     .component('Editor', Editor)
     .component('Panel', Panel)
     .component('FileUpload', FileUpload)
+    .component('Dropdown', Dropdown)
+    .component('InputSwitch', InputSwitch)
 
 
 app.mount("#app");

@@ -56,7 +56,7 @@ function onResize() {
     <!-- Content > md -->
     <div class="hidden md:flex gap-2 h-full container">
       <MenuSidebar v-if="isLgMd" class="fixed col-4 lg:col-3"
-                   style="height: 95vh!important; max-height: 95vh!important;"/>
+                   style="height: 94vh!important; max-height: 94vh!important;"/>
 
       <div class="col p-0" style="margin-left: 285px;">
         <router-view></router-view>
@@ -70,6 +70,8 @@ function onResize() {
   margin-right: auto;
   margin-left: auto;
   max-width: 1500px;
+  min-height: 94vh;
+  height: 94vh;
   width: 100%;
 }
 </style>

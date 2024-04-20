@@ -83,7 +83,7 @@ function onLogout() {
     </div>
 
 
-    <div class="surface-card border-round-xl h-full flex flex-column justify-content-between p-2">
+    <div class="surface-card border-round-xl h-full flex flex-column justify-content-between p-2 pt-4">
       <div class="flex flex-column gap-2 align-items-stretch">
         <Button
             v-for="menu in menus"
