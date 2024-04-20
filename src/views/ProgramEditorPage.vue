@@ -73,7 +73,7 @@ onMounted(() => {
         <VAceEditor
             v-model:value="program.code"
             lang="javascript"
-            style="height: 100%; min-height: 100%"
+            style="height: 10em; min-height: 100%;"
             theme="monokai"/>
       </div>
     </div>

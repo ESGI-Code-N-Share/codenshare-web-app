@@ -93,7 +93,7 @@ function onLogout() {
             severity="secondary"
             @click="$router.push({ name: menu.routeName }); $emit('onNextMenu')"
         >
-          <i class="pi pi-home mr-2"></i>
+          <i :class="menu.icon" class="mr-2"></i>
           <div>{{ menu.label }}</div>
         </Button>
       </div>

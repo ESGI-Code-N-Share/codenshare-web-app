@@ -28,11 +28,9 @@ function onResize() {
 </script>
 
 <template>
-  <section class="w-screen min-h-screen h-full p-2 md:p-4" style="min-width: 250px">
-
+  <section class="w-screen h-full p-2 md:p-4" style="min-width: 250px">
     <!-- Mobile only   -->
-    <div class="flex md:hidden flex-column gap-3 h-full">
-      <!-- Top Bar < md   -->
+    <div class="flex md:hidden flex-column h-full w-full">
       <div class="surface-card flex justify-content-between align-items-center border-round-xl p-2 sm:p-3">
         <h1 class="text-2xl m-0 ml-2">CodeNShare</h1>
         <div class="flex items-center" @click="sidebar = true">
@@ -42,9 +40,8 @@ function onResize() {
         </div>
       </div>
       <!-- Content < md   -->
-      <div class="h-full">
-        <router-view></router-view>
-      </div>
+      <router-view></router-view>
+
       <!-- Sidebar < md   -->
       <SideBar v-if="!isLgMd" v-model:visible="sidebar" :dismissable="false"
                :pt="{root: 'w-auto', content: 'p-2', header: 'pb-2'}" class="border-0"
@@ -53,7 +50,7 @@ function onResize() {
       </SideBar>
     </div>
 
-    <!-- Content > md -->
+    <!-- Tablet and Desktop   -->
     <div class="hidden md:flex gap-2 h-full container">
       <MenuSidebar v-if="isLgMd" class="fixed col-4 lg:col-3"
                    style="height: 94vh!important; max-height: 94vh!important;"/>
@@ -71,7 +68,6 @@ function onResize() {
   margin-left: auto;
   max-width: 1500px;
   min-height: 94vh;
-  height: 94vh;
   width: 100%;
 }
 </style>

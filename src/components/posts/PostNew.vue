@@ -49,7 +49,7 @@ function createPostToggle(event: Event, type: 'short' | 'long') {
 </script>
 
 <template>
-  <div class="p-2 border-round-xl" style="background: #121212">
+  <div class="p-2 border-round-xl surface-card" style="background-color: #121212;">
     <div class="flex justify-content-between align-items-center mb-3 p-2 border-round">
       <div class="flex align-items-center">
         <Avatar
@@ -108,5 +108,7 @@ function createPostToggle(event: Event, type: 'short' | 'long') {
 </template>
 
 <style scoped>
-
+.my-bg {
+  background-color: #121212;
+}
 </style>
