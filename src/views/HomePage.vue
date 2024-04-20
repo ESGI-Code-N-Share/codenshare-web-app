@@ -15,7 +15,7 @@ onMounted(() => {
   <div class="flex gap-3 w-full h-full">
     <!-- Content -->
     <div class="col md:surface-card border-round-xl p-2 sm:p-4 h-full">
-      <h2 class="text-xl ml-2 mt-0">Fil d'actualités</h2>
+      <h2 class="text-xl ml-2 mt-0 pt-2">Fil d'actualités</h2>
       <!-- New message    -->
       <PostNew/>
       <Divider class="my-2"/>

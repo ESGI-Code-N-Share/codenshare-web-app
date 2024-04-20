@@ -60,7 +60,7 @@ onMounted(() => {
   <div class="w-full h-full">
     <!-- Content -->
     <div class="flex flex-column gap-3 md:surface-card p-2 sm:p-4 h-full border-round-xl">
-      <div class="flex justify-content-between align-items-center">
+      <div class="flex justify-content-between align-items-center pt-2">
         <h2 class="text-xl ml-2 my-0">Edition</h2>
         <div class="flex gap-2">
           <Button icon="pi pi-play" icon-pos="right" label="Tester" severity="secondary" style="color: #49DE80"
