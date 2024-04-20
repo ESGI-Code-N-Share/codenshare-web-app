@@ -29,6 +29,20 @@ import Dialog from "primevue/dialog";
 import InlineMessage from "primevue/inlinemessage";
 import Divider from "primevue/divider";
 
+// I18n
+import {createI18n} from 'vue-i18n'
+import fr from "@/locals/fr";
+
+export const i18n = createI18n({
+    locale: 'fr',
+    fallbackLocale: 'fr',
+    messages: {
+        fr: fr
+
+    },
+    legacy: false
+});
+
 const app = createApp(App)
     // directives
     .directive('tooltip', Tooltip)
@@ -61,6 +75,7 @@ const app = createApp(App)
         }
     })
     .use(ToastService)
+    .use(i18n)
 
     // components
     .component('Button', Button)
@@ -75,10 +90,4 @@ const app = createApp(App)
     .component('InlineMessage', InlineMessage)
     .component('Divider', Divider)
 
-
 app.mount("#app");
-
-
-
-
-
