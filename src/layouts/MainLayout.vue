@@ -43,7 +43,7 @@ function onResize() {
       <router-view></router-view>
 
       <!-- Sidebar < md   -->
-      <SideBar v-if="!isLgMd" v-model:visible="sidebar" :dismissable="false"
+      <SideBar v-if="!isLgMd" v-model:visible="sidebar" :dismissable="false" blockScroll
                :pt="{root: 'w-auto', content: 'p-2', header: 'pb-2'}" class="border-0"
                header="CodeNShare">
         <MenuSidebar short style="padding: 0.75em !important;" @onNextMenu="sidebar = false"/>

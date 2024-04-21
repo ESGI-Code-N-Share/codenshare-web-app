@@ -34,7 +34,6 @@ import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import Textarea from "primevue/textarea";
 import Menu from "primevue/menu";
-import Editor from "primevue/editor";
 import Panel from "primevue/panel";
 import FileUpload from "primevue/fileupload";
 import Dropdown from "primevue/dropdown";
@@ -92,7 +91,6 @@ const app = createApp(App)
     .component('IconField', IconField)
     .component('InputIcon', InputIcon)
     .component('Menu', Menu)
-    .component('Editor', Editor)
     .component('Panel', Panel)
     .component('FileUpload', FileUpload)
     .component('Dropdown', Dropdown)
