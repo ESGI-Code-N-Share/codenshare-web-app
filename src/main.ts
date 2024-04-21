@@ -33,7 +33,7 @@ import Divider from "primevue/divider";
 import {createI18n} from 'vue-i18n'
 import fr from "@/locals/fr";
 
-const i18n = createI18n({
+export const i18n = createI18n({
     locale: 'fr',
     fallbackLocale: 'fr',
     messages: {
