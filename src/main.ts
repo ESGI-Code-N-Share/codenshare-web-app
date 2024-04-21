@@ -28,6 +28,18 @@ import Toast from "primevue/toast";
 import Dialog from "primevue/dialog";
 import InlineMessage from "primevue/inlinemessage";
 import Divider from "primevue/divider";
+import Sidebar from 'primevue/sidebar';
+import Avatar from "primevue/avatar";
+import IconField from "primevue/iconfield";
+import InputIcon from "primevue/inputicon";
+import Textarea from "primevue/textarea";
+import Menu from "primevue/menu";
+import Editor from "primevue/editor";
+import Panel from "primevue/panel";
+import FileUpload from "primevue/fileupload";
+import Dropdown from "primevue/dropdown";
+import InputSwitch from "primevue/inputswitch";
+
 
 const app = createApp(App)
     // directives
@@ -65,6 +77,7 @@ const app = createApp(App)
     // components
     .component('Button', Button)
     .component('InputText', InputText)
+    .component('Textarea', Textarea)
     .component('Calendar', Calendar)
     .component('Checkbox', Checkbox)
     .component('Image', Image)
@@ -74,6 +87,16 @@ const app = createApp(App)
     .component('Dialog', Dialog)
     .component('InlineMessage', InlineMessage)
     .component('Divider', Divider)
+    .component('SideBar', Sidebar)
+    .component('Avatar', Avatar)
+    .component('IconField', IconField)
+    .component('InputIcon', InputIcon)
+    .component('Menu', Menu)
+    .component('Editor', Editor)
+    .component('Panel', Panel)
+    .component('FileUpload', FileUpload)
+    .component('Dropdown', Dropdown)
+    .component('InputSwitch', InputSwitch)
 
 
 app.mount("#app");

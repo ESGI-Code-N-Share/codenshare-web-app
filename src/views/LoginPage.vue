@@ -19,7 +19,6 @@ const stayLogin = ref(false);
 
 const emailError = ref('');
 const passwordError = ref('');
-const stayLoginError = ref('');
 
 function isLoginFormValid(): boolean {
   let isValid = true;
@@ -34,18 +33,12 @@ function isLoginFormValid(): boolean {
     isValid = false;
   }
 
-  if (!stayLogin.value) {
-    stayLoginError.value = 'Vous devez accepter les conditions d\'utilisation';
-    isValid = false;
-  }
-
   return isValid;
 }
 
 function resetErrors() {
   emailError.value = '';
   passwordError.value = '';
-  stayLoginError.value = '';
 }
 
 
@@ -76,7 +69,8 @@ async function onSubmitLoginForm() {
 <template>
   <AuthPage>
     <div class="w-full h-full m-auto max-w-30rem">
-      <div class="flex flex-column justify-content-center h-full p-4 surface-card border-round-3xl">
+      <div class="flex flex-column justify-content-center h-full p-4 surface-card border-round-3xl"
+           style="min-height: 43rem">
         <div class="text-center mb-5 sm:mb-7">
           <img alt="Image" class="mb-3" height="50" src="/src/assets/vue.svg"/>
           <div class="text-900 text-2xl sm:text-3xl font-medium mb-3">Content de te revoir !</div>
@@ -111,11 +105,8 @@ async function onSubmitLoginForm() {
               <Checkbox
                   id="cgu"
                   v-model="stayLogin"
-                  v-tooltip.bottom="stayLoginError"
-                  :invalid="!!stayLoginError"
                   binary
                   class="mr-2"
-                  @update:modelValue="stayLoginError = ''"
               />
               <label class="text-sm" for="cgu">Rester connecté</label>
             </div>
@@ -126,7 +117,7 @@ async function onSubmitLoginForm() {
               :loading="loading"
               class="gradient-bg-primary justify-content-center mt-1"
               icon-pos="right"
-              label="Créer mon compte"
+              label="Se connecter"
               @click="onSubmitLoginForm()"
           />
         </form>
