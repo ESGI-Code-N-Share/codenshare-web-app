@@ -51,9 +51,11 @@ const processFile = async (file: File) => {
   // check if accepted file type
   if (!file?.type) return;
   const accepted = props.accept?.split(',')?.map(a => a.trim()) || [];
-  if (!accepted.includes(file.type)) {
-    toastNotification.showError("Le format de fichier n'est pas supporté");
-    emit('onWrongFileType', file.type);
+
+  console.log(accepted, file.type)
+  if (!accepted.some(accept => file.type.startsWith(accept.replace('*', '')))) {
+    toastNotification.showError('Type de fichier non supporté');
+    emit('onWrongFileType', {fileType: file.type});
     return;
   }
 
@@ -108,5 +110,6 @@ const handleClick = () => {
       <i class="pi pi-download text-5xl mb-2"/>
       <div>Glissez-déposez votre fichier</div>
     </div>
+    <Toast class="sm:w-auto" position="top-right" style="width: 85%;"/>
   </div>
 </template>
