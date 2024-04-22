@@ -34,11 +34,11 @@ import IconField from "primevue/iconfield";
 import InputIcon from "primevue/inputicon";
 import Textarea from "primevue/textarea";
 import Menu from "primevue/menu";
-import Editor from "primevue/editor";
 import Panel from "primevue/panel";
 import FileUpload from "primevue/fileupload";
 import Dropdown from "primevue/dropdown";
 import InputSwitch from "primevue/inputswitch";
+import SplitButton from "primevue/splitbutton";
 
 
 const app = createApp(App)
@@ -92,11 +92,11 @@ const app = createApp(App)
     .component('IconField', IconField)
     .component('InputIcon', InputIcon)
     .component('Menu', Menu)
-    .component('Editor', Editor)
     .component('Panel', Panel)
     .component('FileUpload', FileUpload)
     .component('Dropdown', Dropdown)
     .component('InputSwitch', InputSwitch)
+    .component('SplitButton', SplitButton)
 
 
 app.mount("#app");

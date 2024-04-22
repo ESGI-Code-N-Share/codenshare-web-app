@@ -28,7 +28,7 @@ function onResize() {
 </script>
 
 <template>
-  <section class="w-screen h-full p-2 md:p-4" style="min-width: 250px">
+  <section class="w-screen h-full p-2 md:p-4" style="min-width: 330px">
     <!-- Mobile only   -->
     <div class="flex md:hidden flex-column h-full w-full">
       <div class="surface-card flex justify-content-between align-items-center border-round-xl p-2 sm:p-3">
@@ -43,7 +43,7 @@ function onResize() {
       <router-view></router-view>
 
       <!-- Sidebar < md   -->
-      <SideBar v-if="!isLgMd" v-model:visible="sidebar" :dismissable="false"
+      <SideBar v-if="!isLgMd" v-model:visible="sidebar" :dismissable="false" blockScroll
                :pt="{root: 'w-auto', content: 'p-2', header: 'pb-2'}" class="border-0"
                header="CodeNShare">
         <MenuSidebar short style="padding: 0.75em !important;" @onNextMenu="sidebar = false"/>

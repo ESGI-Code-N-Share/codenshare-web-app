@@ -24,11 +24,6 @@ onMounted(() => {
       <div class="p-2">
         <div>Posts...</div>
       </div>
-      <PostNew/>
-      <PostNew/>
-      <PostNew/>
-      <PostNew/>
-      <PostNew/>
 
     </div>
 
