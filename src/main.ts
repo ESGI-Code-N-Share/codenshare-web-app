@@ -38,6 +38,7 @@ import Panel from "primevue/panel";
 import FileUpload from "primevue/fileupload";
 import Dropdown from "primevue/dropdown";
 import InputSwitch from "primevue/inputswitch";
+import SplitButton from "primevue/splitbutton";
 
 
 const app = createApp(App)
@@ -95,6 +96,7 @@ const app = createApp(App)
     .component('FileUpload', FileUpload)
     .component('Dropdown', Dropdown)
     .component('InputSwitch', InputSwitch)
+    .component('SplitButton', SplitButton)
 
 
 app.mount("#app");

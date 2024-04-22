@@ -2,48 +2,48 @@
 
 import {ref} from "vue";
 import {MenuItem} from "primevue/menuitem";
+import InputFile from "@/components/files/InputFile.vue";
 
-const menuShort = ref();
-const menuLong = ref();
+const menuPostOptions = ref();
+const addImage = ref(false);
+const addProgram = ref(false);
 
-const createPostOptionsLong = ref<MenuItem[]>([
+const content = ref('');
+
+const createPostOptions = ref<MenuItem[]>([
   {
-    label: 'Options',
-    items: [
-      {
-        label: 'Ajouter une image',
-        icon: 'pi pi-image'
-      },
-      {
-        label: 'Ajouter un programme',
-        icon: 'pi pi-book'
-      },
-      {
-        label: 'Annuler',
-        icon: 'pi pi-refresh'
-      }
-    ]
+    label: 'Ajouter une image',
+    icon: 'pi pi-image',
+    command() {
+      addImage.value = true;
+      createPostOptions.value[0].disabled = true;
+    },
+  },
+  {
+    label: 'Ajouter un programme',
+    icon: 'pi pi-book',
+    command() {
+      addProgram.value = true;
+      createPostOptions.value[1].disabled = true;
+    },
+  },
+  {
+    label: 'Annuler',
+    icon: 'pi pi-refresh',
+    class: 'border-round text-color-primary',
+    style: 'color: #f87171',
+    command() {
+      addProgram.value = false;
+      addImage.value = false;
+      content.value = '';
+
+      createPostOptions.value?.forEach(item => item.disabled = false);
+    }
   }
 ]);
 
-const createPostOptionsShort = ref<MenuItem[]>([
-  {
-    label: 'Options',
-    items: [
-      {
-        label: 'Annuler',
-        icon: 'pi pi-refresh',
-      }
-    ]
-  }
-]);
-
-function createPostToggle(event: Event, type: 'short' | 'long') {
-  if (type === 'short') {
-    menuShort.value.toggle(event);
-  } else {
-    menuLong.value.toggle(event);
-  }
+function createPostToggle(event: Event) {
+  menuPostOptions.value.show(event);
 }
 
 </script>
@@ -63,52 +63,14 @@ function createPostToggle(event: Event, type: 'short' | 'long') {
           </div>
         </div>
       </div>
-      <div>
-        <div class="hidden md:flex gap-2">
-          <Button
-              aria-controls="overlay_menu_post"
-              aria-haspopup="true"
-              icon="pi pi-image"
-              severity="secondary"
-              type="button"
-          />
-          <Button
-              aria-controls="overlay_menu_post"
-              aria-haspopup="true"
-              class=""
-              icon="pi pi-book"
-              severity="secondary"
-              type="button"
-          />
-          <Button
-              aria-controls="overlay_post_create_short"
-              aria-haspopup="true"
-              class=""
-              icon="pi pi-ellipsis-v"
-              severity="secondary"
-              type="button"
-              @click="createPostToggle($event, 'short')"
-          />
-          <Menu id="overlay_post_create_short" ref="menuShort" :model="createPostOptionsShort" :popup="true"/>
-        </div>
-        <Button
-            aria-controls="overlay_post_create_long"
-            aria-haspopup="true"
-            class="md:hidden"
-            icon="pi pi-ellipsis-v"
-            severity="secondary"
-            type="button"
-            @click="createPostToggle($event, 'long')"
-        />
-        <Menu id="overlay_post_create_long" ref="menuLong" :model="createPostOptionsLong" :popup="true"/>
+      <div class="flex gap-2">
+        <SplitButton :model="createPostOptions" label="Publier"></SplitButton>
       </div>
     </div>
-    <Textarea class="w-full" placeholder="Description" rows="3" variant="filled"/>
+    <InputFile v-if="addImage" accept="image/*" class="mb-3" max-height-preview="5"/>
+    <Textarea v-model="content" class="w-full" placeholder="Contenu" rows="3" variant="filled"/>
   </div>
 </template>
 
 <style scoped>
-.my-bg {
-  background-color: #121212;
-}
 </style>

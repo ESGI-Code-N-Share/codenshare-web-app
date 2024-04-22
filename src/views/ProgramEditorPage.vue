@@ -8,6 +8,7 @@ import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 import {VAceEditor} from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
+import InputFile from "@/components/files/InputFile.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -19,6 +20,7 @@ const program = ref({
   description: '',
   share: false,
   code: '',
+  image: '',
 });
 
 const sidebarProgramEditor = ref(false);
@@ -61,10 +63,16 @@ onMounted(() => {
     <!-- Content -->
     <div class="flex flex-column gap-3 md:surface-card p-2 sm:p-4 h-full border-round-xl">
       <div class="flex justify-content-between align-items-center pt-2">
-        <h2 class="text-xl ml-2 my-0">Edition</h2>
+        <h2 class="text-xl my-0">Edition</h2>
         <div class="flex gap-2">
-          <Button icon="pi pi-play" icon-pos="right" label="Tester" severity="secondary" style="color: #49DE80"
-                  @click="sidebarProgramTest = true"/>
+          <Button severity="secondary" style="color: #49DE80;" @click="sidebarProgramTest = true">
+            <span class="hidden sm:block mr-2">Tester</span>
+            <svg height="14" viewBox="0 0 384 512" width="10.5" xmlns="http://www.w3.org/2000/svg">
+              <!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
+              <path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
+                    fill="#49de80"/>
+            </svg>
+          </Button>
           <Button icon="pi pi-pencil" severity="secondary" style="" @click="sidebarProgramEditor = true"/>
           <Menu ref="panelProgram" :model="editProgramOptions" popup/>
         </div>
@@ -81,19 +89,15 @@ onMounted(() => {
     <!-- Sidebar Program   -->
     <Sidebar
         v-model:visible="sidebarProgramEditor"
-        :pt="{header: 'border-bottom-1', content: 'pt-4'}"
-        class="border-0"
+        :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
+        blockScroll
+        class="border-0 "
         header="Configuration" modal position="right"
         style="min-width: 350px;"
     >
       <div class="flex flex-column gap-3">
-        <!--  <InputFile class="h-5rem w-full" />-->
         <div>Image</div>
-        <div class="border-2 border-dashed border-gray-500 border-round text-center p-4 text-color-secondary"
-             style="background-color: #121212;">
-          <i class="pi pi-download text-5xl mb-2"/>
-          <div>Drag and drop a file</div>
-        </div>
+        <InputFile accept="image/*" @onFileSelected="program.image = $event.fileUrl"/>
 
         <InputText v-model="program.name" placeholder="Nom du programme"/>
         <Textarea v-model="program.description" class="h-5rem w-full text-sm" cols="30" placeholder="Description"
@@ -118,17 +122,13 @@ onMounted(() => {
     <!-- Sidebar Test   -->
     <Sidebar
         v-model:visible="sidebarProgramTest"
-        :pt="{header: 'border-bottom-1', content: 'pt-4'}"
+        :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
+        blockScroll
         class="border-0 md:w-30rem" header="Test" modal position="right"
         style="min-width: 350px;"
     >
       <div class="flex flex-column align-items-stretch gap-3">
-        <!--        <InputFile class="h-5rem w-full"/>-->
-        <div class="border-2 border-dashed border-gray-500 border-round text-center p-4 text-color-secondary"
-             style="background-color: #121212;">
-          <i class="pi pi-download text-5xl mb-2"/>
-          <div>Drag and drop a file</div>
-        </div>
+        <InputFile accept="image/*" @onFileSelected="program.image = $event.fileUrl"/>
 
         <div class="text-center">
           <i class="pi pi-chevron-down text-3xl gradient-text-primary"/>
