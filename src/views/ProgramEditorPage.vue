@@ -9,6 +9,7 @@ import {VAceEditor} from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
 import InputFile from "@/components/files/InputFile.vue";
+import OutputFile from "@/components/files/OutputFile.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -150,10 +151,7 @@ onMounted(() => {
           <i class="pi pi-equals text-3xl gradient-text-primary"/>
         </div>
 
-        <div class="border-2 border-dashed border-gray-500 border-round text-center p-4 text-color-secondary"
-             style="background-color: #121212;">
-          <i class="pi pi-image text-6xl"/>
-        </div>
+        <OutputFile/>
 
         <Button
             class="text-center justify-content-center mt-2"
