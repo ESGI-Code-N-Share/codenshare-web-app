@@ -13,32 +13,40 @@ const menus = ref([
   {
     icon: 'pi pi-home',
     label: 'Accueil',
-    routeName: 'home'
+    routeName: 'home',
+    params: {profileId: '1'}
   },
   {
     icon: 'pi pi-user',
     label: 'Profile',
-    routeName: 'profile'
+    routeName: 'profile', //Todo get user id
+    params: {
+      profileId: '1'
+    }
   },
   {
     icon: 'pi pi-book',
     label: 'Programmes',
-    routeName: 'programs'
+    routeName: 'programs',
+    params: {}
   },
   {
     icon: 'pi pi-envelope',
     label: 'Messages',
-    routeName: 'messages'
+    routeName: 'messages',
+    params: {}
   },
   {
     icon: 'pi pi-question-circle',
     label: 'Aide',
-    routeName: 'help'
+    routeName: 'help',
+    params: {}
   },
   {
     icon: 'pi pi-cog',
     label: 'Paramètres',
-    routeName: 'settings'
+    routeName: 'settings',
+    params: {}
   }
 ]);
 
@@ -91,7 +99,7 @@ function onLogout() {
             :text="$route.name !== menu.routeName"
             class="w-full border-0 border-transparent"
             severity="secondary"
-            @click="$router.push({ name: menu.routeName }); $emit('onNextMenu')"
+            @click="$router.push({ name: menu.routeName, params: menu.params }); $emit('onNextMenu')"
         >
           <i :class="menu.icon" class="mr-2"></i>
           <div>{{ menu.label }}</div>

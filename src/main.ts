@@ -17,6 +17,7 @@ import App from './App.vue'
 import ToastService from 'primevue/toastservice';
 import Tooltip from "primevue/tooltip";
 
+// components
 import Button from "primevue/button";
 import Checkbox from "primevue/checkbox";
 import InputText from "primevue/inputtext";
@@ -39,6 +40,9 @@ import FileUpload from "primevue/fileupload";
 import Dropdown from "primevue/dropdown";
 import InputSwitch from "primevue/inputswitch";
 import SplitButton from "primevue/splitbutton";
+import TabView from "primevue/tabview";
+import TabPanel from "primevue/tabpanel";
+import Paginator from "primevue/paginator";
 
 
 const app = createApp(App)
@@ -97,6 +101,10 @@ const app = createApp(App)
     .component('Dropdown', Dropdown)
     .component('InputSwitch', InputSwitch)
     .component('SplitButton', SplitButton)
+    .component('TabView', TabView)
+    .component('TabPanel', TabPanel)
+    .component('DataView', DataView)
+    .component('Paginator', Paginator)
 
 
 app.mount("#app");
