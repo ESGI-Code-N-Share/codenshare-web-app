@@ -29,7 +29,7 @@ function onCreateNewProgram() {
       </div>
 
       <div class="grid">
-        <ProgramCard v-for="i in 8" :key="i" :program="{id: i}" class="col-12 sm:col-6 lg:col-4 p-2"/>
+        <ProgramCard v-for="i in 8" :key="i" :program="{id: i}" class="col-12 sm:col-6 xl:col-4 p-2"/>
       </div>
     </div>
 
