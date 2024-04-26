@@ -47,7 +47,6 @@ const emit = defineEmits();
 
 
 onMounted(() => {
-  hljs.highlightAll();
   const {post} = props;
   if (post.programId) {
     editPostOptions.value.unshift({
@@ -57,6 +56,7 @@ onMounted(() => {
         console.log('View program');
       }
     });
+    hljs.highlightAll();
   }
 });
 

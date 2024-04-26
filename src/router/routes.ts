@@ -18,10 +18,11 @@ const routes: Array<RouteRecordRaw> = [
                 name: "home",
                 component: HomePage
             },
-            // {
-            //     path: "profile/:profileId",
-            //     name: "profile",
-            // },
+            {
+                path: "profile/:profileId",
+                name: "profile",
+                component: () => import("@/views/ProfilePage.vue")
+            },
             {
                 path: "programs/:program",
                 name: "program",
