@@ -43,6 +43,7 @@ import SplitButton from "primevue/splitbutton";
 import TabView from "primevue/tabview";
 import TabPanel from "primevue/tabpanel";
 import Paginator from "primevue/paginator";
+import Skeleton from "primevue/skeleton";
 
 
 const app = createApp(App)
@@ -105,6 +106,7 @@ const app = createApp(App)
     .component('TabPanel', TabPanel)
     .component('DataView', DataView)
     .component('Paginator', Paginator)
+    .component('Skeleton', Skeleton)
 
 
 app.mount("#app");

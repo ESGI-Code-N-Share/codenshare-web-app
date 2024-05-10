@@ -14,12 +14,14 @@ const menus = ref([
     icon: 'pi pi-home',
     label: 'Accueil',
     routeName: 'home',
+    children: [],
     params: {profileId: '1'}
   },
   {
     icon: 'pi pi-user',
     label: 'Profile',
     routeName: 'profile', //Todo get user id
+    children: [],
     params: {
       profileId: '1'
     }
@@ -28,24 +30,28 @@ const menus = ref([
     icon: 'pi pi-book',
     label: 'Programmes',
     routeName: 'programs',
+    children: ['program'],
     params: {}
   },
   {
     icon: 'pi pi-envelope',
     label: 'Messages',
     routeName: 'messages',
+    children: [],
     params: {}
   },
   {
     icon: 'pi pi-question-circle',
     label: 'Aide',
     routeName: 'help',
+    children: [],
     params: {}
   },
   {
     icon: 'pi pi-cog',
     label: 'Paramètres',
     routeName: 'settings',
+    children: [],
     params: {}
   }
 ]);
@@ -95,7 +101,7 @@ function onLogout() {
       <div class="flex flex-column gap-2 align-items-stretch">
         <Button
             v-for="menu in menus"
-            :style="$route.name === menu.routeName ? 'color: #FBBF24; background: linear-gradient(92deg, rgba(251, 191, 36, 0.45) 0%, rgba(251, 146, 60, 0.40) 100%), #000;' : ''"
+            :style="$route.name === menu.routeName || menu.children.some(child => child === $route.name) ? 'color: #FBBF24; background: linear-gradient(92deg, rgba(251, 191, 36, 0.45) 0%, rgba(251, 146, 60, 0.40) 100%), #000;' : ''"
             :text="$route.name !== menu.routeName"
             class="w-full border-0 border-transparent"
             severity="secondary"
