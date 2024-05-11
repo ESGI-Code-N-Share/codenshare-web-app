@@ -2,7 +2,7 @@
 
 import {ref} from "vue";
 import {useRouter} from "vue-router";
-import {CodeNSareApi} from "@/api/codenshare.api";
+import {CodeNShareApi} from "@/api/codenshare.api";
 
 interface MenuItem {
   /**
@@ -106,7 +106,7 @@ const editProgramOptions = ref<MenuItem[]>([
         label: 'Supprimer',
         icon: 'pi pi-trash',
         command: async () => {
-          const programApi = new CodeNSareApi().program;
+          const programApi = new CodeNShareApi().program;
           await programApi.delete(props.program.programId);
           emit('onDeleted', props.program.programId)
         }

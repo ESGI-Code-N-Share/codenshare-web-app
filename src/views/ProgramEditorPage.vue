@@ -9,7 +9,7 @@ import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
 import InputFile from "@/components/files/InputFile.vue";
 import OutputFile from "@/components/files/OutputFile.vue";
-import {CodeNSareApi} from "@/api/codenshare.api";
+import {CodeNShareApi} from "@/api/codenshare.api";
 
 interface MenuItem {
   /**
@@ -75,7 +75,7 @@ interface MenuItem {
 const route = useRoute();
 const router = useRouter();
 
-const programApi = new CodeNSareApi().program;
+const programApi = new CodeNShareApi().program;
 const loading = ref({update: false, find: true, delete: false});
 const iconSaveProgram = ref('pi pi-save');
 const severityButton = ref('success');
@@ -120,17 +120,31 @@ onMounted(async () => {
     return router.push({name: 'programs'});
   }
 
-  const response = await programApi.find(programId);
-  console.log(response.program)
-  program.value.programId = response.program.programId;
-  program.value.language = languages.value.find(l => l.value === response.program.language || '')!;
-  program.value.name = response.program.name || '';
-  program.value.description = response.program.description || '';
-  program.value.share = response.program.visibility === 'public';
-  program.value.code = response.program.code || '';
-  program.value.image = response.program.image || '';
+  try {
+    const response = await programApi.find(programId);
+    console.log(response.program)
+    program.value.programId = response.program.programId;
+    program.value.language = languages.value.find(l => l.value === response.program.language || '')!;
+    program.value.name = response.program.name || '';
+    program.value.description = response.program.description || '';
+    program.value.share = response.program.visibility === 'public';
+    program.value.code = response.program.code || '';
+    program.value.image = response.program.image || '';
+  } catch (e) {
+    if (e instanceof Error) {
+      if (e.message === 'Service unavailable') {
+        return router.push({name: 'ServiceUnavailable'});
+      }
+      if (e.message === 'Program not found') {
+        return router.push({name: 'programs'});
+      }
+    }
+    console.error(e);
+  } finally {
+    loading.value.find = false;
+  }
 
-  loading.value.find = false;
+
 })
 
 const runProgram = async () => {

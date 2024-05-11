@@ -70,7 +70,9 @@ export class ProgramApi {
             }
             return data;
         } catch (e) {
-            console.error(e);
+            if (e instanceof TypeError) {
+                throw new Error('Service unavailable');
+            }
             throw new Error('Failed to find program');
         }
     }

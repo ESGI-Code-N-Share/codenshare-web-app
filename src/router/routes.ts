@@ -68,6 +68,16 @@ const routes: Array<RouteRecordRaw> = [
         name: "reset-password",
         component: () => import("@/views/ResetPasswordPage.vue")
     },
+    // {
+    //     path: "/404",
+    //     name: "PageNotFound",
+    //     component: () => import("@/views/NotFoundPage.vue")
+    // },
+    {
+        path: '/503',
+        name: 'ServiceUnavailable',
+        component: () => import('@/views/ServiceUnavailablePage.vue')
+    },
     {
         path: "/:pathMatch(.*)*",
         redirect: "/app/404"

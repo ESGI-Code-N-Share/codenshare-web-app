@@ -1,7 +1,7 @@
 import {ProgramApi} from "@/api/programs/program.api";
 
 
-export class CodeNSareApi {
+export class CodeNShareApi {
     program: ProgramApi;
     // auth: AuthApi;
     // user: UserApi;

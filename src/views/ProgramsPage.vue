@@ -2,11 +2,11 @@
 
 import ProgramCard from "@/components/programs/ProgramCard.vue";
 import {useRouter} from "vue-router";
-import {CodeNSareApi} from "@/api/codenshare.api";
+import {CodeNShareApi} from "@/api/codenshare.api";
 import {onMounted, ref} from "vue";
 
 const router = useRouter();
-const programApi = new CodeNSareApi().program;
+const programApi = new CodeNShareApi().program;
 
 const loading = ref({create: false, list: true});
 
