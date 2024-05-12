@@ -112,10 +112,10 @@ const getMessagesByConversationId = (conversationId: string) => {
 </script>
 
 <template>
-  <div class="bg-green-200 h-full p-2 lg:p-4">
+  <div class="h-full md:surface-card border-round-xl p-2 sm:p-4">
     <div class="flex h-full">
       <!-- Conversations   -->
-      <div class="col-4 md:col-5 lg:col-4 bg-yellow-200" style="min-width: 150px !important;">
+      <div class="col-4 md:col-5 lg:col-4 overflow-hidden" style="min-width: 150px !important;">
         <div class="flex align-items-center justify-content-between">
           <h2 class="text-xl ml-2 my-0 hidden md:block md:text-lg">Conversations</h2>
           <Button class="hidden md:flex" icon="pi pi-plus" icon-pos="right" severity="success" text/>
@@ -168,7 +168,7 @@ const getMessagesByConversationId = (conversationId: string) => {
       </div>
 
       <!-- Message   -->
-      <div class="flex flex-column col bg-red-200 h-full">
+      <div class="flex flex-column col h-full z-1">
         <div class="flex flex-column h-10rem">
           <InfoCard
               avatar-url="https://randomuser.me/api/portraits/men/1.jpg"
@@ -184,7 +184,7 @@ const getMessagesByConversationId = (conversationId: string) => {
           <Divider class="col-12 py-2 m-0"/>
         </div>
 
-        <div class="flex flex-column justify-content-end bg-blue-200 h-full">
+        <div class="flex flex-column justify-content-end h-full">
           <ConversationMessages :messages="messages" class="col-12 h-full"/>
 
           <div class="flex gap-3 w-full p-2 border-top-1 border-gray-500">
