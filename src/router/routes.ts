@@ -33,6 +33,16 @@ const routes: Array<RouteRecordRaw> = [
                 name: "programs",
                 component: () => import("@/views/ProgramsPage.vue")
             },
+            {
+                path: "conversations",
+                name: "conversations",
+                component: () => import("@/views/ConversationsPage.vue")
+            },
+            {
+                path: "conversations/:conversation",
+                name: "conversation",
+                component: () => import("@/views/ProgramsPage.vue")
+            },
             // {
             //     path: "settings",
             //     name: "settings",

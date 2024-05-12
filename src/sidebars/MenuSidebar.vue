@@ -33,7 +33,7 @@ const menus = ref([
   {
     icon: 'pi pi-envelope',
     label: 'Messages',
-    routeName: 'messages',
+    routeName: 'conversations',
     params: {}
   },
   {
