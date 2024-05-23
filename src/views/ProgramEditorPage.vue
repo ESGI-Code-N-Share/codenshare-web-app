@@ -3,6 +3,7 @@
 import {onMounted, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import Sidebar from "primevue/sidebar";
+import axios from 'axios';
 import {MenuItem} from "primevue/menuitem";
 import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 import {VAceEditor} from 'vue3-ace-editor';
@@ -57,6 +58,21 @@ onMounted(() => {
   // todo call api to get program details
 })
 
+const runProgram = async () => {
+  console.log('Running program:', program.value);
+  try {
+    const response = await axios.post(`http://localhost:3333/api/v1/programs/${program.value.id}/run`, {
+      code: program.value.code,
+      language: 'java',
+      version: '11',
+      uuid: program.value.id
+    });
+    console.log('Execution result:', response.data.result);
+  } catch (error) {
+    console.error('Error running program:', error);
+  }
+};
+
 </script>
 
 <template>
@@ -66,7 +82,7 @@ onMounted(() => {
       <div class="flex justify-content-between align-items-center pt-2">
         <h2 class="text-xl my-0">Edition</h2>
         <div class="flex gap-2">
-          <Button severity="secondary" style="color: #49DE80;" @click="sidebarProgramTest = true">
+          <Button severity="secondary" style="color: #49DE80;" @click="runProgram">
             <span class="hidden sm:block mr-2">Tester</span>
             <svg height="14" viewBox="0 0 384 512" width="10.5" xmlns="http://www.w3.org/2000/svg">
               <!--!Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.-->
@@ -157,6 +173,7 @@ onMounted(() => {
             class="text-center justify-content-center mt-2"
             severity="secondary"
             style="color: #49DE80; background: linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), #27272A;"
+            @click="runProgram"
         >
           <div>Exécuter</div>
           <i class="pi pi-play px-2"></i>

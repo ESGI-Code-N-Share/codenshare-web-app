@@ -28,3 +28,4 @@ dist-ssr
 /.firebase/
 /.env.production
 /.env.stage
+.env
