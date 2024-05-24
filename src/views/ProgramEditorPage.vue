@@ -17,7 +17,7 @@ const router = useRouter();
 
 const program = ref({
   id: "1",
-  language: 'javascript',
+  language: 'java',
   name: '',
   description: '',
   share: false,
@@ -68,8 +68,12 @@ const runProgram = async () => {
       uuid: program.value.id
     });
     console.log('Execution result:', response.data.result);
-  } catch (error) {
-    console.error('Error running program:', error);
+  } catch (error: any) {
+    if (error.response) {
+      console.error('Bad request:', error.response.data);
+    } else {
+      console.error('Error running program:', error.message);
+    }
   }
 };
 
