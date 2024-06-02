@@ -45,23 +45,13 @@ const sidebarClass = computed(() => {
 </script>
 
 <template>
-  <div :class="['sidebar', sidebarClass]">
+  <div :class="['sidebar', sidebarClass]" class="p-0 md:p-4">
     <MenuSidebar @on-close="toggleSidebar('hidden')"/>
   </div>
 </template>
 
 
 <style scoped>
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 0, 0, 0.5);
-  visibility: visible;
-  opacity: 10;
-}
 
 .sidebar {
   position: fixed;
