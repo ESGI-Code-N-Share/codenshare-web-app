@@ -3,7 +3,6 @@
 import {onMounted, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import Sidebar from "primevue/sidebar";
-import {MenuItem} from "primevue/menuitem";
 import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 import {VAceEditor} from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-javascript';
@@ -32,7 +31,7 @@ const languages = ref([
   {label: 'Python', value: 'python'},
 ]);
 
-const editProgramOptions = ref<MenuItem[]>([
+const editProgramOptions = ref<any[]>([
   {
     label: 'Options',
     items: [

@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 
-import {MenuItem} from "primevue/menuitem";
 import {ref} from "vue";
 import {useRouter} from "vue-router";
 
@@ -18,7 +17,7 @@ const emit = defineEmits();
 const router = useRouter();
 
 const menuProgram = ref();
-const editProgramOptions = ref<MenuItem[]>([
+const editProgramOptions = ref<any[]>([
   {
     label: 'Options',
     items: [

@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 
 import {ref} from "vue";
-import {MenuItem} from "primevue/menuitem";
 import InputFile from "@/components/files/InputFile.vue";
 import InfoCard from "@/components/cards/InfoCard.vue";
 
@@ -13,7 +12,7 @@ const addProgram = ref(false);
 const title = ref('');
 const content = ref('');
 
-const createPostOptions = ref<MenuItem[]>([
+const createPostOptions = ref<any[]>([
   {
     label: 'Options de publication',
     items: [

@@ -4,7 +4,7 @@ import {usePrimeVue} from "primevue/config";
 
 
 defineProps<{ short?: boolean }>()
-defineEmits(['onNextMenu']);
+defineEmits(['onNextMenu', 'onClose']);
 
 // todo temp
 const primevue = usePrimeVue();
@@ -52,16 +52,13 @@ const menus = ref([
 
 
 function onLogout() {
-  primevue.changeTheme('aura-dark-amber', "aura-light-amber", "theme-link", () => {
-    console.log('Theme changed');
-  })
+
 }
 
 </script>
 
 <template>
-  <div class="h-full flex flex-column gap-3 align-items-stretch border-round-2xl "
-       style="min-height: 550px !important; background-color: #121212; padding: 0 0.5em 0 0; min-width: 275px; max-width: 275px">
+  <div class="h-full flex flex-column gap-3 align-items-stretch border-round-2xl w-full">
     <div class="surface-card border-round-xl p-2">
       <!-- Top   -->
       <div v-if="short">
@@ -76,8 +73,10 @@ function onLogout() {
       <div v-else class="flex flex-column align-items-center justify-content-center pb-4 pt-3 relative">
         <Avatar :image="'https://randomuser.me/api/portraits/men/9.jpg'" shape="circle" size="xlarge"/>
         <div class="mt-2">Corentin lechene</div>
-        <Button class="absolute top-0 left-0 text-white" icon="pi pi-sign-out" rounded severity="secondary"
+        <Button class="absolute top-0 left-0 text-white" icon="pi pi-sign-out" rounded severity="secondary" text
                 @click="onLogout()"/>
+        <Button class="absolute top-0 right-0 text-white" icon="pi pi-times" rounded severity="secondary"
+                @click="$emit('onClose')"/>
       </div>
 
       <Divider class="mb-2 mt-0"/>
