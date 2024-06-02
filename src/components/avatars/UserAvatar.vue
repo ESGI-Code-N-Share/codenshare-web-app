@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 
+import {computed} from "vue";
+
 const avatars = defineModel('avatars', {
   default: ['https://randomuser.me/api/portraits/men/92.jpg']
 });
@@ -7,12 +9,12 @@ const avatars = defineModel('avatars', {
 const props = withDefaults(defineProps<{ avatarSize?: number, max?: number }>(), {avatarSize: 2, max: 5});
 const emit = defineEmits(['onAvatarClick']);
 
-const pt = {
+const pt = computed(() => ({
   minHeight: `${props.avatarSize}em`,
   minWidth: `${props.avatarSize}em`,
   height: `${props.avatarSize}em`,
   width: `${props.avatarSize}em`,
-}
+}));
 
 </script>
 

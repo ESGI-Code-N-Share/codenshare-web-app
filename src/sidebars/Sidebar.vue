@@ -1,12 +1,14 @@
 <script lang="ts" setup>
 
-import {computed, onMounted, onUnmounted} from "vue";
+import {computed, onMounted, onUnmounted, ref} from "vue";
 import MenuSidebar from "@/sidebars/MenuSidebar.vue";
 
 const sidebarState = defineModel('state', {
   type: String,
   default: 'hidden',
 })
+
+const isFixed = ref(false);
 
 onMounted(() => {
   window.addEventListener('resize', onResize);
@@ -23,8 +25,10 @@ const toggleSidebar = (n: 'hidden' | 'collapsed' | 'expanded') => {
 
 function onResize() {
   if (!window) return;
+  isFixed.value = false
 
   if (window.innerWidth < 768) {
+    isFixed.value = true;
     toggleSidebar('hidden')
   } else if (window.innerWidth < 1024) {
     toggleSidebar('collapsed')
@@ -33,20 +37,27 @@ function onResize() {
   }
 }
 
+
 const sidebarClass = computed(() => {
   return {
     'sidebar-hidden': sidebarState.value === 'hidden',
     'sidebar-collapsed': sidebarState.value === 'collapsed',
     'sidebar-expanded': sidebarState.value === 'expanded',
-    'sidebar-fixed': window.innerWidth < 768,
+    'sidebar-fixed': isFixed.value,
   };
 });
 
 </script>
 
 <template>
-  <div :class="['sidebar', sidebarClass]" class="p-0 md:p-4">
-    <MenuSidebar @on-close="toggleSidebar('hidden')"/>
+  <div :class="['sidebar', sidebarClass]" class="p-0 md:p-4 md:pr-0">
+    <MenuSidebar
+        :collapsed="state === 'collapsed'"
+        :isFixed="isFixed"
+        @on-close="toggleSidebar('hidden')"
+        @on-collapse="toggleSidebar('collapsed')"
+        @on-expand="toggleSidebar('expanded')"
+    />
   </div>
 </template>
 
@@ -59,8 +70,8 @@ const sidebarClass = computed(() => {
   left: 0;
   height: 100%;
   width: 100%;
+  max-height: 100vh;
   transition: width 0.5s;
-  overflow: hidden;
   background-color: #121212;
   color: white;
   z-index: 9999;
@@ -73,11 +84,12 @@ const sidebarClass = computed(() => {
 
 .sidebar-hidden {
   width: 0;
+  overflow: hidden;
 }
 
 .sidebar-collapsed {
   padding: 0.5em;
-  width: 90px;
+  width: 100px;
 }
 
 .sidebar-expanded {

@@ -13,7 +13,7 @@ const sidebar = ref<'hidden' | 'collapsed' | 'expanded'>('hidden');
 </script>
 
 <template>
-  <section class="flex flex-column gap-4 h-full p-2 sm:p-4">
+  <section class="flex flex-column gap-4 h-full p-2 sm:p-4 overflow-hidden">
 
     <!-- Mobile only   -->
     <!-- Navbar top   -->
@@ -24,7 +24,7 @@ const sidebar = ref<'hidden' | 'collapsed' | 'expanded'>('hidden');
 
     <!-- Content   -->
     <div
-        :class="{ 'offset-ml-90': sidebar === 'collapsed', 'offset-ml-300': sidebar === 'expanded' }"
+        :class="{ 'offset-ml-100': sidebar === 'collapsed', 'offset-ml-300': sidebar === 'expanded' }"
         class="flex h-full"
         style="transition: margin-left 0.5s"
     >
@@ -72,8 +72,8 @@ const sidebar = ref<'hidden' | 'collapsed' | 'expanded'>('hidden');
 </section>-->
 
 <style scoped>
-.offset-ml-90 {
-  margin-left: 90px;
+.offset-ml-100 {
+  margin-left: 100px;
 }
 
 .offset-ml-300 {
