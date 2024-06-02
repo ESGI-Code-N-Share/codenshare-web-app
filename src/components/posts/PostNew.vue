@@ -73,6 +73,7 @@ const createPostOptions = ref<any[]>([
   }
 
 ]);
+const user = ref('https://randomuser.me/api/portraits/men/92.jpg')
 
 
 const openCreatePost = (event: Event) => {
@@ -82,14 +83,14 @@ const openCreatePost = (event: Event) => {
 </script>
 
 <template>
-  <div id="post-new" class="flex flex-column gap-3 p-3 border-round-xl" style="background: var(--gray-900);">
-    <InfoCard avatar-url="https://randomuser.me/api/portraits/men/9.jpg" subtitle="Juste maintenant" subtitle-icon="pi-clock"
-              title="Corentin Lechêne">
+  <div class="flex flex-column gap-3 surface-card border-round-xl p-3">
+    <InfoCard :avatar-url="user" subtitle="Aujourd'hui" subtitle-icon="pi-clock" title="Corentin Lechene">
       <template #button>
         <Button aria-label="more-options" icon="pi pi-ellipsis-v" severity="secondary" @click="openCreatePost($event)"/>
         <Menu ref="menuCreatePost" :model="createPostOptions" popup/>
       </template>
     </InfoCard>
+    <!-- Form   -->
     <div class="flex flex-column gap-2">
       <InputText v-model="title" class="w-full" placeholder="Titre du post" variant="filled"/>
       <Textarea v-model="content" class="w-full" placeholder="Contenu" rows="3" variant="filled"/>
@@ -99,9 +100,5 @@ const openCreatePost = (event: Event) => {
 </template>
 
 <style scoped>
-@media (min-width: 768px) {
-  #post-new {
-    background-color: #121212 !important;
-  }
-}
+
 </style>

@@ -70,14 +70,19 @@ const openEditPost = (event: Event) => {
 <template>
   <div class="flex flex-column gap-3 border-round-xl post-card"
        style="padding: 0.75em 0.75em 1em; background: var(--gray-900);">
-    <InfoCard :avatar-url="post.user.avatarUrl" :subtitle="post.postedAt"
-              :title="`${post.user.firstname} ${post.user.lastname}`" subtitle-icon="pi-clock">
+    <InfoCard
+        :avatar-url="post.user.avatarUrl"
+        :subtitle="post.postedAt"
+        :title="`${post.user.firstname} ${post.user.lastname}`"
+        subtitle-icon="pi-clock"
+        @onAvatarClick="$router.push(`/app/profile/qsdqsd`)"
+    >
       <template #button>
         <Button aria-label="more-options" icon="pi pi-ellipsis-v" severity="secondary" @click="openEditPost($event)"/>
         <Menu ref="menuEditPost" :model="editPostOptions" popup/>
       </template>
     </InfoCard>
-    <div class="flex flex-column gap-2 px-2">
+    <div class="flex flex-column gap-2 px-1">
       <div class="text-lg m-0">{{ post.title }}</div>
       <div class="text-color-secondary pb-2">{{ post.content }}</div>
       <div v-if="post.image" class="w-full h-full border-1 border-gray-500 border-round-xl">
@@ -88,21 +93,9 @@ const openEditPost = (event: Event) => {
             style="object-fit: contain"
         />
       </div>
-      <div v-if="post.codeBlock" class="w-full">
-        <pre class="m-0">
-          <code class="border-round-xl border-1 border-gray-500 border-round-xl px-4">
-            {{ post.codeBlock }}
-          </code>
-        </pre>
-      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-@media (min-width: 768px) {
-  .post-card {
-    background-color: #121212 !important;
-  }
-}
 </style>

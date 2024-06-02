@@ -3,6 +3,7 @@
 import {ref} from "vue";
 import {useRoute} from "vue-router";
 import Sidebar from "../sidebars/Sidebar.vue";
+import UserAvatar from "@/components/avatars/UserAvatar.vue";
 
 const route = useRoute();
 
@@ -12,18 +13,13 @@ const sidebar = ref<'hidden' | 'collapsed' | 'expanded'>('hidden');
 </script>
 
 <template>
-  <section class="flex flex-column gap-2 h-full p-2      ">
+  <section class="flex flex-column gap-4 h-full p-2 sm:p-4">
 
     <!-- Mobile only   -->
     <!-- Navbar top   -->
-    <div class="flex md:hidden align-items-center justify-content-between p-2 border-round-xl">
-      <h1 class="text-2xl m-0">CodeNShare</h1>
-      <Avatar
-          :image="'https://randomuser.me/api/portraits/men/33.jpg'"
-          shape="circle"
-          size="large"
-          @click="sidebar = 'expanded'"
-      />
+    <div class="flex md:hidden align-items-center justify-content-between p-2 sm:p-3 border-round-xl surface-card">
+      <h1 class="text-3xl m-0">CodeNShare</h1>
+      <UserAvatar :avatars="['https://randomuser.me/api/portraits/men/33.jpg']" @onAvatarClick="sidebar = 'expanded'"/>
     </div>
 
     <!-- Content   -->

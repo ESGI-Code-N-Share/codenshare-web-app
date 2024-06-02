@@ -43,6 +43,7 @@ import SplitButton from "primevue/splitbutton";
 import TabView from "primevue/tabview";
 import TabPanel from "primevue/tabpanel";
 import Paginator from "primevue/paginator";
+import AvatarGroup from "primevue/avatargroup";
 
 
 const app = createApp(App)
@@ -93,6 +94,7 @@ const app = createApp(App)
     .component('Divider', Divider)
     .component('SideBar', Sidebar)
     .component('Avatar', Avatar)
+    .component('AvatarGroup', AvatarGroup)
     .component('IconField', IconField)
     .component('InputIcon', InputIcon)
     .component('Menu', Menu)
