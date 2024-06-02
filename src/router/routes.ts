@@ -66,21 +66,33 @@ const routes: Array<RouteRecordRaw> = [
     {
         path: "/register",
         name: "register",
-        component: () => import("@/views/RegisterPage.vue")
+        component: () => import("@/views/RegisterPage.vue"),
+        meta: {
+            public: true
+        }
     },
     {
         path: "/login",
         name: "login",
-        component: () => import("@/views/LoginPage.vue")
+        component: () => import("@/views/LoginPage.vue"),
+        meta: {
+            public: true
+        }
     },
     {
         path: "/reset-password",
         name: "reset-password",
-        component: () => import("@/views/ResetPasswordPage.vue")
+        component: () => import("@/views/ResetPasswordPage.vue"),
+        meta: {
+            public: true
+        }
     },
     {
         path: "/:pathMatch(.*)*",
-        redirect: "/app/404"
+        redirect: "/app/404",
+        meta: {
+            public: true
+        }
     }
 ];
 

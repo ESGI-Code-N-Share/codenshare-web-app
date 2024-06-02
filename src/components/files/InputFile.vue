@@ -13,6 +13,7 @@ interface InputFileProps {
   maxHeightPreview?: string;
 }
 
+const modelValue = defineModel<string>('fileUrl')
 const props = defineProps<InputFileProps>();
 const emit = defineEmits(['onFileSelected', 'onWrongFileType'])
 
@@ -70,6 +71,7 @@ const processFile = async (file: File) => {
     const fileName = 'image';
 
     fileUrl.value = URL.createObjectURL(blob);
+    modelValue.value = fileUrl.value;
     emit('onFileSelected', {fileName, fileUrl: fileUrl.value});
   } else {
     // todo call api to upload file
@@ -96,7 +98,7 @@ const handleClick = () => {
 
 <template>
   <div
-      :class="{ 'bg-gray-700': isHovering, 'p-2': !!fileUrl, 'p-4': !fileUrl }"
+      :class="{ 'bg-gray-700': isHovering, 'p-2': !!modelValue, 'p-4': !modelValue }"
       class="drop-zone border-dashed border-gray-500 border-round text-center text-color-secondary cursor-pointer h-auto"
       style="background-color: var(--gray-800);"
       @click="handleClick()"
@@ -104,7 +106,8 @@ const handleClick = () => {
       @dragover.prevent="isHovering = true"
       @dragleave.prevent="isHovering = false"
   >
-    <img v-if="fileUrl" :class="`max-h-${maxHeightPreview || 15}rem`" :src="fileUrl" alt="image" class="w-full h-full"
+    <img v-if="modelValue" :class="`max-h-${maxHeightPreview || 15}rem`" :src="modelValue" alt="image"
+         class="w-full h-full"
          style="object-fit: contain"/>
     <div v-else>
       <i class="pi pi-download text-5xl mb-2"/>

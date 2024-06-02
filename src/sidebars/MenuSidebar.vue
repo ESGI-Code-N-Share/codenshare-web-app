@@ -1,10 +1,17 @@
 <script lang="ts" setup>
 import {ref} from "vue";
 import UserAvatar from "@/components/avatars/UserAvatar.vue";
+import {useUserStore} from "@/stores/user.store";
+import {useRouter} from "vue-router";
 
 
-defineProps<{ collapsed: boolean, isFixed: boolean }>();
-defineEmits(['onNextMenu', 'onClose', 'onCollapse', 'onExpand']);
+const props = defineProps<{ collapsed: boolean, isFixed: boolean }>();
+const emit = defineEmits(['onNextMenu', 'onClose', 'onCollapse', 'onExpand']);
+
+const router = useRouter();
+const userStore = useUserStore();
+const currentUser = userStore.currentUser;
+
 
 const menus = ref([
   {
@@ -47,8 +54,14 @@ const menus = ref([
   }
 ]);
 
-function onLogout() {
-
+async function onLogout() {
+  try {
+    const userStore = useUserStore();
+    await userStore.logout();
+    await router.push({name: 'login'});
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 </script>
@@ -59,11 +72,11 @@ function onLogout() {
       class="h-full flex flex-column gap-3 align-items-stretch"
       @click.prevent="collapsed ? $emit('onExpand') : ''"
   >
-    <div class="flex flex-column gap-2 p-2 surface-card border-round-xl">
+    <div v-if="currentUser" class="flex flex-column gap-2 p-2 surface-card border-round-xl">
 
       <div :class="{'p-4 pt-6': !collapsed}" class="flex flex-column align-items-center gap-2 p-2 relative">
-        <UserAvatar :avatar-size="collapsed ? 2 : 3.5" :avatars="['https://randomuser.me/api/portraits/men/92.jpg']"/>
-        <div v-if="!collapsed" class="gradient-text-primary font-semibold text-lg">Corentin Lechene</div>
+        <UserAvatar :avatar-size="collapsed ? 2 : 3.5" :avatars="[currentUser.avatar]"/>
+        <div v-if="!collapsed" class="gradient-text-primary font-semibold text-lg">{{ userStore.fullName }}</div>
         <Button
             v-if="!collapsed"
             class="absolute left-0 text-white"

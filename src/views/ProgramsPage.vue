@@ -2,15 +2,37 @@
 
 import ProgramCard from "@/components/programs/ProgramCard.vue";
 import {useRouter} from "vue-router";
+import {onMounted, ref} from "vue";
+import {Program} from "@/models";
+import {CodeNShareProgramApi} from "@/api/codenshare";
 
 const router = useRouter();
 
+const programs = ref<Program[]>([]);
 
-function onCreateNewProgram() {
-  // call api to create new program and return id
-  const id = Math.random().toString(36).substring(7);
-  router.push({name: 'program', params: {program: id}})
+onMounted(async () => {
+  await fetchPrograms();
+})
+
+const onCreateNewProgram = async () => {
+  try {
+    const programId = await CodeNShareProgramApi.create();
+    await router.push({name: 'program', params: {program: programId as string}});
+  } catch (e) {
+    console.error(e);
+  }
 }
+
+
+const fetchPrograms = async () => {
+  try {
+    programs.value = await CodeNShareProgramApi.listByUser();
+    console.log(programs.value)
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 </script>
 
 <template>
@@ -35,8 +57,16 @@ function onCreateNewProgram() {
     </div>
 
     <!-- Content   -->
-    <div class="grid">
-      <ProgramCard v-for="i in 8" :key="i" :program="{id: i}" class="col-12 sm:col-6 xl:col-4"/>
+    <div v-if="programs.length > 0" class="grid">
+      <ProgramCard
+          v-for="program in programs" :key="program.programId"
+          :program="program"
+          class="col-12 sm:col-6 xl:col-4"
+          @on-deleted="fetchPrograms()"
+      />
+    </div>
+    <div v-else class="surface-card p-4 border-round-xl">
+      Vous n'avez pas encore de programme.
     </div>
 
   </div>

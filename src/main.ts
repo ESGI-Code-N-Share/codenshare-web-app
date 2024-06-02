@@ -45,12 +45,15 @@ import TabPanel from "primevue/tabpanel";
 import Paginator from "primevue/paginator";
 import AvatarGroup from "primevue/avatargroup";
 
+import {createPinia} from "pinia";
 
+const pinia = createPinia()
 const app = createApp(App)
     // directives
     .directive('tooltip', Tooltip)
 
     // plugins
+    .use(pinia)
     .use(router)
     .use(PrimeVue, {
         ripple: true,

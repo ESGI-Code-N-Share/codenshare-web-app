@@ -10,9 +10,10 @@ export interface Program {
     name: string
     code: string
     description: string
-    pictureName: string
+    imageURL: string
     language: ProgramLanguages
-    programVisibility: ProgramVisibility
+    version: string;
+    visibility: ProgramVisibility
     author: User
     originalAuthor: User
     codeHistories: CodeHistory[]

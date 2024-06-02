@@ -2,26 +2,38 @@
 
 import {onMounted, ref} from "vue";
 import PostCard from "@/components/posts/PostCard.vue";
-import {getPosts} from "@/services/temp/post.service";
 import PostNew from "@/components/posts/PostNew.vue";
+import {Post} from "@/models";
+import {CodeNSharePostApi} from "@/api/codenshare";
 
 const baseUrl = ref(import.meta.env.VITE_API_URL);
 const mode = ref(import.meta.env.MODE);
 
-onMounted(() => {
+const posts = ref<Post[]>([]);
+
+onMounted(async () => {
   console.log(import.meta.env);
+  await fetchPosts();
 });
+
+const fetchPosts = async () => {
+  try {
+    posts.value = await CodeNSharePostApi.getLatestPosts();
+  } catch (e) {
+    console.error(e);
+  }
+}
 </script>
 
 <template>
   <div class="col flex flex-column gap-4 p-2">
     <h2 class="p-0 m-0">Fil d'actualités</h2>
     <div class="flex flex-column gap-3 w-full">
-      <PostNew/>
+      <PostNew @on-published="fetchPosts()"/>
 
       <!-- Post    -->
       <div class="flex flex-column gap-3">
-        <PostCard v-for="post in getPosts()" :key="post.id" :post="post"/>
+        <PostCard v-for="post in posts" :key="post.postId" :post="post" @on-deleted="fetchPosts()"/>
       </div>
 
       <!-- End of feed    -->

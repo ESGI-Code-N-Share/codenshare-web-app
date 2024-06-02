@@ -5,31 +5,25 @@ import {useRoute, useRouter} from "vue-router";
 import {VAceEditor} from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
-import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 import OutputFile from "@/components/files/OutputFile.vue";
 import InputFile from "@/components/files/InputFile.vue";
+import {Program, ProgramId, ProgramLanguages} from "@/models";
+import {CodeNShareProgramApi} from "@/api/codenshare";
 
 const route = useRoute();
 const router = useRouter();
 
-const program = ref({
-  id: "1",
-  language: 'java',
-  name: '',
-  description: '',
-  share: false,
-  code: '',
-  image: '',
-  version: '',
-});
-const version = ref('');
+const program = ref<Program>();
+const language = ref();
+const version = ref();
 
 const sidebarProgramEditor = ref(false);
 const sidebarProgramTest = ref(false);
 
-const languages = ref([
+const languages = ref<{ label: string, value: ProgramLanguages }[]>([
   {label: 'Javascript', value: 'javascript'},
-  {label: 'Python', value: 'python'},
+  {label: 'Java', value: 'java'},
+  {label: 'C', value: 'c'},
 ]);
 const versions = ref<{ label: string, value: string }[]>([
   {label: 'Java 8', value: '8'},
@@ -37,35 +31,62 @@ const versions = ref<{ label: string, value: string }[]>([
   {label: 'Java 15', value: '15'},
 ]);
 
-const editProgramOptions = ref<any[]>([
-  {
-    label: 'Options',
-    items: [
-      {
-        label: 'Sauvegarder',
-        icon: 'pi pi-save',
-      },
-      {
-        label: 'Supprimer',
-        icon: 'pi pi-trash'
-      }
-    ]
-  }
-]);
 
-onMounted(() => {
+onMounted(async () => {
   const programId = route.params.program as string;
   if (!programId) {
     return router.push({name: 'programs'});
   }
 
-  // todo call api to get program details
+  await fetchProgram(programId);
 })
+
+const fetchProgram = async (programId: ProgramId) => {
+  try {
+    program.value = await CodeNShareProgramApi.get(programId);
+    if (!program.value) {
+      return await router.push({name: 'programs'});
+    }
+  } catch (e) {
+    console.error(e);
+    await router.push({name: 'programs'});
+  }
+}
+
+const onSaveProgram = async () => {
+  if (program.value) {
+    try {
+      const update = {
+        programId: program.value.id as string,
+        name: program.name as string,
+        code: program.code as string,
+        pictureURL: program.imageURL as string,
+        authorId: localStorage.getItem('userId') as string,
+        description: program.description,
+        visibility: program.visibility as string,
+        language: program.language as string,
+      }
+      await CodeNShareProgramApi.update(update);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
+
+const onRunProgram = async () => {
+  if (program.value) {
+    try {
+      await CodeNShareProgramApi.execute(program.value.programId);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
 
 </script>
 
 <template>
-  <div class="col flex flex-column gap-4 p-2">
+  <div v-if="program" class="col flex flex-column gap-4 p-2">
     <div class="flex justify-content-between align-items-center">
       <Button icon="pi pi-arrow-left" severity="secondary" @click="router.back()"/>
       <h2 class="p-0 m-0">Edition</h2>
@@ -101,25 +122,31 @@ onMounted(() => {
     >
       <div class="flex flex-column gap-3">
         <div>Image</div>
-        <InputFile accept="image/*" @onFileSelected="program.image = $event.fileUrl"/>
+        <InputFile v-model:file-url="program.imageURL" accept="image/*"
+                   @onFileSelected="program.imageURL = $event.fileUrl"/>
 
         <InputText v-model="program.name" placeholder="Nom du programme"/>
         <Textarea v-model="program.description" class="h-5rem w-full text-sm" cols="30" placeholder="Description"
                   rows="5"/>
 
         <Dropdown
-            v-model="program.language"
+            v-model="language"
             :options="languages"
+            data-key="value"
             option-label="label"
             placeholder="Langage"
+            @change="program.language = $event.value.value"
+        />
+        <Dropdown
+            v-if="program.language === 'java'"
+            v-model="version"
+            :options="versions"
+            option-label="label"
+            placeholder="Version"
+            @change="program.version = $event.value.value"
         />
 
-        <div class="flex align-items-center">
-          <InputSwitch id="share" v-model="program.share" binary class="mr-2"/>
-          <label class="text-sm" for="share">{{ program.share ? 'Public' : 'Privé' }}</label>
-        </div>
-
-        <Button icon="pi pi-save" icon-pos="right" label="Sauvegarder" severity="success"/>
+        <Button icon="pi pi-save" icon-pos="right" label="Sauvegarder" severity="success" @click="onSaveProgram()"/>
       </div>
     </SideBar>
 
@@ -132,13 +159,13 @@ onMounted(() => {
         style="min-width: 350px;"
     >
       <div class="flex flex-column align-items-stretch gap-3">
-        <InputFile accept="image/*" @onFileSelected="program.image = $event.fileUrl"/>
+        <InputFile accept="image/*" @onFileSelected="program.imageURL = $event.fileUrl"/>
 
         <div class="text-center">
           <i class="pi pi-chevron-down text-3xl gradient-text-primary"/>
         </div>
 
-        <ProgramListItem/>
+        <!--        <ProgramListItem />-->
         <Button
             v-tooltip.bottom="'Unavailable for now'"
             class="text-color-secondary"
@@ -160,6 +187,7 @@ onMounted(() => {
             class="text-center justify-content-center mt-2"
             severity="secondary"
             style="color: #49DE80; background: linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), #27272A;"
+            @click="onRunProgram()"
         >
           <div>Exécuter</div>
           <i class="pi pi-play px-2"></i>

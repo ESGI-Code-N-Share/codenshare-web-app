@@ -3,6 +3,13 @@
 import {ref} from "vue";
 import InputFile from "@/components/files/InputFile.vue";
 import InfoCard from "@/components/cards/InfoCard.vue";
+import {useUserStore} from "@/stores/user.store";
+import {CodeNSharePostApi} from "@/api/codenshare";
+
+const emit = defineEmits(['onPublished']);
+
+const userStore = useUserStore();
+const currentUser = userStore.currentUser;
 
 const menuCreatePost = ref();
 
@@ -11,6 +18,7 @@ const addProgram = ref(false);
 
 const title = ref('');
 const content = ref('');
+const image = ref('');
 
 const createPostOptions = ref<any[]>([
   {
@@ -46,8 +54,17 @@ const createPostOptions = ref<any[]>([
         icon: 'pi pi-send',
         class: 'border-round text-color-primary',
         style: 'color: #2e7d32',
-        command() {
-          console.log('Publish post');
+        async command() {
+          if (!title.value || !content.value) {
+            return;
+          }
+          try {
+            console.log(title.value, content.value, image.value);
+            await CodeNSharePostApi.create(title.value, content.value, image.value);
+            emit('onPublished');
+          } catch (e) {
+            console.error(e);
+          }
         }
       },
       {
@@ -83,8 +100,9 @@ const openCreatePost = (event: Event) => {
 </script>
 
 <template>
-  <div class="flex flex-column gap-3 surface-card border-round-xl p-3">
-    <InfoCard :avatar-url="user" subtitle="Aujourd'hui" subtitle-icon="pi-clock" title="Corentin Lechene">
+  <div v-if="currentUser" class="flex flex-column gap-3 surface-card border-round-xl p-3">
+    <InfoCard :avatar-url="currentUser.avatar" :title="userStore.fullName" subtitle="Aujourd'hui"
+              subtitle-icon="pi-clock">
       <template #button>
         <Button aria-label="more-options" icon="pi pi-ellipsis-v" severity="secondary" @click="openCreatePost($event)"/>
         <Menu ref="menuCreatePost" :model="createPostOptions" popup/>
@@ -94,7 +112,7 @@ const openCreatePost = (event: Event) => {
     <div class="flex flex-column gap-2">
       <InputText v-model="title" class="w-full" placeholder="Titre du post" variant="filled"/>
       <Textarea v-model="content" class="w-full" placeholder="Contenu" rows="3" variant="filled"/>
-      <InputFile v-if="addImage" accept="image/*" class="" max-height-preview="5"/>
+      <InputFile v-if="addImage" v-model:file-url="image" accept="image/*" class="" max-height-preview="5"/>
     </div>
   </div>
 </template>
