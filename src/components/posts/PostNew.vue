@@ -13,6 +13,7 @@ const currentUser = userStore.currentUser;
 
 const menuCreatePost = ref();
 
+const loading = ref({create: false})
 const addImage = ref(false);
 const addProgram = ref(false);
 
@@ -59,11 +60,14 @@ const createPostOptions = ref<any[]>([
             return;
           }
           try {
+            loading.value.create = true;
             console.log(title.value, content.value, image.value);
             await CodeNSharePostApi.create(title.value, content.value, image.value);
             emit('onPublished');
           } catch (e) {
             console.error(e);
+          } finally {
+            loading.value.create = false;
           }
         }
       },

@@ -46,8 +46,11 @@ import Paginator from "primevue/paginator";
 import AvatarGroup from "primevue/avatargroup";
 
 import {createPinia} from "pinia";
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import ProgressSpinner from "primevue/progressspinner";
 
 const pinia = createPinia()
+pinia.use(piniaPluginPersistedstate)
 const app = createApp(App)
     // directives
     .directive('tooltip', Tooltip)
@@ -110,6 +113,7 @@ const app = createApp(App)
     .component('TabPanel', TabPanel)
     .component('DataView', DataView)
     .component('Paginator', Paginator)
+    .component('ProgressSpinner', ProgressSpinner)
 
 
 app.mount("#app");

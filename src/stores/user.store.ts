@@ -16,6 +16,7 @@ export const useUserStore = defineStore('user', {
         fullName: (state) => `${state.currentUser?.firstname} ${state.currentUser?.lastname}`,
         shortName: (state) => `${state.currentUser?.lastname.charAt(0)}. ${state.currentUser?.firstname}`,
     },
+    persist: true,
     actions: {
         async login(email: string, password: string) {
             this.loading = true;
@@ -43,9 +44,9 @@ export const useUserStore = defineStore('user', {
         async logout() {
             this.loading = true;
             try {
-                await CodeNShareAuthApi.logout();
                 this.currentUser = null;
                 this.isAuthenticated = false;
+                await CodeNShareAuthApi.logout();
             } catch (e) {
                 console.error(e);
             } finally {

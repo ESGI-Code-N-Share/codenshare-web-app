@@ -58,6 +58,7 @@ async function onLogout() {
   try {
     const userStore = useUserStore();
     await userStore.logout();
+    console.log("ici")
     await router.push({name: 'login'});
   } catch (e) {
     console.error(e);
