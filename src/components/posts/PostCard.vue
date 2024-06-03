@@ -82,7 +82,7 @@ const openEditPost = (event: Event) => {
         :subtitle="dayjs(post.postedAt).format('DD MMM YYYY HH:mm')"
         :title="`${post.author.firstname} ${post.author.lastname}`"
         subtitle-icon="pi-clock"
-        @onAvatarClick="$router.push(`/app/profile/qsdqsd`)"
+        @onAvatarClick="$router.push(`/app/profile/${post.author.userId}?loading=true`)"
     >
       <template #button>
         <Button aria-label="more-options" icon="pi pi-ellipsis-v" severity="secondary" @click="openEditPost($event)"/>

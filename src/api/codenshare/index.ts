@@ -8,8 +8,9 @@ export * from './codenshare-friend.api';
 export * from './codenshare-message.api';
 
 
+export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 export interface Request {
-    method: string;
+    method: RequestMethod;
     url: string;
     body?: any;
 }
@@ -28,6 +29,6 @@ export const request = async <T>({method, url, body}: Request) => {
         throw new Error('Request failed');
     }
     const responseData = await response.json();
-    console.log(responseData)
+    console.log(url, '=>', responseData)
     return responseData.data as T;
 }

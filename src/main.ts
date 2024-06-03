@@ -44,6 +44,7 @@ import TabView from "primevue/tabview";
 import TabPanel from "primevue/tabpanel";
 import Paginator from "primevue/paginator";
 import AvatarGroup from "primevue/avatargroup";
+import MultiSelect from "primevue/multiselect";
 
 import {createPinia} from "pinia";
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
@@ -113,6 +114,7 @@ const app = createApp(App)
     .component('TabPanel', TabPanel)
     .component('DataView', DataView)
     .component('Paginator', Paginator)
+    .component('MultiSelect', MultiSelect)
     .component('ProgressSpinner', ProgressSpinner)
 
 

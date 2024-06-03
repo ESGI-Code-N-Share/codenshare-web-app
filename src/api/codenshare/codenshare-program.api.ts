@@ -1,5 +1,6 @@
 import {request} from "@/api/codenshare";
 import {Program, ProgramId} from "@/models/program.model";
+import {UserId} from "@/models";
 
 export class CodeNShareProgramApi {
     static async create(): Promise<ProgramId> {
@@ -10,10 +11,14 @@ export class CodeNShareProgramApi {
         });
     }
 
-    static async listByUser(): Promise<Program[]> {
+    static async getByUser(userId: UserId): Promise<Program[]> {
         return request<Program[]>({
-            method: 'GET', url: '/programs?userId=' + localStorage.getItem('userId')
+            method: 'GET', url: `/programs?userId=${userId}`
         });
+    }
+
+    static async listByUser(): Promise<Program[]> {
+        return this.getByUser(localStorage.getItem('userId') as string)
     }
 
     static async search(query: string): Promise<Program[]> {

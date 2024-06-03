@@ -3,16 +3,8 @@
 import InfoCard from "@/components/cards/InfoCard.vue";
 import {computed, onMounted, ref} from "vue";
 import ConversationMessages from "@/components/conversations/ConversationMessages.vue";
-import {useConversationStore} from "@/stores/conversation.store";
-import {useUserStore} from "@/stores/user.store";
 import {Conversation, User, UserId} from "@/models";
-import {useFriendStore} from "@/stores/friend.store";
 
-
-const userStore = useUserStore();
-const conversationStore = useConversationStore();
-const friendStore = useFriendStore();
-const currentUser = userStore.currentUser;
 
 const messageContent = ref('');
 const menuOptionsConversation = ref();
@@ -23,61 +15,23 @@ const friendsOptions = ref<{ name: string, userId: UserId }[]>([]);
 
 
 const currentConversation = ref<Conversation>();
-const conversations = computed(() => conversationStore.conversations);
+const conversations = ref<Conversation[]>([]);
 const messages = computed(() => currentConversation.value?.messages || []);
 
 onMounted(async () => {
-  if (currentUser) {
-    await conversationStore.fetchConversations(currentUser.userId);
-    await friendStore.fetchFriends(currentUser.userId);
-    if (conversationStore.conversations.length > 0) {
-      currentConversation.value = conversationStore.conversations[0];
-    }
-    friendsOptions.value = friendStore.friends
-        .filter(friend => friend.status === 'accepted')
-        .map(friend => ({
-          name: friend.addressedBy.firstname + ' ' + friend.addressedBy.lastname,
-          userId: friend.addressedBy.userId
-        }));
-  }
+
 })
 
 
 const sendMessage = async () => {
-  if (!messageContent.value || !currentUser || !currentConversation.value) return;
-  try {
-    const nextMessage = await conversationStore.sendMessage(
-        currentConversation.value.conversationId,
-        currentUser.userId,
-        messageContent.value,
-        //tood
-    );
-    messageContent.value = '';
-    messages.value.push(nextMessage);
-    messages.value.pop(); //fixme bug
-  } catch (e) {
-    console.error(e);
-  }
+
 }
 
 const getMessagesByConversation = async (conversation: Conversation) => {
-  currentConversation.value = await conversationStore.fetchConversation(conversation.conversationId);
 }
 
 const onCreateNewConversation = async () => {
-  if (!currentUser || selectedUsers.value.length === 0) return;
-  try {
-    currentConversation.value = await conversationStore.createConversation(
-        currentUser.userId,
-        selectedUsers.value.map(user => user.userId),
-    );
-    openConversationCreationModal.value = false;
-    selectedUsers.value = [];
-    currentConversation.value = await conversationStore.fetchConversation(currentConversation.value.conversationId);
-    conversationStore.conversations.unshift(currentConversation.value);
-  } catch (e) {
-    console.error(e);
-  }
+
 }
 
 const openOptionsConversation = (event: MouseEvent) => {
@@ -89,15 +43,9 @@ const optionsConversation = [
     label: 'Supprimer',
     icon: 'pi pi-trash',
     command: async () => {
-      if (!currentConversation.value || !currentUser) return;
+      if (!currentConversation.value) return;
 
-      try {
-        await conversationStore.leaveConversation(currentConversation.value.conversationId, currentUser.userId)
-        conversationStore.conversations = conversationStore.conversations.filter(conversation => conversation.conversationId !== currentConversation.value?.conversationId);
-        currentConversation.value = conversationStore.conversations[0];
-      } catch (e) {
-        console.error(e);
-      }
+
     }
   }
 ]
@@ -138,9 +86,9 @@ const optionsConversation = [
         <div class="flex flex-column gap-2">
           <InfoCard
               v-for="conversation in conversations"
-              :avatar-url="conversation.users[0].avatar"
+              :avatar-url="conversation.members[0].avatar"
               :subtitle="conversation.messages.length > 0 ? conversation.messages[0].content : 'Pas de message'"
-              :title="conversation.users[0].lastname[0] + ' ' + conversation.users[0].firstname"
+              :title="conversation.members[0].lastname[0] + ' ' + conversation.members[0].firstname"
               class="w-full"
               @click="getMessagesByConversation(conversation)"
           />

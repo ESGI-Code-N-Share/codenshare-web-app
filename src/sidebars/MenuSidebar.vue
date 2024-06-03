@@ -18,14 +18,14 @@ const menus = ref([
     icon: 'pi pi-home',
     label: 'Accueil',
     routeName: 'home',
-    params: {profileId: '1'}
+    params: {}
   },
   {
     icon: 'pi pi-user',
     label: 'Profile',
-    routeName: 'profile', //Todo get user id
+    routeName: 'profile',
     params: {
-      profileId: '1'
+      profileId: currentUser?.userId
     }
   },
   {
@@ -58,7 +58,6 @@ async function onLogout() {
   try {
     const userStore = useUserStore();
     await userStore.logout();
-    console.log("ici")
     await router.push({name: 'login'});
   } catch (e) {
     console.error(e);
