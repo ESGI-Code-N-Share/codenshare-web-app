@@ -64,6 +64,10 @@ const createPostOptions = ref<any[]>([
             console.log(title.value, content.value, image.value);
             await CodeNSharePostApi.create(title.value, content.value, image.value);
             emit('onPublished');
+            title.value = '';
+            content.value = '';
+            addImage.value = false;
+            addProgram.value = false;
           } catch (e) {
             console.error(e);
           } finally {

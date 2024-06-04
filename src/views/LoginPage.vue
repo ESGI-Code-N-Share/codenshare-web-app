@@ -65,6 +65,18 @@ async function onSubmitLoginForm() {
   }
 }
 
+// todo remove this function in production
+async function onSubmitAdminLoginForm() {
+  try {
+    const userStore = useUserStore();
+    await userStore.login('admin@cns.fr', 'adminfiters');
+    toastNotifications.showSuccess('Connexion réussie');
+    await router.push({name: 'home'});
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 
 </script>
 
@@ -121,6 +133,13 @@ async function onSubmitLoginForm() {
               icon-pos="right"
               label="Se connecter"
               @click="onSubmitLoginForm()"
+          />
+          <Button
+              :loading="loading"
+              class="gradient-bg-primary justify-content-center mt-1"
+              icon-pos="right"
+              label="Se connecter avec l'admin"
+              @click="onSubmitAdminLoginForm()"
           />
         </form>
 
