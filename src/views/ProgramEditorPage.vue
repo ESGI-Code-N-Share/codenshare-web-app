@@ -47,6 +47,8 @@ const fetchProgram = async (programId: ProgramId) => {
     if (!program.value) {
       return await router.push({name: 'programs'});
     }
+    language.value = languages.value.find(l => l.value === program.value?.language);
+    version.value = versions.value.find(v => v.value === program.value?.version);
   } catch (e) {
     console.error(e);
     await router.push({name: 'programs'});
@@ -56,17 +58,7 @@ const fetchProgram = async (programId: ProgramId) => {
 const onSaveProgram = async () => {
   if (program.value) {
     try {
-      const update = {
-        programId: program.value.id as string,
-        name: program.name as string,
-        code: program.code as string,
-        pictureURL: program.imageURL as string,
-        authorId: localStorage.getItem('userId') as string,
-        description: program.description,
-        visibility: program.visibility as string,
-        language: program.language as string,
-      }
-      await CodeNShareProgramApi.update(update);
+      await CodeNShareProgramApi.update(program.value);
     } catch (e) {
       console.error(e);
     }
@@ -86,7 +78,7 @@ const onRunProgram = async () => {
 </script>
 
 <template>
-  <div v-if="program" class="col flex flex-column gap-4 p-2">
+  <div class="col flex flex-column gap-4 p-2">
     <div class="flex justify-content-between align-items-center">
       <Button icon="pi pi-arrow-left" severity="secondary" @click="router.back()"/>
       <h2 class="p-0 m-0">Edition</h2>
@@ -102,8 +94,11 @@ const onRunProgram = async () => {
         <Button icon="pi pi-pencil" severity="secondary" style="" @click="sidebarProgramEditor = true"/>
       </div>
     </div>
+    <div v-if="!program" class="flex justify-content-center align-items-center h-full">
+      <ProgressSpinner/>
+    </div>
 
-    <div class="h-full">
+    <div v-if="program" class="h-full">
       <VAceEditor
           v-model:value="program.code"
           lang="javascript"
@@ -113,6 +108,7 @@ const onRunProgram = async () => {
 
     <!-- Sidebar Program   -->
     <SideBar
+        v-if="program"
         v-model:visible="sidebarProgramEditor"
         :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
         blockScroll
@@ -138,7 +134,7 @@ const onRunProgram = async () => {
             @change="program.language = $event.value.value"
         />
         <Dropdown
-            v-if="program.language === 'java'"
+            v-if="program.language === 'java' && program.version !== undefined"
             v-model="version"
             :options="versions"
             option-label="label"
@@ -152,6 +148,7 @@ const onRunProgram = async () => {
 
     <!-- Sidebar Test   -->
     <SideBar
+        v-if="program"
         v-model:visible="sidebarProgramTest"
         :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
         blockScroll

@@ -3,12 +3,12 @@
 import ProgramCard from "@/components/programs/ProgramCard.vue";
 import {useRouter} from "vue-router";
 import {onMounted, ref} from "vue";
-import {Program} from "@/models";
+import {ProgramsRequest} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
 
 const router = useRouter();
 
-const programs = ref<Program[]>([]);
+const programs = ref<ProgramsRequest[]>([]);
 const loading = ref({create: false, fetch: false})
 
 onMounted(async () => {

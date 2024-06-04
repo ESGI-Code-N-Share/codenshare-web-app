@@ -2,12 +2,12 @@
 
 import {ref} from "vue";
 import {useRouter} from "vue-router";
-import {Program} from "@/models";
+import {Program, ProgramsRequest} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
 
 
 interface ProgramCardProps {
-  program: Program
+  program: Program | ProgramsRequest
 }
 
 const props = defineProps<ProgramCardProps>();
@@ -23,7 +23,7 @@ const editProgramOptions = ref<any[]>([
       {
         label: 'Utiliser',
         icon: 'pi pi-play',
-        command: (event) => {
+        command: (event: Event) => {
           console.log(event);
           router.push({name: 'playground', query: {program: props.program.programId}})
         }
