@@ -57,6 +57,7 @@ const sidebarClass = computed(() => {
         @on-close="toggleSidebar('hidden')"
         @on-collapse="toggleSidebar('collapsed')"
         @on-expand="toggleSidebar('expanded')"
+        @on-next-menu="isFixed ? toggleSidebar('hidden') : ''"
     />
   </div>
 </template>
