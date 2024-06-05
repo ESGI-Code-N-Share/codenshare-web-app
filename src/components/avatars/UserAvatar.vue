@@ -19,7 +19,7 @@ const pt = computed(() => ({
 </script>
 
 <template>
-  <AvatarGroup v-if="avatars.length > 1">
+  <AvatarGroup>
     <Avatar
         v-for="(avatar, i) in avatars.slice(0, max)"
         :key="avatar"
@@ -39,15 +39,6 @@ const pt = computed(() => ({
         size="large"
     />
   </AvatarGroup>
-  <Avatar
-      v-else
-      :image="avatars[0]"
-      :pt="{image: {style: pt}}"
-      :style="pt"
-      shape="circle"
-      size="large"
-      @click="$emit('onAvatarClick', 0)"
-  />
 </template>
 
 <style scoped>

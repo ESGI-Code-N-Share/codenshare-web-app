@@ -3,14 +3,24 @@ import {Conversation, ConversationId, UserId} from "@/models";
 
 export class CodeNShareConversationApi {
     static async getByUser(): Promise<Conversation[]> {
-        return request({method: 'GET', url: '/conversations'})
+        return request<Conversation[]>({
+            method: 'GET',
+            url: `/users/${localStorage.getItem('userId')}/conversations`
+        })
     }
 
     static async create(memberIds: UserId[]): Promise<Conversation> {
-        return request({method: 'POST', url: '/conversations', body: {memberIds}})
+        return request<Conversation>({
+            method: 'GET',
+            url: `/users/${localStorage.getItem('userId')}/conversations`,
+            body: {memberIds}
+        })
     }
 
     static async delete(conversationId: ConversationId): Promise<void> {
-        return request({method: 'DELETE', url: `/conversations/${conversationId}`})
+        return request<void>({
+            method: 'DELETE',
+            url: `/users/${localStorage.getItem('userId')}/conversations`
+        })
     }
 }
