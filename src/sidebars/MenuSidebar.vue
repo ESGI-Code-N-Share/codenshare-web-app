@@ -23,7 +23,7 @@ const menus = ref([
   },
   {
     icon: 'pi pi-user',
-    label: 'Profile',
+    label: 'Profil',
     routeName: 'profile',
     children: [],
     params: {

@@ -28,7 +28,7 @@ const pt = computed(() => ({
         :style="pt"
         shape="circle"
         size="large"
-        @click="$emit('onAvatarClick', i)"
+        @click.prevent="$emit('onAvatarClick', i)"
     />
     <Avatar
         v-if="avatars.length > max"

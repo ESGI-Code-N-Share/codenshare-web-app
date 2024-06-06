@@ -7,7 +7,7 @@ import ProgramCard from "@/components/programs/ProgramCard.vue";
 import InfoCard from "@/components/cards/InfoCard.vue";
 import ListView from "@/components/ListView.vue";
 import UserAvatar from "@/components/avatars/UserAvatar.vue";
-import {Friend, Post, Program, User, UserId} from "@/models";
+import {Friend, Post, Program, ProgramsRequest, User, UserId} from "@/models";
 import {useRoute, useRouter} from "vue-router";
 import {CodeNShareFriendApi, CodeNSharePostApi, CodeNShareProgramApi, CodeNShareUserApi} from "@/api/codenshare";
 import {useUserStore} from "@/stores/user.store";
@@ -53,7 +53,7 @@ const menuItemsProfile = ref([
 
 const user = ref<{
   posts: Post[] | undefined,
-  programs: Program[] | undefined,
+  programs: ProgramsRequest[] | undefined,
   detail: User | undefined,
   followers: Friend[] | undefined,
   following: Friend[] | undefined
@@ -153,6 +153,34 @@ watch(
 function openOptionsProfile(event: MouseEvent) {
   menuOptionsProfile.value.show(event);
 }
+
+const onAddFriend = async (friend: Friend) => {
+  try {
+    if (!currentUser) return;
+    await CodeNShareFriendApi.follow(currentUser.userId, friend.requestedBy.userId);
+    if (user.value) {
+      user.value.following = Array.isArray(user.value.following)
+          ? [...user.value.following, friend]
+          : [friend];
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+const onRemoveFriend = async (friend: Friend) => {
+  try {
+    if (!currentUser) return;
+    await CodeNShareFriendApi.unfollow(currentUser.userId, friend.addressedTo.userId);
+    if (user.value) {
+      user.value.following = Array.isArray(user.value.following)
+          ? user.value.following.filter(f => f.addressedTo.userId !== friend.addressedTo.userId)
+          : [];
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
 </script>
 
 <template>
@@ -233,13 +261,18 @@ function openOptionsProfile(event: MouseEvent) {
                 <InfoCard
                     :avatar-url="friend.requestedBy.avatar"
                     :subtitle="`Suivi depuis ${friend.createdAt}`"
-                    :title="friend.requestedBy.firstname + '' + friend.requestedBy.lastname"
-                    class="px-3 py-2 w-full"
+                    :title="friend.requestedBy.firstname + ' ' + friend.requestedBy.lastname"
+                    class="px-3 py-2 w-full capitalize"
                     style="background-color: #121212;"
                     @on-avatar-click="$router.push(`/app/profile/${friend.requestedBy.userId}`)"
                 >
                   <template #button>
-                    <Button aria-label="more-options" icon="pi pi-user-plus" severity="secondary"/>
+                    <Button
+                        aria-label="more-options"
+                        icon="pi pi-user-plus"
+                        severity="secondary"
+                        @click="onAddFriend(friend)"
+                    />
                   </template>
                 </InfoCard>
               </template>
@@ -253,13 +286,18 @@ function openOptionsProfile(event: MouseEvent) {
                 <InfoCard
                     :avatar-url="friend.addressedTo.avatar"
                     :subtitle="`Suivi depuis ${friend.createdAt}`"
-                    :title="friend.addressedTo.firstname + '' + friend.addressedTo.lastname"
-                    class="px-3 py-2 w-full"
+                    :title="friend.addressedTo.firstname + ' ' + friend.addressedTo.lastname"
+                    class="px-3 py-2 w-full capitalize"
                     style="background-color: #121212;"
                     @on-avatar-click="$router.push(`/app/profile/${friend.addressedTo.userId}`)"
                 >
                   <template #button>
-                    <Button aria-label="more-options" icon="pi pi-user-minus" severity="secondary"/>
+                    <Button
+                        aria-label="more-options"
+                        icon="pi pi-user-minus"
+                        severity="secondary"
+                        @click="onRemoveFriend(friend)"
+                    />
                   </template>
                 </InfoCard>
               </template>

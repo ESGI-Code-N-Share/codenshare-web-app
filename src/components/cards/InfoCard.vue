@@ -28,8 +28,9 @@ const pt = {
 <template>
   <div class="flex justify-content-between gap-2 align-items-center">
     <div class="flex gap-2 align-items-center">
-      <UserAvatar v-if="avatarUrls" :avatars="avatarUrls" :max="maxAvatars" @on-avatar-click="$emit('onAvatarClick')"/>
-      <UserAvatar v-else :avatars="[avatarUrl]" @on-avatar-click="$emit('onAvatarClick')"/>
+      <UserAvatar v-if="avatarUrls" :avatars="avatarUrls" :max="maxAvatars"
+                  @on-avatar-click.prevent="$emit('onAvatarClick')"/>
+      <UserAvatar v-else :avatars="[avatarUrl]" @on-avatar-click.prevent="$emit('onAvatarClick')"/>
 
       <div class="flex flex-column gap-1">
         <div v-if="caption" class="text-xs self-">{{ caption }}</div>
