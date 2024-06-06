@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 
 import {computed, onMounted, onUnmounted, ref} from "vue";
-import {Conversation, Message, User, UserId} from "@/models";
+import {Conversation, ConversationId, Message, User, UserId} from "@/models";
 import UserAvatar from "@/components/avatars/UserAvatar.vue";
 import {CodeNShareConversationApi, CodeNShareFriendApi, CodeNShareMessageApi} from "@/api/codenshare";
 import InfoCard from "@/components/cards/InfoCard.vue";
@@ -29,7 +29,7 @@ const selectedUsers = ref<User[]>([]);
 const friendsOptions = ref<{ name: string, userId: UserId }[]>([]);
 
 const intervalId = ref<NodeJS.Timeout>();
-const isNewMessage = ref('');
+const isNewMessage = ref<ConversationId>();
 
 const optionsConversation = [
   {
@@ -106,9 +106,12 @@ const sendMessage = async () => {
 const getMessagesByConversation = async (conversation: Conversation) => {
   try {
     loading.value.fetch = true;
+    if (conversation.conversationId === isNewMessage.value) {
+      isNewMessage.value = undefined;
+    }
+
     messages.value = await CodeNShareMessageApi.getByConversation(conversation.conversationId);
     currentConversation.value = conversation;
-    isNewMessage.value = '';
     messageContent.value = '';
     scrollToLast();
   } catch (e) {
@@ -135,25 +138,20 @@ const onCreateNewConversation = async () => {
 
 const fetchConversations = async (secondFetch = false) => {
   try {
-    loading.value.fetch = true;
+    if (!secondFetch) loading.value.fetch = true;
+    const lastCurrentMessage = conversations.value[0]?.messages.at(-1);
+
     conversations.value = await CodeNShareConversationApi.getByUser();
-    const firstConversation = conversations.value[0];
-    // here we check if the first conversation has a new message
-    // and if the current conversation is not the same as the first conversation
-    // and if the last message is not from the current user
-    // then we set the conversation id to the isNewMessage and we display it as a new message
-    if (secondFetch) {
-      if (firstConversation?.conversationId !== currentConversation.value?.conversationId) {
-        const lastMessage = firstConversation.messages.at(-1);
-        if (lastMessage && lastMessage.sender.userId !== currentUser?.userId) {
-          isNewMessage.value = firstConversation.conversationId;
-        }
-      } else {
-        messages.value = firstConversation.messages;
+    const lastFetchedMessage = conversations.value[0]?.messages.at(-1);
+
+    if (secondFetch && lastCurrentMessage?.messageId !== lastFetchedMessage?.messageId) {
+      if (lastFetchedMessage?.sender.userId !== currentUser?.userId) {
+        isNewMessage.value = conversations.value[0].conversationId;
       }
     }
+
     currentConversation.value = conversations.value.find(c => c.conversationId === currentConversation.value?.conversationId);
-    scrollToLast();
+    if (!secondFetch) scrollToLast();
   } catch (e) {
     console.error(e);
   } finally {
@@ -166,7 +164,6 @@ const onOpenCreateConversation = async () => {
   try {
     loading.value.fetchFriends = true;
     const following = await CodeNShareFriendApi.getFollowingByUser(currentUser.userId);
-    console.log(following)
 
     friendsOptions.value = following.map(f => ({
           name: f.addressedTo.firstname + ' ' + f.addressedTo.lastname,
