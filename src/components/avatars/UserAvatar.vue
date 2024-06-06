@@ -42,5 +42,7 @@ const pt = computed(() => ({
 </template>
 
 <style scoped>
-
+.p-avatar-group .p-avatar + .p-avatar {
+  margin-left: -1.15em;
+}
 </style>

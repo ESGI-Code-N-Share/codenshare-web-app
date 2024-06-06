@@ -11,7 +11,7 @@ export class CodeNShareConversationApi {
 
     static async create(memberIds: UserId[]): Promise<Conversation> {
         return request<Conversation>({
-            method: 'GET',
+            method: 'POST',
             url: `/users/${localStorage.getItem('userId')}/conversations`,
             body: {memberIds}
         })
@@ -20,7 +20,7 @@ export class CodeNShareConversationApi {
     static async delete(conversationId: ConversationId): Promise<void> {
         return request<void>({
             method: 'DELETE',
-            url: `/users/${localStorage.getItem('userId')}/conversations`
+            url: `/users/${localStorage.getItem('userId')}/conversations/${conversationId}`
         })
     }
 }

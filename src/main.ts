@@ -49,6 +49,7 @@ import MultiSelect from "primevue/multiselect";
 import {createPinia} from "pinia";
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import ProgressSpinner from "primevue/progressspinner";
+import VirtualScroller from "primevue/virtualscroller";
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -116,6 +117,7 @@ const app = createApp(App)
     .component('Paginator', Paginator)
     .component('MultiSelect', MultiSelect)
     .component('ProgressSpinner', ProgressSpinner)
+    .component('VirtualScroller', VirtualScroller)
 
 
 app.mount("#app");

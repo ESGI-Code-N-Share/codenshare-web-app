@@ -13,7 +13,7 @@ const sidebar = ref<'hidden' | 'collapsed' | 'expanded'>('hidden');
 </script>
 
 <template>
-  <section class="flex flex-column gap-4 h-full p-3 sm:p-4 overflow-hidden">
+  <section class="flex flex-column gap-4 h-full p-3 sm:p-4 overflow-hidden" style="min-width: 350px">
 
     <!-- Mobile only   -->
     <!-- Navbar top   -->
