@@ -6,7 +6,7 @@ import {useRouter} from "vue-router";
 
 
 const props = defineProps<{ collapsed: boolean, isFixed: boolean }>();
-const emit = defineEmits(['onNextMenu', 'onClose', 'onCollapse', 'onExpand']);
+const emit = defineEmits(['onNextMenu', 'onClose', 'onCollapse', 'onExpand', 'onSearch']);
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -107,10 +107,9 @@ async function onLogout() {
       <div class="flex justify-content-center w-full">
         <Divider class="my-0 p-0" style=""/>
       </div>
-      <div class="p-2">
+      <div class="p-2" @click.stop="$emit('onSearch')">
         <Button
             v-if="collapsed"
-            :class="$route.name === 'playground' ? 'gradient-bg-primary text-black-alpha-90' : 'hover:surface-200'"
             class="w-full"
             icon="pi pi-search"
             severity="secondary"
@@ -118,7 +117,7 @@ async function onLogout() {
         />
         <IconField v-else class="" iconPosition="left">
           <InputIcon class="pi pi-search"></InputIcon>
-          <InputText class="w-full text-sm border-round-md" placeholder="Recherche"/>
+          <InputText class="w-full text-sm border-round-md" placeholder="Recherche" readonly/>
         </IconField>
       </div>
     </div>

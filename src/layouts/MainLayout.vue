@@ -4,11 +4,56 @@ import {ref} from "vue";
 import Sidebar from "../sidebars/Sidebar.vue";
 import UserAvatar from "@/components/avatars/UserAvatar.vue";
 import {useUserStore} from "@/stores/user.store";
+import {Program, User, UserId} from "@/models";
+import ListView from "@/components/ListView.vue";
+import InfoCard from "@/components/cards/InfoCard.vue";
+import {CodeNShareFriendApi, CodeNShareProgramApi, CodeNShareUserApi} from "@/api/codenshare";
+import ProgramCard from "@/components/programs/ProgramCard.vue";
 
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
 
 const sidebar = ref<'hidden' | 'collapsed' | 'expanded'>('hidden');
+const openSearchModal = ref(false);
+
+const query = ref('');
+
+type Result = {
+  type: 'program';
+  value: Program;
+} | {
+  type: 'user';
+  value: User;
+}
+const results = ref<Result[]>()
+
+const onAddFriend = async (friendId: UserId) => {
+  try {
+    if (!currentUser) return;
+    await CodeNShareFriendApi.follow(currentUser.userId, friendId);
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+const onSearch = async () => {
+  try {
+    if (!query.value || query.value.length <= 1) return;
+    const [users, programs] = await Promise.all([
+      CodeNShareUserApi.search(query.value),
+      CodeNShareProgramApi.search(query.value),
+    ]);
+
+    results.value = [
+      ...users.map(u => ({type: 'user', value: u})),
+      ...programs.map(p => ({type: 'program', value: p})),
+    ] as Result[];
+    console.log(results.value)
+  } catch (e) {
+    console.error(e);
+  }
+
+}
 
 </script>
 
@@ -29,10 +74,104 @@ const sidebar = ref<'hidden' | 'collapsed' | 'expanded'>('hidden');
         style="transition: margin-left 0.5s"
     >
       <!-- Left Sidebar   -->
-      <Sidebar v-model:state="sidebar"/>
+      <Sidebar v-model:state="sidebar" @on-search="openSearchModal = true"/>
 
       <!-- Views   -->
       <router-view></router-view>
+      <Dialog
+          v-model:visible="openSearchModal"
+          :pt="{content: 'p-0'}"
+          :show-header="false"
+          class="absolute"
+          modal
+          style="min-width: 20% !important; top: 10%; z-index: 9999;"
+      >
+        <div class="flex flex-column gap-3 p-2">
+          <div class="w-full">
+            <InputText v-model.trim="query" class="w-full" placeholder="Recherche" @update:model-value="onSearch"/>
+          </div>
+          <div class="" style="min-height: 7em">
+            <TabView
+                :pt="{root: {style: 'display: grid !important'}, panelContainer: 'p-0 pt-3'}"
+                scrollable
+                style="max-width: 50rem; max-height: 30em"
+            >
+              <!-- All result             -->
+              <TabPanel header="Tous les résultats">
+                <ListView v-if="results" :items="results">
+                  <template #default="{item: result}: {item: Result}">
+                    <InfoCard
+                        v-if="result.type === 'user'"
+                        :avatar-url="result.value.avatar"
+                        :subtitle="`Suivi depuis ${result.value.createdAt}`"
+                        :title="result.value.firstname + ' ' + result.value.lastname"
+                        class="px-3 py-2 w-full capitalize"
+                        style="background-color: #121212;"
+                        @on-avatar-click="$router.push(`/app/profile/${result.value.userId}`)"
+                    >
+                      <template #button>
+                        <Button
+                            aria-label="more-options"
+                            icon="pi pi-user-plus"
+                            severity="secondary"
+                            @click="onAddFriend(result.value.userId)"
+                        />
+                      </template>
+                    </InfoCard>
+
+                    <ProgramCard
+                        v-if="result.type === 'program'"
+                        :program="result.value"
+                        class="w-full"
+                        style="background: #121212;"
+                    />
+                  </template>
+                </ListView>
+              </TabPanel>
+
+              <!-- All result             -->
+              <TabPanel header="Utilisateurs">
+                <ListView v-if="results" :items="results.filter(result => result.type === 'user')">
+                  <template #default="{item: result}: {item: Result}">
+                    <InfoCard
+                        v-if="result.type === 'user'"
+                        :avatar-url="result.value.avatar"
+                        :subtitle="`Suivi depuis ${result.value.createdAt}`"
+                        :title="result.value.firstname + ' ' + result.value.lastname"
+                        class="px-3 py-2 w-full capitalize"
+                        style="background-color: #121212;"
+                        @on-avatar-click="$router.push(`/app/profile/${result.value.userId}`)"
+                    >
+                      <template #button>
+                        <Button
+                            aria-label="more-options"
+                            icon="pi pi-user-plus"
+                            severity="secondary"
+                            @click="onAddFriend(result.value.userId)"
+                        />
+                      </template>
+                    </InfoCard>
+                  </template>
+                </ListView>
+              </TabPanel>
+
+              <!-- Programs             -->
+              <TabPanel header="Programmes">
+                <ListView v-if="results" :items="results.filter(result => result.type === 'program')">
+                  <template #default="{item: result}: {item: Result}">
+                    <ProgramCard
+                        v-if="result.type === 'program'"
+                        :program="result.value"
+                        class="w-full"
+                        style="background: #121212;"
+                    />
+                  </template>
+                </ListView>
+              </TabPanel>
+            </TabView>
+          </div>
+        </div>
+      </Dialog>
     </div>
 
   </section>

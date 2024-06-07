@@ -66,7 +66,7 @@ function editProgramToggle(event: Event) {
 </script>
 
 <template>
-  <div class="p-2 sm:p-2" style="min-height: 300px; max-height: 300px">
+  <div class="p-2 sm:p-2 border-round-2xl" style="min-height: 260px; max-height: 300px">
     <div class="flex flex-column surface-card border-round-xl p-2 h-full">
       <img
           alt="meeting"

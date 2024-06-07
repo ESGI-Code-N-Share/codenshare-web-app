@@ -7,6 +7,7 @@ const sidebarState = defineModel('state', {
   type: String,
   default: 'hidden',
 })
+defineEmits(['onSearch'])
 
 const isFixed = ref(false);
 
@@ -58,6 +59,7 @@ const sidebarClass = computed(() => {
         @on-collapse="toggleSidebar('collapsed')"
         @on-expand="toggleSidebar('expanded')"
         @on-next-menu="isFixed ? toggleSidebar('hidden') : ''"
+        @on-search="$emit('onSearch')"
     />
   </div>
 </template>
@@ -75,7 +77,7 @@ const sidebarClass = computed(() => {
   transition: width 0.5s;
   background-color: #121212;
   color: white;
-  z-index: 9999;
+  z-index: 20;
 }
 
 .sidebar-fixed {
