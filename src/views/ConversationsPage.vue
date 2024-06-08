@@ -48,8 +48,10 @@ const optionsConversation = [
         currentConversation.value = conversations.value[0];
         messages.value = currentConversation.value?.messages;
         scrollToLast();
+        toastNotifications.showSuccess("Conversation supprimée avec succès");
       } catch (e) {
         console.error(e);
+        toastNotifications.showError("Une erreur s'est produite lors de la suppression de la conversation");
       } finally {
         this.loading = false
       }
@@ -131,8 +133,10 @@ const onCreateNewConversation = async () => {
     const newConversation = await CodeNShareConversationApi.create(members);
     conversations.value = [...conversations.value, newConversation];
     openConversationCreationModal.value = false;
+    toastNotifications.showSuccess("Conversation créée avec succès");
   } catch (e) {
     console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors de la création de la conversation");
   } finally {
     loading.value.create = false
   }
@@ -176,7 +180,6 @@ const onOpenCreateConversation = async () => {
     ));
 
     openConversationCreationModal.value = true;
-    toastNotifications.showInfo("Sélectionnez des utilisateurs pour créer une conversation");
   } catch (e) {
     console.error(e);
     toastNotifications.showError("Une erreur s'est produite lors de la récupération de vos amis");
@@ -211,7 +214,7 @@ const onOpenCreateConversation = async () => {
             v-for="conversation in conversations"
             :key="conversation.conversationId"
             :class="{'selected': currentConversation === conversation, 'new-message': isNewMessage === conversation.conversationId }"
-            class="flex gap-2 w-full align-items-center border-round-xl"
+            class="flex gap-2 w-full align-items-center border-round-xl cursor-pointer hover:bg-gray-700"
             @click="getMessagesByConversation(conversation)"
         >
           <UserAvatar
@@ -316,7 +319,7 @@ const onOpenCreateConversation = async () => {
 <style scoped>
 
 .selected {
-  background-color: #252525;
+  background-color: #3c3c3c;
   cursor: pointer;
 }
 
