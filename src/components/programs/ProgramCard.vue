@@ -1,9 +1,11 @@
 <script lang="ts" setup>
 
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import {useRouter} from "vue-router";
 import {Program, ProgramsRequest} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
+import {getProgramOptions} from "@/utils/program.util";
+import {useUserStore} from "@/stores/user.store";
 
 
 interface ProgramCardProps {
@@ -11,57 +13,59 @@ interface ProgramCardProps {
 }
 
 const props = defineProps<ProgramCardProps>();
-const emit = defineEmits(['onDeleted']);
+const emit = defineEmits(['onDeleted', 'onMenuClick']);
 
 const router = useRouter();
 
 const menuProgram = ref();
-const editProgramOptions = ref<any[]>([
-  {
-    label: 'Options',
-    items: [
-      {
-        label: 'Utiliser',
-        icon: 'pi pi-play',
-        command: (event: Event) => {
-          console.log(event);
-          router.push({name: 'playground', query: {program: props.program.programId}})
-        }
-      },
-      {
-        label: 'Partager',
-        icon: 'pi pi-share-alt'
-      },
-      {
-        label: 'Modifier',
-        icon: 'pi pi-pencil',
-        command: () => {
-          router.push({name: 'program', params: {program: props.program.programId}})
-        }
-      },
-      {
-        label: 'Supprimer',
-        icon: 'pi pi-trash',
-        command: async () => {
-          try {
-            try {
-              await CodeNShareProgramApi.delete(props.program.programId)
-              emit('onDeleted', props.program.programId);
-            } catch (e) {
-              console.error(e);
-            }
-          } catch (e) {
-            console.error(e);
-          }
-        }
-      }
-    ]
-  }
-]);
+const editProgramOptions = ref();
+
+const currentUser = useUserStore().currentUser;
 
 function editProgramToggle(event: Event) {
   menuProgram.value.toggle(event);
 }
+
+onMounted(() => {
+  if (!currentUser) return;
+  editProgramOptions.value = getProgramOptions(props.program, currentUser, {
+    deleteCommand: async () => {
+      try {
+        await CodeNShareProgramApi.delete(props.program.programId);
+        emit('onDeleted', props.program.programId);
+        emit('onMenuClick')
+      } catch (e) {
+        console.error(e);
+      }
+    },
+
+    importCommand: async () => {
+      try {
+        await CodeNShareProgramApi.import(props.program.programId);
+        await router.push({name: 'playground', query: {program: props.program.programId}});
+        emit('onMenuClick')
+      } catch (e) {
+        console.error(e);
+      }
+    },
+
+    editCommand: () => {
+      console.log("here")
+      router.push({name: 'program', params: {program: props.program.programId}})
+      emit('onMenuClick')
+    },
+
+    shareCommand: () => {
+      // router.push({name: 'share-program', params: {program: props.program.programId}});
+      emit('onMenuClick')
+    },
+
+    userCommand: () => {
+      router.push({name: 'playground', query: {program: props.program.programId}})
+      emit('onMenuClick')
+    }
+  });
+})
 
 </script>
 

@@ -8,6 +8,7 @@ import InfoCard from "@/components/cards/InfoCard.vue";
 import {Post} from "@/models";
 import {useUserStore} from "@/stores/user.store";
 import dayjs from 'dayjs/esm/index.js'
+import {getEditPostOptions} from "@/utils/post.util";
 import {CodeNSharePostApi} from "@/api/codenshare";
 
 
@@ -24,46 +25,23 @@ const currentUser = userStore.currentUser;
 
 const imageNotFound = ref(false);
 const menuEditPost = ref();
-const editPostOptions = ref([
-  {
-    label: 'Importer le programme',
-    icon: 'pi pi-upload',
-    async command() {
-      //todo import program
-    }
-  },
-  {
-    separator: true
-  },
-  {
-    label: 'Supprimer',
-    icon: 'pi pi-trash',
-    class: 'text-color-danger',
-    async command() {
-      try {
-        await CodeNSharePostApi.delete(props.post.postId);
-        emit('onDeleted', props.post.postId);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
-])
+
+const editPostOptions = ref();
 
 
 onMounted(() => {
-  const {post} = props;
+  if (!currentUser) return;
 
-  editPostOptions.value.shift(); //todo import program
-  // if(!post.program || post.program.visibility === 'private') {
-  //   editPostOptions.value.shift();
-  // }
+  const deleteCommand = async () => {
+    try {
+      await CodeNSharePostApi.delete(props.post.postId);
+      emit('onDeleted', props.post.postId);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-  if (post.author.userId !== currentUser!.userId) {
-    editPostOptions.value.pop();
-    editPostOptions.value.pop();
-  }
-
+  editPostOptions.value = getEditPostOptions(props.post, currentUser, {deleteCommand});
   hljs.highlightAll();
 });
 
