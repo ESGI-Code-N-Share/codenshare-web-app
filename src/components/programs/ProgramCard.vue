@@ -6,6 +6,8 @@ import {Program, ProgramsRequest} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
 import {getProgramOptions} from "@/utils/program.util";
 import {useUserStore} from "@/stores/user.store";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
 
 interface ProgramCardProps {
@@ -16,6 +18,7 @@ const props = defineProps<ProgramCardProps>();
 const emit = defineEmits(['onDeleted', 'onMenuClick']);
 
 const router = useRouter();
+const toastNotifications = new ToastService(useToast());
 
 const menuProgram = ref();
 const editProgramOptions = ref();
@@ -32,10 +35,12 @@ onMounted(() => {
     deleteCommand: async () => {
       try {
         await CodeNShareProgramApi.delete(props.program.programId);
+        toastNotifications.showSuccess('Programme supprimé');
         emit('onDeleted', props.program.programId);
         emit('onMenuClick')
       } catch (e) {
         console.error(e);
+        toastNotifications.showError("Une erreur s'est produite lors de la suppression du programme");
       }
     },
 
@@ -43,14 +48,15 @@ onMounted(() => {
       try {
         await CodeNShareProgramApi.import(props.program.programId);
         await router.push({name: 'playground', query: {program: props.program.programId}});
+        toastNotifications.showSuccess('Programme importé');
         emit('onMenuClick')
       } catch (e) {
         console.error(e);
+        toastNotifications.showError("Une erreur s'est produite lors de l'importation du programme");
       }
     },
 
     editCommand: () => {
-      console.log("here")
       router.push({name: 'program', params: {program: props.program.programId}})
       emit('onMenuClick')
     },
@@ -60,7 +66,7 @@ onMounted(() => {
       emit('onMenuClick')
     },
 
-    userCommand: () => {
+    useCommand: () => {
       router.push({name: 'playground', query: {program: props.program.programId}})
       emit('onMenuClick')
     }

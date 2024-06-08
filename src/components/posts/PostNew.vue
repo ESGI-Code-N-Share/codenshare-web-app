@@ -5,11 +5,14 @@ import InputFile from "@/components/files/InputFile.vue";
 import InfoCard from "@/components/cards/InfoCard.vue";
 import {useUserStore} from "@/stores/user.store";
 import {CodeNSharePostApi} from "@/api/codenshare";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
 const emit = defineEmits(['onPublished']);
 
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
+const toastNotifications = new ToastService(useToast());
 
 const menuCreatePost = ref();
 
@@ -64,12 +67,14 @@ const createPostOptions = ref<any[]>([
             console.log(title.value, content.value, image.value);
             await CodeNSharePostApi.create(title.value, content.value, image.value);
             emit('onPublished');
+            toastNotifications.showSuccess('Publication créée');
             title.value = '';
             content.value = '';
             addImage.value = false;
             addProgram.value = false;
           } catch (e) {
             console.error(e);
+            toastNotifications.showError("Une erreur s'est produite lors de la création de la publication");
           } finally {
             loading.value.create = false;
           }
@@ -98,7 +103,6 @@ const createPostOptions = ref<any[]>([
   }
 
 ]);
-const user = ref('https://randomuser.me/api/portraits/men/92.jpg')
 
 
 const openCreatePost = (event: Event) => {

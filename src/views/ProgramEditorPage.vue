@@ -9,9 +9,12 @@ import OutputFile from "@/components/files/OutputFile.vue";
 import InputFile from "@/components/files/InputFile.vue";
 import {Program, ProgramId, ProgramLanguages} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
 const route = useRoute();
 const router = useRouter();
+const toastNotifications = new ToastService(useToast());
 
 const program = ref<Program>();
 const language = ref();
@@ -51,6 +54,7 @@ const fetchProgram = async (programId: ProgramId) => {
     version.value = versions.value.find(v => v.value === program.value?.version);
   } catch (e) {
     console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors du chargement du programme");
     await router.push({name: 'programs'});
   }
 }
@@ -59,8 +63,10 @@ const onSaveProgram = async () => {
   if (program.value) {
     try {
       await CodeNShareProgramApi.update(program.value);
+      toastNotifications.showSuccess("Modifications enregistrées");
     } catch (e) {
       console.error(e);
+      toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
     }
   }
 }
@@ -69,8 +75,10 @@ const onRunProgram = async () => {
   if (program.value) {
     try {
       await CodeNShareProgramApi.execute(program.value.programId);
+      toastNotifications.showSuccess("Programme exécuté");
     } catch (e) {
       console.error(e);
+      toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
     }
   }
 }

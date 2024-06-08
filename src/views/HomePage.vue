@@ -5,9 +5,11 @@ import PostCard from "@/components/posts/PostCard.vue";
 import PostNew from "@/components/posts/PostNew.vue";
 import {Post} from "@/models";
 import {CodeNSharePostApi} from "@/api/codenshare";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
-const baseUrl = ref(import.meta.env.VITE_API_URL);
-const mode = ref(import.meta.env.MODE);
+
+const toastNotifications = new ToastService(useToast());
 
 const posts = ref<Post[]>([]);
 const loading = ref({fetch: false})
@@ -23,6 +25,7 @@ const fetchPosts = async () => {
     posts.value = await CodeNSharePostApi.getLatestPosts();
   } catch (e) {
     console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors du chargement des publications");
   } finally {
     loading.value.fetch = false;
   }

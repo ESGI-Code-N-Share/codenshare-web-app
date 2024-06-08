@@ -9,6 +9,8 @@ import {useUserStore} from "@/stores/user.store";
 import ConversationMessage from "@/components/conversations/ConversationMessage.vue";
 import VirtualScroller from "primevue/virtualscroller";
 import dayjs from "dayjs/esm/index.js";
+import {useToast} from "primevue/usetoast";
+import {ToastService} from "@/services/toast.service";
 
 const size1 = computed(() => {
   return window.innerWidth < 450 ? 1 : window.innerWidth < 550 ? 2 : window.innerWidth < 1024 ? 4 : 5;
@@ -18,6 +20,7 @@ const size2 = computed(() => {
 });
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
+const toastNotifications = new ToastService(useToast());
 
 const messageContent = ref('');
 const menuOptionsConversation = ref();
@@ -154,6 +157,7 @@ const fetchConversations = async (secondFetch = false) => {
     if (!secondFetch) scrollToLast();
   } catch (e) {
     console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors de la récupération des conversations");
   } finally {
     loading.value.fetch = false;
   }
@@ -172,8 +176,10 @@ const onOpenCreateConversation = async () => {
     ));
 
     openConversationCreationModal.value = true;
+    toastNotifications.showInfo("Sélectionnez des utilisateurs pour créer une conversation");
   } catch (e) {
     console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors de la récupération de vos amis");
   } finally {
     loading.value.fetchFriends = false;
   }

@@ -10,6 +10,8 @@ import {useUserStore} from "@/stores/user.store";
 import dayjs from 'dayjs/esm/index.js'
 import {getEditPostOptions} from "@/utils/post.util";
 import {CodeNSharePostApi} from "@/api/codenshare";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
 
 interface PostCardProps {
@@ -22,6 +24,7 @@ const emit = defineEmits(['onDeleted']);
 
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
+const toastNotifications = new ToastService(useToast());
 
 const imageNotFound = ref(false);
 const menuEditPost = ref();
@@ -35,6 +38,7 @@ onMounted(() => {
   const deleteCommand = async () => {
     try {
       await CodeNSharePostApi.delete(props.post.postId);
+      toastNotifications.showSuccess('Publication supprimée');
       emit('onDeleted', props.post.postId);
     } catch (e) {
       console.error(e);
