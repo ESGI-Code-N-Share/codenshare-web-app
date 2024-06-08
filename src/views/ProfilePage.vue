@@ -49,6 +49,7 @@ const menuItemsProfile = ref([
           try {
             await CodeNShareFriendApi.follow(currentUser.userId, user.value.detail.userId);
             await fetchProfile(user.value.detail.userId);
+            toastNotifications.showSuccess(`Vous suivez maintenant ${user.value.detail.firstname}`);
           } catch (e) {
             console.error(e);
           }
@@ -146,7 +147,19 @@ const fetchProfile = async (userId: UserId) => {
       followers: await fetchFollowers(userId),
       following: await fetchFollowing(userId),
     }
-    console.log(user)
+    console.log(user.value?.detail?.userId, currentUser?.userId)
+    if (user.value?.detail?.userId === currentUser?.userId) {
+      menuItemsProfile.value[0].visible = false;
+      menuItemsProfile.value[1].visible = false;
+      menuItemsProfile.value.push({
+        label: 'Editer',
+        icon: 'pi pi-pencil',
+        command: () => router.push('/app/profile/settings')
+      })
+    } else {
+      menuItemsProfile.value[0].visible = true;
+      menuItemsProfile.value[1].visible = true;
+    }
   } catch (e) {
     console.error(e);
     toastNotifications.showError('Impossible de charger le profil');
@@ -291,8 +304,8 @@ const onToggleFriend = async (friend: Friend) => {
                   <template #button>
                     <Button
                         v-if="followerIcon(friend)"
-                        aria-label="more-options"
                         :icon="followerIcon(friend)"
+                        aria-label="more-options"
                         severity="secondary"
                         @click="onToggleFriend(friend)"
                     />
