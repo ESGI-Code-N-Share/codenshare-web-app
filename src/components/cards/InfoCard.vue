@@ -43,7 +43,7 @@ const pt = {
         </div>
       </div>
     </div>
-    <div v-if="$slots.button" class="flex gap-2">
+    <div v-if="$slots.button" class="flex gap-1">
       <slot name="button"/>
     </div>
   </div>

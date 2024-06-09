@@ -11,5 +11,8 @@ export const profile = {
         follow: "Suivre",
         report: "Signaler",
         unfollow: "Ne plus suivre",
+    },
+    errors: {
+        cannot_follow_yourself: "Vous ne pouvez pas vous suivre vous-même",
     }
 }

@@ -12,10 +12,12 @@ import ProgramCard from "@/components/programs/ProgramCard.vue";
 import dayjs from "dayjs/esm/index.js";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import {useI18n} from "vue-i18n";
 
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
+const {t: $t} = useI18n();
 
 const sidebar = ref<'hidden' | 'collapsed' | 'expanded'>('hidden');
 const openSearchModal = ref(false);
@@ -34,6 +36,11 @@ const results = ref<Result[]>()
 const onAddFriend = async (friendId: UserId) => {
   try {
     if (!currentUser) return;
+    if (currentUser.userId === friendId) {
+      toastNotifications.showError($t('profile.errors.cannot_follow_yourself'));
+      return;
+    }
+
     await CodeNShareFriendApi.follow(currentUser.userId, friendId);
     toastNotifications.showSuccess("Demande d'amitié envoyée");
   } catch (e) {
@@ -91,22 +98,30 @@ const openSearch = () => {
 
       <!-- Views   -->
       <router-view></router-view>
+
+      <!-- Searchbar     -->
       <Dialog
           v-model:visible="openSearchModal"
           :pt="{content: 'p-0'}"
           :show-header="false"
-          class="absolute"
+          class="absolute p-2 mx-3"
           modal
           style="min-width: 20% !important; top: 10%; z-index: 9999;"
       >
         <div class="flex flex-column gap-3 p-2">
-          <div class="w-full">
+          <div class="w-full flex gap-3">
             <InputText
                 ref="searchInput"
                 v-model.trim="query"
-                class="w-full"
                 :placeholder="$t('global.menubar.search')"
+                class="w-full"
                 @update:model-value="onSearch"
+            />
+            <Button
+                aria-label="close"
+                class="p-2"
+                icon="pi pi-times"
+                @click="openSearchModal = false"
             />
           </div>
           <div class="" style="min-height: 7em">
