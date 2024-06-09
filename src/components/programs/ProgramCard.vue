@@ -87,9 +87,7 @@ onMounted(() => {
       />
       <div class="flex flex-column pl-2 pb-2 overflow-hidden">
         <div class="flex justify-content-between align-items-center mt-2">
-          <small v-if="program.visibility === 'public'" class="" style="color: #4ade80">En ligne</small>
-          <small v-else-if="program.visibility === 'protected'" class="" style="color: #f7b924">Protégé</small>
-          <small v-else-if="program.visibility === 'private'" class="" style="color: #4a6dde">Privé</small>
+          <small style="color: #4ade80">{{ $t(`program.visibilities.${program.visibility}`) }}</small>
           <Button
               aria-controls="overlay_edit_program"
               aria-haspopup="true"

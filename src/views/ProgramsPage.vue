@@ -50,13 +50,13 @@ const fetchPrograms = async () => {
 <template>
   <div class="col flex flex-column gap-4 p-2">
     <div class="flex justify-content-between align-items-center">
-      <h2 class="p-0 m-0">Mes programmes</h2>
+      <h2 class="p-0 m-0">{{ $t('global.pages.programs') }}</h2>
       <Button
           :loading="loading.create"
           class="hidden md:flex"
           icon="pi pi-plus"
           icon-pos="right"
-          label="Nouveau"
+          :label="$t('program.buttons.new')"
           severity="success"
           @click="onCreateNewProgram"
       />
@@ -83,7 +83,7 @@ const fetchPrograms = async () => {
       />
     </div>
     <div v-else class="surface-card p-4 border-round-xl">
-      Vous n'avez pas encore de programme.
+      {{ $t('program.no_programs') }}
     </div>
 
   </div>

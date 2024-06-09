@@ -11,6 +11,11 @@ import VirtualScroller from "primevue/virtualscroller";
 import dayjs from "dayjs/esm/index.js";
 import {useToast} from "primevue/usetoast";
 import {ToastService} from "@/services/toast.service";
+import {useRouter} from "vue-router";
+import {useI18n} from "vue-i18n";
+
+const router = useRouter();
+const {t} = useI18n();
 
 const size1 = computed(() => {
   return window.innerWidth < 450 ? 1 : window.innerWidth < 550 ? 2 : window.innerWidth < 1024 ? 4 : 5;
@@ -36,7 +41,7 @@ const isNewMessage = ref<ConversationId>();
 
 const optionsConversation = [
   {
-    label: 'Quitter',
+    label: t('conversation.buttons.leave'),
     icon: 'pi pi-trash',
     loading: false,
     async command() {
@@ -129,6 +134,10 @@ const getMessagesByConversation = async (conversation: Conversation) => {
 const onCreateNewConversation = async () => {
   try {
     const members = selectedUsers.value.map(u => u.userId);
+    if (members.length === 0) {
+      toastNotifications.showError("Veuillez sélectionner au moins un ami");
+      return;
+    }
     loading.value.create = true
     const newConversation = await CodeNShareConversationApi.create(members);
     conversations.value = [...conversations.value, newConversation];
@@ -188,6 +197,12 @@ const onOpenCreateConversation = async () => {
   }
 }
 
+const goToUserProfile = (index: number) => {
+  const user = currentConversation.value?.members[index];
+  if (!user) return;
+  router.push(`/app/profile/${user.userId}?loading=true`);
+}
+
 </script>
 
 <template>
@@ -196,7 +211,7 @@ const onOpenCreateConversation = async () => {
         class="flex flex-column w-5rem sm:w-8rem md:w-13rem lg:w-17rem xl:w-22rem p-0 md:py-2 border-right-1 border-gray-700  ">
       <div class="flex align-items-center justify-content-center md:justify-content-between pb-2 md:py-3 px-2   "
            style="min-height: 70px; max-height: 70px">
-        <h3 class="hidden md:block p-0 m-0 text-2xl">Messages</h3>
+        <h3 class="hidden md:block p-0 m-0 text-2xl">{{ $t('global.pages.conversations') }}</h3>
         <Button :loading="loading.fetchFriends" icon="pi pi-plus" @click="onOpenCreateConversation()"/>
       </div>
 
@@ -237,12 +252,12 @@ const onOpenCreateConversation = async () => {
             <div class="text-base">{{ conversation.messages.at(-1)?.sender?.firstname }}</div>
             <small class="text-color-secondary">{{ conversation.messages.at(-1)?.content }}</small>
           </div>
-          <div v-else class="hidden md:block text-color-secondary">Vide</div>
+          <div v-else class="hidden md:block text-color-secondary">{{ $t('conversation.empty2') }}</div>
         </div>
       </div>
       <div v-else class="p-3 overflow-hidden text-center">
-        <span class="block sm:hidden">Vide</span>
-        <span class="hidden sm:block">Aucune conversation</span>
+        <span class="block sm:hidden">{{ $t('conversation.empty2') }}</span>
+        <span class="hidden sm:block">{{ $t('conversation.empty1') }}</span>
       </div>
 
 
@@ -254,7 +269,8 @@ const onOpenCreateConversation = async () => {
             :avatar-urls="currentConversation.members.map(u => u.avatar)"
             :title="currentConversation.owner.firstname + ' ' + currentConversation.owner.lastname"
             :max-avatars="size2"
-            :subtitle="dayjs(currentConversation.createdAt).format('[Créé le] DD/MM/YYYY')"
+            :subtitle="dayjs(currentConversation.createdAt).format(`[${$t('conversation.created')}] DD/MM/YYYY`)"
+            @on-avatar-click="goToUserProfile($event)"
         >
           <template #button>
             <Button icon="pi pi-ellipsis-v" severity="secondary" @click="openOptionsConversation($event)"/>
@@ -286,28 +302,34 @@ const onOpenCreateConversation = async () => {
       </VirtualScroller>
       <div class="flex gap-3 w-full p-1 sm:p-2 pl-2 sm:pl-3 pt-2 sm:pt-3 border-top-1 border-gray-500">
         <IconField class="flex w-full cursor-pointer" iconPosition="right">
-          <InputIcon v-if="!loading.send" class="pi pi-send" @click="sendMessage()"></InputIcon>
+          <InputIcon v-if="!loading.send" v-tooltip.left="$t('conversation.tooltips.send')" class="pi pi-send"
+                     @click="sendMessage()"></InputIcon>
           <InputIcon v-else class="pi pi-spin pi-spinner"></InputIcon>
-          <Textarea v-model="messageContent" :rows="1" class="w-full text-xs sm:text-sm"
-                    placeholder="Ecrire un message"/>
+          <Textarea
+              v-model="messageContent"
+              :placeholder="$t('conversation.forms.sendMessages.placeholder')"
+              :rows="1"
+              class="w-full text-xs sm:text-sm"
+          />
         </IconField>
-        <Button icon="pi pi-paperclip" icon-pos="right" severity="secondary"/>
+        <Button v-tooltip.left="$t('conversation.tooltips.addFile')" icon="pi pi-paperclip" icon-pos="right"
+                severity="secondary"/>
       </div>
     </div>
 
-    <Dialog v-model:visible="openConversationCreationModal" header="Nouvelle conversation" modal>
+    <Dialog v-model:visible="openConversationCreationModal" :header="$t('conversation.new')" modal>
       <div class="flex flex-column gap-4">
         <MultiSelect
             v-model="selectedUsers"
             :options="friendsOptions"
             class="w-full"
             optionLabel="name"
-            placeholder="Sélectionner des utilisateurs"
+            :placeholder="$t('conversation.forms.friends.placeholder')"
         />
         <Button
             :loading="loading.create"
             class="w-full"
-            label="Créer"
+            :label="$t('conversation.buttons.create')"
             severity="success"
             @click="onCreateNewConversation()"
         />

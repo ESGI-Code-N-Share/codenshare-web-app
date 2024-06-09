@@ -43,10 +43,11 @@ const routes: Array<RouteRecordRaw> = [
                 name: "conversation",
                 component: () => import("@/views/ProgramsPage.vue")
             },
-            // {
-            //     path: "settings",
-            //     name: "settings",
-            // },
+            {
+                path: "settings",
+                name: "settings",
+                component: () => import("@/views/SettingsPage.vue")
+            },
             {
                 path: "playground",
                 name: "playground",

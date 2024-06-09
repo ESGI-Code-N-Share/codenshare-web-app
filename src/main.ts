@@ -45,11 +45,27 @@ import TabPanel from "primevue/tabpanel";
 import Paginator from "primevue/paginator";
 import AvatarGroup from "primevue/avatargroup";
 import MultiSelect from "primevue/multiselect";
+import ProgressSpinner from "primevue/progressspinner";
+import VirtualScroller from "primevue/virtualscroller";
 
 import {createPinia} from "pinia";
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import ProgressSpinner from "primevue/progressspinner";
-import VirtualScroller from "primevue/virtualscroller";
+import {createI18n} from 'vue-i18n'
+import {fr, pt} from "@/locales";
+
+export const i18n = createI18n({
+    locale: 'pt',
+    fallbackLocale: 'fr',
+    messages: {
+        fr: fr,
+        pt: pt,
+        // en: en,
+        // zh: zh,
+        // es: es,
+        // de: de,
+    },
+    legacy: false
+})
 
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
@@ -59,6 +75,7 @@ const app = createApp(App)
 
     // plugins
     .use(pinia)
+    .use(i18n)
     .use(router)
     .use(PrimeVue, {
         ripple: true,

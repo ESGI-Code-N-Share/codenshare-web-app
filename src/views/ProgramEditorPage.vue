@@ -89,10 +89,10 @@ const onRunProgram = async () => {
   <div class="col flex flex-column gap-4 p-2">
     <div class="flex justify-content-between align-items-center">
       <Button icon="pi pi-arrow-left" severity="secondary" @click="router.back()"/>
-      <h2 class="p-0 m-0">Edition</h2>
+      <h2 class="p-0 m-0">{{ $t('global.pages.editor') }}</h2>
       <div class="flex gap-2">
         <Button severity="secondary" style="color: #49DE80;" @click="sidebarProgramTest = true">
-          <span class="hidden sm:block mr-2">Tester</span>
+          <span class="hidden sm:block mr-2">{{ $t('program.buttons.test') }}</span>
           <svg height="14" viewBox="0 0 384 512" width="10.5" xmlns="http://www.w3.org/2000/svg">
             <path
                 d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
@@ -121,16 +121,19 @@ const onRunProgram = async () => {
         :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
         blockScroll
         class="border-0 "
-        header="Configuration" modal position="right"
+        :header="$t('program.configure')"
+        modal
+        position="right"
         style="min-width: 350px;"
     >
       <div class="flex flex-column gap-3">
-        <div>Image</div>
+        <div>{{ $t('global.drop_a_file.label') }}</div>
         <InputFile v-model:file-url="program.imageURL" accept="image/*"
                    @onFileSelected="program.imageURL = $event.fileUrl"/>
 
-        <InputText v-model="program.name" placeholder="Nom du programme"/>
-        <Textarea v-model="program.description" class="h-5rem w-full text-sm" cols="30" placeholder="Description"
+        <InputText v-model="program.name" :placeholder="$t('program.forms.name.placeholder')"/>
+        <Textarea v-model="program.description" :placeholder="$t('program.forms.description.placeholder')" class="h-5rem w-full text-sm"
+                  cols="30"
                   rows="5"/>
 
         <Dropdown
@@ -138,7 +141,7 @@ const onRunProgram = async () => {
             :options="languages"
             data-key="value"
             option-label="label"
-            placeholder="Langage"
+            :placeholder="$t('program.forms.language.placeholder')"
             @change="program.language = $event.value.value"
         />
         <Dropdown
@@ -146,11 +149,12 @@ const onRunProgram = async () => {
             v-model="version"
             :options="versions"
             option-label="label"
-            placeholder="Version"
+            :placeholder="$t('program.forms.version.placeholder')"
             @change="program.version = $event.value.value"
         />
 
-        <Button icon="pi pi-save" icon-pos="right" label="Sauvegarder" severity="success" @click="onSaveProgram()"/>
+        <Button :label="$t('program.buttons.save')" icon="pi pi-save" icon-pos="right" severity="success"
+                @click="onSaveProgram()"/>
       </div>
     </SideBar>
 
@@ -160,7 +164,10 @@ const onRunProgram = async () => {
         v-model:visible="sidebarProgramTest"
         :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
         blockScroll
-        class="border-0 md:w-30rem" header="Test" modal position="right"
+        :header="$t('program.test')"
+        class="border-0 md:w-30rem"
+        modal
+        position="right"
         style="min-width: 350px;"
     >
       <div class="flex flex-column align-items-stretch gap-3">
@@ -176,11 +183,9 @@ const onRunProgram = async () => {
             class="text-color-secondary"
             icon="pi pi-plus"
             icon-pos="right"
-            label="Ajouter un autre programme"
+            :label="$t('program.forms.nextProgram.placeholder')"
             severity="secondary"
         />
-        <!--        <ProgramListItemEmpty />-->
-
 
         <div class="text-center">
           <i class="pi pi-equals text-3xl gradient-text-primary"/>
@@ -194,7 +199,7 @@ const onRunProgram = async () => {
             style="color: #49DE80; background: linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), #27272A;"
             @click="onRunProgram()"
         >
-          <div>Exécuter</div>
+          <div>{{ $t('program.buttons.execute') }}</div>
           <i class="pi pi-play px-2"></i>
         </Button>
       </div>

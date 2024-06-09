@@ -111,7 +111,7 @@ const handleClick = () => {
          style="object-fit: contain"/>
     <div v-else>
       <i class="pi pi-download text-5xl mb-2"/>
-      <div>Glissez-déposez votre fichier</div>
+      <div>{{ $t('global.drop_a_file.placeholder') }}</div>
     </div>
     <Toast class="sm:w-auto" position="top-right" style="width: 85%;"/>
   </div>

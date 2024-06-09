@@ -14,10 +14,12 @@ import {useUserStore} from "@/stores/user.store";
 import dayjs from "dayjs/esm/index.js";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import {useI18n} from "vue-i18n";
 
 const route = useRoute();
 const router = useRouter();
 const toastNotifications = new ToastService(useToast());
+const {t: $t} = useI18n();
 
 
 const userStore = useUserStore();
@@ -41,7 +43,7 @@ const followerIcon = (friend: Friend) => {
 const menuOptionsProfile = ref();
 const menuItemsProfile = ref([
   {
-    label: 'Suivre',
+    label: $t('profile.buttons.follow'),
     icon: 'pi pi-user-plus',
     async command() {
       if (user.value?.detail && currentUser?.userId) {
@@ -60,7 +62,7 @@ const menuItemsProfile = ref([
     }
   },
   {
-    label: 'Signaler',
+    label: $t('profile.buttons.report'),
     icon: 'pi pi-exclamation-triangle',
     command() {
       console.log('report')
@@ -152,13 +154,16 @@ const fetchProfile = async (userId: UserId) => {
       menuItemsProfile.value[0].visible = false;
       menuItemsProfile.value[1].visible = false;
       menuItemsProfile.value.push({
-        label: 'Editer',
+        label: $t('profile.buttons.edit'),
         icon: 'pi pi-pencil',
         command: () => router.push('/app/profile/settings')
       })
     } else {
       menuItemsProfile.value[0].visible = true;
       menuItemsProfile.value[1].visible = true;
+      if (menuItemsProfile.value[2]) {
+        menuItemsProfile.value[2].visible = true;
+      }
     }
   } catch (e) {
     console.error(e);
@@ -221,10 +226,10 @@ const onToggleFriend = async (friend: Friend) => {
   <div class="gap-3 w-full h-full">
     <!-- Content -->
     <div class="col surface-card border-round-xl md:p-4 h-full relative">
-      <h2 v-if="user?.detail?.userId === currentUser?.userId" class="text-xl mt-0 pt-2">Mon profil</h2>
+      <h2 v-if="user?.detail?.userId === currentUser?.userId" class="text-xl mt-0 pt-2">{{ $t('global.pages.me') }}</h2>
       <div v-else class="flex justify-content-start align-items-center gap-2 pb-2">
-        <Button icon="pi pi-arrow-left" severity="secondary" text @click="router.back()"/>
-        <h2 class="text-xl my-0">Profil</h2>
+        <Button icon="pi pi-arrow-left" severity="secondary" text @click="$router.go(-2);"/>
+        <h2 class="text-xl my-0">{{ $t('global.pages.profile') }}</h2>
       </div>
 
       <div v-if="user" class="flex flex-column gap-3 pt-2 h-full w-full">
@@ -240,16 +245,18 @@ const onToggleFriend = async (friend: Friend) => {
                 <div class="flex gap-1">
                   <i class="pi pi-users mr-1"></i>
                   <div>{{ user.followers.length }}</div>
-                  <div>suivi(e)s</div>
+                  <div>{{ $t('profile.follower') }}</div>
                 </div>
                 <div class="flex gap-1">
                   <i class="pi pi-user-plus mr-1"></i>
                   <div>{{ user.following.length }}</div>
-                  <div>abonné(e)s</div>
+                  <div>{{ $t('profile.following') }}</div>
                 </div>
               </div>
-              <small class="text-xs text-gray-600">Avec nous depuis le
-                {{ dayjs(user.detail.createdAt).format('DD/MM/YYYY') }}</small>
+              <small class="text-xs text-gray-600">
+                <span class="mr-1">{{ $t('profile.with_us_since') }}</span>
+                <span>{{ dayjs(user.detail.createdAt).format('DD/MM/YYYY') }}</span>
+              </small>
             </div>
           </div>
           <div v-if="currentUser" class="flex gap-2">
@@ -263,7 +270,7 @@ const onToggleFriend = async (friend: Friend) => {
 
         <!--  Profile Description      -->
         <div class="">
-          <h3 class="mt-0">A propos</h3>
+          <h3 class="mt-0">{{ $t('profile.about') }}</h3>
           <p class="m-0 opacity-80">{{ user.detail?.overview }}</p>
         </div>
 
@@ -272,7 +279,7 @@ const onToggleFriend = async (friend: Friend) => {
                  style="max-width: 50rem">
 
           <!-- Posts         -->
-          <TabPanel header="Posts">
+          <TabPanel :header="$t('post.posts')">
             <ListView :items="user.posts || []">
               <template #default="{item: post}: {item: Post}">
                 <PostCard :post="post" class="w-full md:border-noround py-3 px-2" style="border-radius: 0 !important;"/>
@@ -281,7 +288,7 @@ const onToggleFriend = async (friend: Friend) => {
           </TabPanel>
 
           <!-- Programs         -->
-          <TabPanel header="Programmes">
+          <TabPanel :header="$t('program.programs')">
             <ListView :items="user.programs || []">
               <template #default="{item: program}: {item: Program}">
                 <ProgramCard :program="program" class="w-full md:border-noround" style="border-radius: 0 !important;"/>
@@ -290,12 +297,12 @@ const onToggleFriend = async (friend: Friend) => {
           </TabPanel>
 
           <!-- Followers         -->
-          <TabPanel header="Suivi(e)s">
+          <TabPanel :header="$t('profile.follower')">
             <ListView :items="user.followers || []">
               <template #default="{item: friend}: {item: Friend}">
                 <InfoCard
                     :avatar-url="friend.requestedBy.avatar"
-                    :subtitle="`Suivi depuis ${ dayjs(friend.createdAt).format('DD/MM/YYYY') }`"
+                    :subtitle="`${$t('profile.followed_since')} ${ dayjs(friend.createdAt).format('DD/MM/YYYY') }`"
                     :title="friend.requestedBy.firstname + ' ' + friend.requestedBy.lastname"
                     class="px-3 py-2 w-full capitalize"
                     style="background-color: #121212;"
@@ -316,12 +323,12 @@ const onToggleFriend = async (friend: Friend) => {
           </TabPanel>
 
           <!-- Following         -->
-          <TabPanel header="Abonné(e)s">
+          <TabPanel :header="$t('profile.following')">
             <ListView :items="user.following || []">
               <template #default="{item: friend}: {item: Friend}">
                 <InfoCard
                     :avatar-url="friend.addressedTo.avatar"
-                    :subtitle="`Suivi depuis ${ dayjs(friend.createdAt).format('DD/MM/YYYY') }`"
+                    :subtitle="`${$t('profile.following_since')} ${ dayjs(friend.createdAt).format('DD/MM/YYYY') }`"
                     :title="friend.addressedTo.firstname + ' ' + friend.addressedTo.lastname"
                     class="px-3 py-2 w-full capitalize"
                     style="background-color: #121212;"

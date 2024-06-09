@@ -7,12 +7,14 @@ import {useUserStore} from "@/stores/user.store";
 import {CodeNSharePostApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import {useI18n} from "vue-i18n";
 
 const emit = defineEmits(['onPublished']);
 
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
+const {t} = useI18n();
 
 const menuCreatePost = ref();
 
@@ -26,10 +28,9 @@ const image = ref('');
 
 const createPostOptions = ref<any[]>([
   {
-    label: 'Options de publication',
     items: [
       {
-        label: 'Ajouter une image',
+        label: t('post.buttons.add_image'),
         icon: 'pi pi-image',
         command() {
           addImage.value = true;
@@ -37,7 +38,7 @@ const createPostOptions = ref<any[]>([
         },
       },
       {
-        label: 'Ajouter un programme',
+        label: t('post.buttons.add_program'),
         icon: 'pi pi-book',
         command() {
           addProgram.value = true;
@@ -51,10 +52,10 @@ const createPostOptions = ref<any[]>([
     ]
   },
   {
-    label: 'Publication',
+    label: t('post.publish'),
     items: [
       {
-        label: 'Publier',
+        label: t('post.buttons.submit'),
         icon: 'pi pi-send',
         class: 'border-round text-color-primary',
         style: 'color: #2e7d32',
@@ -84,7 +85,7 @@ const createPostOptions = ref<any[]>([
         separator: true,
       },
       {
-        label: 'Annuler',
+        label: t('post.buttons.cancel'),
         icon: 'pi pi-refresh',
         class: 'border-round text-color-primary',
         style: 'color: #f87171',
@@ -113,7 +114,7 @@ const openCreatePost = (event: Event) => {
 
 <template>
   <div v-if="currentUser" class="flex flex-column gap-3 surface-card border-round-xl p-3">
-    <InfoCard :avatar-url="currentUser.avatar" :title="userStore.fullName" subtitle="Aujourd'hui"
+    <InfoCard :avatar-url="currentUser.avatar" :subtitle="$t('global.today')" :title="userStore.fullName"
               subtitle-icon="pi-clock">
       <template #button>
         <Button aria-label="more-options" icon="pi pi-ellipsis-v" severity="secondary" @click="openCreatePost($event)"/>
@@ -122,8 +123,9 @@ const openCreatePost = (event: Event) => {
     </InfoCard>
     <!-- Form   -->
     <div class="flex flex-column gap-2">
-      <InputText v-model="title" class="w-full" placeholder="Titre du post" variant="filled"/>
-      <Textarea v-model="content" class="w-full" placeholder="Contenu" rows="3" variant="filled"/>
+      <InputText v-model="title" :placeholder="$t('post.forms.title.placeholder')" class="w-full" variant="filled"/>
+      <Textarea v-model="content" :placeholder="$t('post.forms.content.placeholder')" class="w-full" rows="3"
+                variant="filled"/>
       <InputFile v-if="addImage" v-model:file-url="image" accept="image/*" class="" max-height-preview="5"/>
     </div>
   </div>
