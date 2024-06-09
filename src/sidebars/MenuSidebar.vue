@@ -80,9 +80,12 @@ async function onLogout() {
   >
     <div v-if="currentUser" class="flex flex-column gap-2 p-2 surface-card border-round-xl">
 
-      <div :class="{'p-4 pt-6': !collapsed}" class="flex flex-column align-items-center gap-2 p-2 relative">
+      <div :class="{'p-4 pt-4 sm:pt-6': !collapsed}" class="flex flex-column align-items-center gap-2 p-2 relative">
         <UserAvatar :avatar-size="collapsed ? 2 : 3.5" :avatars="[currentUser.avatar]"/>
-        <div v-if="!collapsed" class="gradient-text-primary font-semibold text-lg">{{ userStore.fullName }}</div>
+        <div v-if="!collapsed" class="hidden sm:block gradient-text-primary font-semibold text-lg">{{
+            userStore.fullName
+          }}
+        </div>
         <Button
             v-if="!collapsed"
             class="absolute left-0 text-white"
