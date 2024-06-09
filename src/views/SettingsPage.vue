@@ -99,7 +99,7 @@ const onSaveUser = async () => {
       </div>
 
       <!-- App Settings     -->
-      <div class="col-12 md:col-5 flex flex-column gap-2 p-0">
+      <div class="col-12 md:col-5 flex flex-column gap-2 p-0 pb-4">
         <h3>{{ $t('setting.application') }}</h3>
         <div class="flex flex-column gap-4">
           <div class="flex flex-column gap-2">
