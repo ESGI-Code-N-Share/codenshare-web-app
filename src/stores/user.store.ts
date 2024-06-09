@@ -30,10 +30,10 @@ export const useUserStore = defineStore('user', {
                 this.loading = false;
             }
         },
-        async register() {
+        async register(firstname: string, lastname: string, birthdate: string, email: string, password: string) {
             this.loading = true;
             try {
-                await CodeNShareAuthApi.register();
+                await CodeNShareAuthApi.register(firstname, lastname, birthdate, email, password);
                 this.isAuthenticated = true;
             } catch (e) {
                 console.error(e);

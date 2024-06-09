@@ -4,6 +4,10 @@ import {ref} from "vue";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import AuthPage from "@/components/auth/AuthPage.vue";
+import axios from 'axios';
+import dayjs from "dayjs/esm";
+import {CodeNShareAuthApi} from "@/api/codenshare";
+import router from "@/router";
 
 const toastNotifications = new ToastService(useToast())
 
@@ -11,7 +15,7 @@ const loading = ref(false);
 
 const firstname = ref('');
 const lastname = ref('');
-const birthDate = ref('');
+const birthDate = ref<Date>('');
 const email = ref('');
 const password = ref('');
 const cgu = ref(false);
@@ -78,8 +82,16 @@ async function onSubmitRegisterForm() {
       return toastNotifications.showError("Le formulaire contient des erreurs");
     }
 
-    //todo call api to create user
+    const formattedBirthDate = dayjs(birthDate.value).format('YYYY-MM-DD');
 
+    await CodeNShareAuthApi.register(
+        firstname.value,
+        lastname.value,
+        formattedBirthDate,
+        email.value,
+        password.value
+    );
+    await router.push({ name: 'login' });
     toastNotifications.showSuccess("Votre compte a été créé avec succès");
   } catch (e) {
     console.error(e);
@@ -91,10 +103,9 @@ async function onSubmitRegisterForm() {
 
 
 </script>
-
 <template>
   <AuthPage>
-    <div class="flex w-full h-full surface-card border-round-3xl p-4 m-autor">
+    <div class="flex w-full h-full surface-card border-round-3xl p-4 m-auto">
       <div class="flex flex-column gap-5 justify-content-center col-12 md:col-6 xl:col-5 p-1 sm:p-8 md:p-5 lg:p-6">
         <div class="md:mb-4">
           <h1 class="text-4xl lg:text-5xl mb-4 lg:col-8 p-0">Créer ton compte</h1>
@@ -176,7 +187,6 @@ async function onSubmitRegisterForm() {
             />
           </form>
         </div>
-
       </div>
       <div class="p-0 h-full col-0 md:col-6 xl:col-7">
         <img
@@ -189,6 +199,7 @@ async function onSubmitRegisterForm() {
     </div>
   </AuthPage>
 </template>
+
 
 <style scoped>
 

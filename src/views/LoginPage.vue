@@ -14,8 +14,8 @@ const router = useRouter();
 const loading = ref(false);
 const openResetPasswordDialog = ref(false);
 
-const email = ref('c.lechene@gmail.com');
-const password = ref('adminfiters');
+const email = ref('');
+const password = ref('');
 const stayLogin = ref(false);
 
 const emailError = ref('');
@@ -55,10 +55,15 @@ async function onSubmitLoginForm() {
 
     const userStore = useUserStore();
     await userStore.login(email.value, password.value);
-    toastNotifications.showSuccess('Connexion réussie');
-    await router.push({name: 'home'});
+
+    if (userStore.error) {
+      toastNotifications.showError(userStore.error);
+    } else {
+      toastNotifications.showSuccess('Connexion réussie');
+      await router.push({ name: 'home' });
+    }
   } catch (e) {
-    console.error(e)
+    console.error(e);
     toastNotifications.showError('Une erreur est survenue');
   } finally {
     loading.value = false;
