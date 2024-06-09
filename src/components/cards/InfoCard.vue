@@ -34,8 +34,8 @@ const pt = {
 
       <div class="flex flex-column gap-1">
         <div v-if="caption" class="text-xs self-">{{ caption }}</div>
-        <div class="text-base">{{ title }}</div>
-        <div v-if="subtitle" class="flex text-color-secondary text-sm">
+        <div class="text-sm sm:text-base">{{ title }}</div>
+        <div v-if="subtitle" class="flex text-color-secondary text-xs sm:text-sm">
           <div>
             <i v-if="subtitleIcon" :class="subtitleIcon" class="pi pr-1"></i>
           </div>

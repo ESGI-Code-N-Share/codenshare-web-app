@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atelier-dune-dark.css';
 import 'highlight.js/lib/languages/javascript';
@@ -31,6 +31,10 @@ const menuEditPost = ref();
 
 const editPostOptions = ref();
 
+const isPostLiked = computed(() => {
+  if (!currentUser) return false;
+  return props.post.likes.some(like => like.userId === currentUser.userId);
+});
 
 onMounted(() => {
   if (!currentUser) return;
@@ -54,6 +58,28 @@ const openEditPost = (event: Event) => {
   menuEditPost.value.toggle(event);
 }
 
+const likePost = async () => {
+  if (!currentUser) return;
+
+  try {
+    if (isPostLiked.value) {
+      await CodeNSharePostApi.unlike(props.post.postId);
+      props.post.likes = props.post.likes.filter(like => like.userId !== currentUser.userId);
+    } else {
+      await CodeNSharePostApi.like(props.post.postId);
+      props.post.likes.push({
+        likeId: Math.random().toString(36).substring(7),
+        userId: currentUser.userId,
+        postId: props.post.postId,
+        likedAt: new Date(),
+      })
+    }
+  } catch (e) {
+    console.error(e);
+    toastNotifications.showError('Erreur lors de la mise à jour de la publication');
+  }
+}
+
 </script>
 
 <template>
@@ -67,13 +93,20 @@ const openEditPost = (event: Event) => {
         @onAvatarClick="$router.push(`/app/profile/${post.author.userId}?loading=true`)"
     >
       <template #button>
+        <Button
+            :class="{'liked': isPostLiked}"
+            :icon="isPostLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"
+            aria-label="like"
+            text
+            @click="likePost()"
+        />
         <Button aria-label="more-options" icon="pi pi-ellipsis-v" severity="secondary" @click="openEditPost($event)"/>
         <Menu ref="menuEditPost" :model="editPostOptions" popup/>
       </template>
     </InfoCard>
     <div class="flex flex-column gap-2 px-1">
-      <div class="text-lg m-0">{{ post.title }}</div>
-      <div class="text-color-secondary pb-2">{{ post.content }}</div>
+      <div class="text-base sm:text-lg m-0">{{ post.title }}</div>
+      <div class="text-sm sm:text-base text-color-secondary pb-2">{{ post.content }}</div>
       <div v-if="post.image && !imageNotFound" class="w-full h-full border-1 border-gray-500 border-round-xl">
         <img
             v-if="!imageNotFound"
@@ -89,4 +122,7 @@ const openEditPost = (event: Event) => {
 </template>
 
 <style scoped>
+.liked {
+  color: var(--red-500);
+}
 </style>
