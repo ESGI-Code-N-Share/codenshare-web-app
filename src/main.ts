@@ -53,8 +53,10 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import {createI18n} from 'vue-i18n'
 import {fr, pt} from "@/locales";
 
+const currentLanguage = localStorage.getItem('language') || 'fr';
+
 export const i18n = createI18n({
-    locale: 'pt',
+    locale: currentLanguage,
     fallbackLocale: 'fr',
     messages: {
         fr: fr,

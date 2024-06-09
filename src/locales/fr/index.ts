@@ -4,6 +4,13 @@ import {profile} from "@/locales/fr/profile.locale";
 import {conversation} from "./conversation.locale";
 
 const global = {
+    loading: "Chargement...",
+    forms: {
+        language: {
+            label: "Langue",
+            placeholder: "Choisissez une langue",
+        },
+    },
     today: "Aujourd'hui",
     yes: "Oui",
     no: "Non",

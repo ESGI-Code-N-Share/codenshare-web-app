@@ -7,6 +7,12 @@ const global = {
     today: "Hoje",
     yes: "Sim",
     no: "Não",
+    forms: {
+        language: {
+            label: "Língua",
+            placeholder: "Escolha uma língua",
+        },
+    },
     pages: {
         home: "Feed de notícias",
         me: "Meu perfil",

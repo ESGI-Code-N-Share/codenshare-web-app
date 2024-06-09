@@ -105,7 +105,7 @@ const openSearch = () => {
                 ref="searchInput"
                 v-model.trim="query"
                 class="w-full"
-                placeholder="Recherche"
+                :placeholder="$t('global.menubar.search')"
                 @update:model-value="onSearch"
             />
           </div>
@@ -116,13 +116,13 @@ const openSearch = () => {
                 style="max-width: 50rem; max-height: 30em"
             >
               <!-- All result             -->
-              <TabPanel header="Tous les résultats">
+              <TabPanel :header="$t('global.all_results')">
                 <ListView v-if="results" :items="results">
                   <template #default="{item: result}: {item: Result}">
                     <InfoCard
                         v-if="result.type === 'user'"
                         :avatar-url="result.value.avatar"
-                        :subtitle="`Suivi depuis ${ dayjs(result.value.createdAt).format('DD/MM/YYYY') }`"
+                        :subtitle="`${$t('profile.followed_since')} ${ dayjs(result.value.createdAt).format('DD/MM/YYYY') }`"
                         :title="result.value.firstname + ' ' + result.value.lastname"
                         class="px-3 py-2 w-full capitalize"
                         style="background-color: #121212;"
@@ -155,7 +155,7 @@ const openSearch = () => {
                     <InfoCard
                         v-if="result.type === 'user'"
                         :avatar-url="result.value.avatar"
-                        :subtitle="`Suivi depuis ${ dayjs(result.value.createdAt).format('DD/MM/YYYY') }`"
+                        :subtitle="`${$t('profile.followed_since')} ${ dayjs(result.value.createdAt).format('DD/MM/YYYY') }`"
                         :title="result.value.firstname + ' ' + result.value.lastname"
                         class="px-3 py-2 w-full capitalize"
                         style="background-color: #121212;"

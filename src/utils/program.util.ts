@@ -50,7 +50,7 @@ export const programUseOption = (command: (event: MenuItemCommandEvent) => void)
 export const getProgramOptions = (program: Program | ProgramsRequest, user: User, commands: {
     [key: string]: (event: MenuItemCommandEvent) => void
 }): MenuItem[] => {
-    const {deleteCommand, importCommand, updateCommand, shareCommand, useCommand} = commands;
+    const {deleteCommand, importCommand, editCommand, shareCommand, useCommand} = commands;
 
     if (user.role === 'admin') {
         return [
@@ -63,7 +63,7 @@ export const getProgramOptions = (program: Program | ProgramsRequest, user: User
         return [
             programUseOption(useCommand),
             programShareOption(shareCommand),
-            programEditOption(updateCommand),
+            programEditOption(editCommand),
             programDeleteOption(deleteCommand)
         ];
     }

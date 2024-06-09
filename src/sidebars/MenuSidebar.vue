@@ -16,14 +16,14 @@ const currentUser = userStore.currentUser;
 const menus = ref([
   {
     icon: 'pi pi-home',
-    label: 'Accueil',
+    label: 'home',
     routeName: 'home',
     children: [],
     params: {profileId: '1'}
   },
   {
     icon: 'pi pi-user',
-    label: 'Profil',
+    label: 'profile',
     routeName: 'profile',
     children: [],
     params: {
@@ -32,28 +32,28 @@ const menus = ref([
   },
   {
     icon: 'pi pi-book',
-    label: 'Programmes',
+    label: 'programs',
     routeName: 'programs',
     children: ['program'],
     params: {}
   },
   {
     icon: 'pi pi-envelope',
-    label: 'Messages',
+    label: 'messages',
     routeName: 'conversations',
     children: [],
     params: {}
   },
   {
     icon: 'pi pi-question-circle',
-    label: 'Aide',
+    label: 'help',
     routeName: 'help',
     children: [],
     params: {}
   },
   {
     icon: 'pi pi-cog',
-    label: 'Paramètres',
+    label: 'settings',
     routeName: 'settings',
     children: [],
     params: {}
@@ -117,7 +117,7 @@ async function onLogout() {
         />
         <IconField v-else class="" iconPosition="left">
           <InputIcon class="pi pi-search"></InputIcon>
-          <InputText class="w-full text-sm border-round-md" placeholder="Recherche" readonly/>
+          <InputText :placeholder="$t('global.menubar.search')" class="w-full text-sm border-round-md" readonly/>
         </IconField>
       </div>
     </div>
@@ -135,7 +135,7 @@ async function onLogout() {
             @click="$router.push({ name: menu.routeName, params: menu.params }); $emit('onNextMenu')"
         >
           <i :class="{'pr-2': !collapsed, [menu.icon]: true}"></i>
-          <div v-if="!collapsed">{{ menu.label }}</div>
+          <div v-if="!collapsed">{{ $t(`global.menubar.${menu.label}`) }}</div>
         </Button>
       </div>
 
@@ -154,7 +154,7 @@ async function onLogout() {
           class="w-full"
           icon="pi pi-play"
           iconPos="right"
-          label="Playground"
+          :label="$t('global.menubar.playground')"
           severity="secondary"
           @click="$router.push({ name: 'playground' })"
       />
