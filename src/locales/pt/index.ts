@@ -1,7 +1,8 @@
-import {post} from "@/locales/pt/post.locale";
-import {program} from "@/locales/pt/program.locale";
-import {profile} from "@/locales/pt/profile.locale";
 import {conversation} from "./conversation.locale";
+import {post} from "./post.locale";
+import {program} from "./program.locale";
+import {profile} from "./profile.locale";
+import {setting} from "./setting.locale";
 
 const global = {
     today: "Hoje",
@@ -48,4 +49,5 @@ export const pt = {
     profile,
     program,
     conversation,
+    setting,
 }

@@ -206,7 +206,7 @@ const goToUserProfile = (index: number) => {
 </script>
 
 <template>
-  <div class="col flex w-full h-full p-2 surface-card" style="background: var(--primary-400)">
+  <div class="col flex w-full h-full p-2 surface-card border-round-xl">
     <div
         class="flex flex-column w-5rem sm:w-8rem md:w-13rem lg:w-17rem xl:w-22rem p-0 md:py-2 border-right-1 border-gray-700  ">
       <div class="flex align-items-center justify-content-center md:justify-content-between pb-2 md:py-3 px-2   "

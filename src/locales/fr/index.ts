@@ -1,7 +1,8 @@
-import {post} from "@/locales/fr/post.locale";
-import {program} from "@/locales/fr/program.locale";
-import {profile} from "@/locales/fr/profile.locale";
 import {conversation} from "./conversation.locale";
+import {setting} from "./setting.locale";
+import {post} from "./post.locale";
+import {program} from "./program.locale";
+import {profile} from "./profile.locale";
 
 const global = {
     loading: "Chargement...",
@@ -49,4 +50,5 @@ export const fr = {
     profile,
     program,
     conversation,
+    setting,
 }

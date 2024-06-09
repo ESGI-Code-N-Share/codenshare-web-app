@@ -19,39 +19,22 @@ export const useUserStore = defineStore('user', {
     persist: true,
     actions: {
         async login(email: string, password: string) {
-            this.loading = true;
-            try {
-                this.currentUser = await CodeNShareAuthApi.login(email, password);
-                this.isAuthenticated = true;
-                localStorage.setItem('userId', this.currentUser.userId);
-            } catch (e) {
-                console.error(e);
-            } finally {
-                this.loading = false;
-            }
+            this.currentUser = await CodeNShareAuthApi.login(email, password);
+            this.isAuthenticated = true;
+            localStorage.setItem('userId', this.currentUser.userId);
         },
         async register() {
-            this.loading = true;
-            try {
-                await CodeNShareAuthApi.register();
-                this.isAuthenticated = true;
-            } catch (e) {
-                console.error(e);
-            } finally {
-                this.loading = false;
-            }
+            await CodeNShareAuthApi.register();
+            this.isAuthenticated = true;
         },
         async logout() {
-            this.loading = true;
-            try {
-                this.currentUser = null;
-                this.isAuthenticated = false;
-                await CodeNShareAuthApi.logout();
-            } catch (e) {
-                console.error(e);
-            } finally {
-                this.loading = false;
-            }
+            this.currentUser = null;
+            this.isAuthenticated = false;
+            // await CodeNShareAuthApi.logout();
+        },
+        async updateUser({firstname, lastname, avatar}: { firstname: string, lastname: string, avatar: string }) {
+            if (this.currentUser?.userId)
+                this.currentUser = await CodeNShareUserApi.update(this.currentUser?.userId, firstname, lastname, avatar);
         },
 
         async fetchUser(userId: UserId) {
