@@ -93,13 +93,19 @@ const likePost = async () => {
         @onAvatarClick="$router.push(`/app/profile/${post.author.userId}?loading=true`)"
     >
       <template #button>
-        <Button
-            :class="{'liked': isPostLiked}"
-            :icon="isPostLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"
-            aria-label="like"
-            text
-            @click="likePost()"
-        />
+        <div class="flex align-items-center" style="width: 50px;">
+          <Button
+              :class="{'liked': isPostLiked}"
+              :icon="isPostLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"
+              aria-label="like"
+              class="w-2"
+              size="small"
+              text
+              @click="likePost()"
+          />
+          <div class="ml-1">{{ post.likes.length }}</div>
+        </div>
+
         <Button aria-label="more-options" icon="pi pi-ellipsis-v" severity="secondary" @click="openEditPost($event)"/>
         <Menu ref="menuEditPost" :model="editPostOptions" popup/>
       </template>
