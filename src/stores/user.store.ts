@@ -38,6 +38,10 @@ export const useUserStore = defineStore('user', {
             this.currentUser = null;
             this.isAuthenticated = false;
         },
+        async updateUser({firstname, lastname, avatar}: { firstname: string, lastname: string, avatar: string }) {
+            if (this.currentUser?.userId)
+                this.currentUser = await CodeNShareUserApi.update(this.currentUser?.userId, firstname, lastname, avatar);
+        },
 
         async fetchUser(userId: UserId) {
             this.loading = true;

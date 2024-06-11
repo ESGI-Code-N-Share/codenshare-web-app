@@ -5,8 +5,11 @@ import {useRouter} from "vue-router";
 import {onMounted, ref} from "vue";
 import {ProgramsRequest} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
 const router = useRouter();
+const toastNotifications = new ToastService(useToast());
 
 const programs = ref<ProgramsRequest[]>([]);
 const loading = ref({create: false, fetch: false})
@@ -19,9 +22,11 @@ const onCreateNewProgram = async () => {
   try {
     loading.value.create = true;
     const programId = await CodeNShareProgramApi.create();
+    toastNotifications.showSuccess("Programme créé avec succès");
     await router.push({name: 'program', params: {program: programId as string}});
   } catch (e) {
     console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors de la création du programme");
   } finally {
     loading.value.create = false;
   }
@@ -32,9 +37,9 @@ const fetchPrograms = async () => {
   try {
     loading.value.fetch = true;
     programs.value = await CodeNShareProgramApi.listByUser();
-    console.log(programs.value)
   } catch (e) {
     console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors du chargement des programmes");
   } finally {
     loading.value.fetch = false;
   }
@@ -45,13 +50,13 @@ const fetchPrograms = async () => {
 <template>
   <div class="col flex flex-column gap-4 p-2">
     <div class="flex justify-content-between align-items-center">
-      <h2 class="p-0 m-0">Mes programmes</h2>
+      <h2 class="p-0 m-0">{{ $t('global.pages.programs') }}</h2>
       <Button
           :loading="loading.create"
           class="hidden md:flex"
           icon="pi pi-plus"
           icon-pos="right"
-          label="Nouveau"
+          :label="$t('program.buttons.new')"
           severity="success"
           @click="onCreateNewProgram"
       />
@@ -78,7 +83,7 @@ const fetchPrograms = async () => {
       />
     </div>
     <div v-else class="surface-card p-4 border-round-xl">
-      Vous n'avez pas encore de programme.
+      {{ $t('program.no_programs') }}
     </div>
 
   </div>

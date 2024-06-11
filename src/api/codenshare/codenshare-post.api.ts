@@ -1,5 +1,5 @@
 import {request} from "@/api/codenshare";
-import {Post, PostId} from "@/models/post.model";
+import {Post, PostId, PostLikeId} from "@/models/post.model";
 import {UserId} from "@/models";
 
 
@@ -19,5 +19,21 @@ export class CodeNSharePostApi {
 
     static async delete(postId: PostId): Promise<PostId> {
         return request<PostId>({method: 'DELETE', url: `/posts/${postId}`})
+    }
+
+    static async like(postId: PostId): Promise<PostLikeId> {
+        return request<PostLikeId>({
+            method: 'POST',
+            url: `/posts/${postId}/likes`,
+            body: {userId: localStorage.getItem('userId')}
+        })
+    }
+
+    static async unlike(postId: PostId): Promise<PostLikeId> {
+        return request<PostLikeId>({
+            method: 'DELETE',
+            url: `/posts/${postId}/likes`,
+            body: {userId: localStorage.getItem('userId')}
+        })
     }
 }

@@ -5,9 +5,11 @@ import PostCard from "@/components/posts/PostCard.vue";
 import PostNew from "@/components/posts/PostNew.vue";
 import {Post} from "@/models";
 import {CodeNSharePostApi} from "@/api/codenshare";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
-const baseUrl = ref(import.meta.env.VITE_API_URL);
-const mode = ref(import.meta.env.MODE);
+
+const toastNotifications = new ToastService(useToast());
 
 const posts = ref<Post[]>([]);
 const loading = ref({fetch: false})
@@ -23,6 +25,7 @@ const fetchPosts = async () => {
     posts.value = await CodeNSharePostApi.getLatestPosts();
   } catch (e) {
     console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors du chargement des publications");
   } finally {
     loading.value.fetch = false;
   }
@@ -31,7 +34,7 @@ const fetchPosts = async () => {
 
 <template>
   <div class="col flex flex-column gap-4 p-2">
-    <h2 class="p-0 m-0">Fil d'actualités</h2>
+    <h2 class="p-0 m-0">{{ $t('global.pages.home') }}</h2>
     <div class="flex flex-column gap-3 w-full">
       <PostNew @on-published="fetchPosts()"/>
 
@@ -52,7 +55,7 @@ const fetchPosts = async () => {
         <Divider class="my-0 p-0" style="width: 75%;" type="dashed"/>
       </div>
       <div v-if="!loading.fetch" class="flex justify-content-center p-3 border-round-xl surface-card">
-        Vous avez atteint la fin du fil d'actualités
+        {{ $t('post.end_of_post') }}
       </div>
     </div>
 

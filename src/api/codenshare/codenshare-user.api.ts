@@ -14,4 +14,14 @@ export class CodeNShareUserApi {
     static async delete(userId: UserId): Promise<void> {
         return request({method: 'DELETE', url: `/users/${userId}`})
     }
+
+    static async update(userId: string, firstname: string, lastname: string, avatar: string): Promise<User> {
+        return request({
+            method: 'PATCH', url: `/users/${userId}`, body: {
+                firstname: firstname,
+                lastname: lastname,
+                avatar: avatar,
+            }
+        })
+    }
 }

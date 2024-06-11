@@ -17,12 +17,12 @@ const downloadFile = () => {
   >
     <div v-if="!file" class="flex flex-column gap-1 justify-content-center align-items-center">
       <i class="pi pi-image text-6xl"/>
-      <small class="text-color-secondary">Votre fichier s'affichera ici</small>
+      <small class="text-color-secondary">{{ $t('program.output_files.title') }}</small>
     </div>
     <div v-else class="flex justify-content-between">
       <div class="flex gap-1 md:gap-3 align-items-center">
         <i class="pi pi-image text-6xl"/>
-        <div>Télécharger le fichier</div>
+        <div>{{ $t('program.output_files.download') }}</div>
       </div>
       <Button v-if="file?.id" icon="pi pi-download" severity="secondary" size="large" @click="downloadFile()"/>
     </div>

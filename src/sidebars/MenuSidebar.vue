@@ -6,7 +6,7 @@ import {useRouter} from "vue-router";
 
 
 const props = defineProps<{ collapsed: boolean, isFixed: boolean }>();
-const emit = defineEmits(['onNextMenu', 'onClose', 'onCollapse', 'onExpand']);
+const emit = defineEmits(['onNextMenu', 'onClose', 'onCollapse', 'onExpand', 'onSearch']);
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -16,14 +16,14 @@ const currentUser = userStore.currentUser;
 const menus = ref([
   {
     icon: 'pi pi-home',
-    label: 'Accueil',
+    label: 'home',
     routeName: 'home',
     children: [],
     params: {profileId: '1'}
   },
   {
     icon: 'pi pi-user',
-    label: 'Profil',
+    label: 'profile',
     routeName: 'profile',
     children: [],
     params: {
@@ -32,28 +32,28 @@ const menus = ref([
   },
   {
     icon: 'pi pi-book',
-    label: 'Programmes',
+    label: 'programs',
     routeName: 'programs',
     children: ['program'],
     params: {}
   },
   {
     icon: 'pi pi-envelope',
-    label: 'Messages',
+    label: 'messages',
     routeName: 'conversations',
     children: [],
     params: {}
   },
   {
     icon: 'pi pi-question-circle',
-    label: 'Aide',
+    label: 'help',
     routeName: 'help',
     children: [],
     params: {}
   },
   {
     icon: 'pi pi-cog',
-    label: 'Paramètres',
+    label: 'settings',
     routeName: 'settings',
     children: [],
     params: {}
@@ -80,9 +80,12 @@ async function onLogout() {
   >
     <div v-if="currentUser" class="flex flex-column gap-2 p-2 surface-card border-round-xl">
 
-      <div :class="{'p-4 pt-6': !collapsed}" class="flex flex-column align-items-center gap-2 p-2 relative">
+      <div :class="{'p-4 pt-4 sm:pt-6': !collapsed}" class="flex flex-column align-items-center gap-2 p-2 relative">
         <UserAvatar :avatar-size="collapsed ? 2 : 3.5" :avatars="[currentUser.avatar]"/>
-        <div v-if="!collapsed" class="gradient-text-primary font-semibold text-lg">{{ userStore.fullName }}</div>
+        <div v-if="!collapsed" class="hidden sm:block gradient-text-primary font-semibold text-lg">{{
+            userStore.fullName
+          }}
+        </div>
         <Button
             v-if="!collapsed"
             class="absolute left-0 text-white"
@@ -107,10 +110,9 @@ async function onLogout() {
       <div class="flex justify-content-center w-full">
         <Divider class="my-0 p-0" style=""/>
       </div>
-      <div class="p-2">
+      <div class="p-2" @click.stop="$emit('onSearch')">
         <Button
             v-if="collapsed"
-            :class="$route.name === 'playground' ? 'gradient-bg-primary text-black-alpha-90' : 'hover:surface-200'"
             class="w-full"
             icon="pi pi-search"
             severity="secondary"
@@ -118,7 +120,7 @@ async function onLogout() {
         />
         <IconField v-else class="" iconPosition="left">
           <InputIcon class="pi pi-search"></InputIcon>
-          <InputText class="w-full text-sm border-round-md" placeholder="Recherche"/>
+          <InputText :placeholder="$t('global.menubar.search')" class="w-full text-sm border-round-md" readonly/>
         </IconField>
       </div>
     </div>
@@ -136,7 +138,7 @@ async function onLogout() {
             @click="$router.push({ name: menu.routeName, params: menu.params }); $emit('onNextMenu')"
         >
           <i :class="{'pr-2': !collapsed, [menu.icon]: true}"></i>
-          <div v-if="!collapsed">{{ menu.label }}</div>
+          <div v-if="!collapsed">{{ $t(`global.menubar.${menu.label}`) }}</div>
         </Button>
       </div>
 
@@ -155,7 +157,7 @@ async function onLogout() {
           class="w-full"
           icon="pi pi-play"
           iconPos="right"
-          label="Playground"
+          :label="$t('global.menubar.playground')"
           severity="secondary"
           @click="$router.push({ name: 'playground' })"
       />

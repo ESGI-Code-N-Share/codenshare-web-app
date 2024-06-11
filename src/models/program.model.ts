@@ -9,6 +9,7 @@ export interface ProgramsRequest {
     programId: string
     name: string
     description: string
+    authorId: UserId
     imageURL: string
     visibility: string
 }

@@ -10,6 +10,7 @@ const props = withDefaults(defineProps<{ avatarSize?: number, max?: number }>(),
 const emit = defineEmits(['onAvatarClick']);
 
 const pt = computed(() => ({
+  cursor: 'pointer',
   minHeight: `${props.avatarSize}em`,
   minWidth: `${props.avatarSize}em`,
   height: `${props.avatarSize}em`,

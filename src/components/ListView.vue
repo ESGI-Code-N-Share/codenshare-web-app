@@ -3,7 +3,6 @@
 import DataView from "primevue/dataview";
 
 const props = withDefaults(defineProps<{ items: any[], paginator?: number, emptyMessage?: string }>(), {
-  emptyMessage: 'Aucun élément à afficher',
   paginator: 10
 });
 const emit = defineEmits();
@@ -12,7 +11,7 @@ const emit = defineEmits();
 
 <template>
   <div v-if="items.length === 0" class="surface-card p-3">
-    {{ emptyMessage }}
+    {{ emptyMessage || $t('global.no_results') }}
   </div>
   <DataView v-else :paginator="!!paginator"
             :pt="{content: 'border-round-xl overflow-hidden', root: 'border-round-xl overflow-hidden'}"

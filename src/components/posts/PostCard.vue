@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import hljs from 'highlight.js';
 import 'highlight.js/styles/atelier-dune-dark.css';
 import 'highlight.js/lib/languages/javascript';
@@ -8,7 +8,10 @@ import InfoCard from "@/components/cards/InfoCard.vue";
 import {Post} from "@/models";
 import {useUserStore} from "@/stores/user.store";
 import dayjs from 'dayjs/esm/index.js'
+import {getEditPostOptions} from "@/utils/post.util";
 import {CodeNSharePostApi} from "@/api/codenshare";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
 
 interface PostCardProps {
@@ -21,55 +24,60 @@ const emit = defineEmits(['onDeleted']);
 
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
+const toastNotifications = new ToastService(useToast());
 
 const imageNotFound = ref(false);
 const menuEditPost = ref();
-const editPostOptions = ref([
-  {
-    label: 'Importer le programme',
-    icon: 'pi pi-upload',
-    async command() {
-      //todo import program
-    }
-  },
-  {
-    separator: true
-  },
-  {
-    label: 'Supprimer',
-    icon: 'pi pi-trash',
-    class: 'text-color-danger',
-    async command() {
-      try {
-        await CodeNSharePostApi.delete(props.post.postId);
-        emit('onDeleted', props.post.postId);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
-])
 
+const editPostOptions = ref();
+
+const isPostLiked = computed(() => {
+  if (!currentUser) return false;
+  return props.post.likes.some(like => like.userId === currentUser.userId);
+});
 
 onMounted(() => {
-  const {post} = props;
+  if (!currentUser) return;
 
-  editPostOptions.value.shift(); //todo import program
-  // if(!post.program || post.program.visibility === 'private') {
-  //   editPostOptions.value.shift();
-  // }
+  const deleteCommand = async () => {
+    try {
+      await CodeNSharePostApi.delete(props.post.postId);
+      toastNotifications.showSuccess('Publication supprimée');
+      emit('onDeleted', props.post.postId);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-  if (post.author.userId !== currentUser!.userId) {
-    editPostOptions.value.pop();
-    editPostOptions.value.pop();
-  }
-
+  editPostOptions.value = getEditPostOptions(props.post, currentUser, {deleteCommand});
   hljs.highlightAll();
 });
 
 
 const openEditPost = (event: Event) => {
   menuEditPost.value.toggle(event);
+}
+
+const likePost = async () => {
+  if (!currentUser) return;
+
+  try {
+    if (isPostLiked.value) {
+      await CodeNSharePostApi.unlike(props.post.postId);
+      props.post.likes = props.post.likes.filter(like => like.userId !== currentUser.userId);
+    } else {
+      await CodeNSharePostApi.like(props.post.postId);
+      props.post.likes.push({
+        likeId: Math.random().toString(36).substring(7),
+        userId: currentUser.userId,
+        postId: props.post.postId,
+        likedAt: new Date(),
+      })
+    }
+  } catch (e) {
+    console.error(e);
+    toastNotifications.showError('Erreur lors de la mise à jour de la publication');
+  }
 }
 
 </script>
@@ -85,13 +93,26 @@ const openEditPost = (event: Event) => {
         @onAvatarClick="$router.push(`/app/profile/${post.author.userId}?loading=true`)"
     >
       <template #button>
+        <div class="flex align-items-center" style="width: 50px;">
+          <Button
+              :class="{'liked': isPostLiked}"
+              :icon="isPostLiked ? 'pi pi-heart-fill' : 'pi pi-heart'"
+              aria-label="like"
+              class="w-2"
+              size="small"
+              text
+              @click="likePost()"
+          />
+          <div class="ml-1">{{ post.likes.length }}</div>
+        </div>
+
         <Button aria-label="more-options" icon="pi pi-ellipsis-v" severity="secondary" @click="openEditPost($event)"/>
         <Menu ref="menuEditPost" :model="editPostOptions" popup/>
       </template>
     </InfoCard>
     <div class="flex flex-column gap-2 px-1">
-      <div class="text-lg m-0">{{ post.title }}</div>
-      <div class="text-color-secondary pb-2">{{ post.content }}</div>
+      <div class="text-base sm:text-lg m-0">{{ post.title }}</div>
+      <div class="text-sm sm:text-base text-color-secondary pb-2">{{ post.content }}</div>
       <div v-if="post.image && !imageNotFound" class="w-full h-full border-1 border-gray-500 border-round-xl">
         <img
             v-if="!imageNotFound"
@@ -107,4 +128,7 @@ const openEditPost = (event: Event) => {
 </template>
 
 <style scoped>
+.liked {
+  color: var(--red-500);
+}
 </style>
