@@ -18,19 +18,25 @@ export const useUserStore = defineStore('user', {
     },
     persist: true,
     actions: {
+        //todo auth: pas de trycatch ici
+
+
         async login(email: string, password: string) {
-            this.currentUser = await CodeNShareAuthApi.login(email, password);
-            this.isAuthenticated = true;
-            localStorage.setItem('userId', this.currentUser.userId);
+            return CodeNShareAuthApi.login(email, password)
+                .then(user => {
+                    this.currentUser = user;
+                    this.isAuthenticated = true;
+                    localStorage.setItem('userId', this.currentUser.userId);
+                });
         },
-        async register() {
-            await CodeNShareAuthApi.register();
+        async register(firstname: string, lastname: string, birthdate: string, email: string, password: string) {
+            await CodeNShareAuthApi.register(firstname, lastname, birthdate, email, password);
             this.isAuthenticated = true;
         },
         async logout() {
+            // await CodeNShareAuthApi.logout();
             this.currentUser = null;
             this.isAuthenticated = false;
-            // await CodeNShareAuthApi.logout();
         },
         async updateUser({firstname, lastname, avatar}: { firstname: string, lastname: string, avatar: string }) {
             if (this.currentUser?.userId)

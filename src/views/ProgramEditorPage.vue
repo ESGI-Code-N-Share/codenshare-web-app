@@ -19,6 +19,7 @@ const toastNotifications = new ToastService(useToast());
 const program = ref<Program>();
 const language = ref();
 const version = ref();
+const output = ref('');
 
 const sidebarProgramEditor = ref(false);
 const sidebarProgramTest = ref(false);
@@ -74,7 +75,9 @@ const onSaveProgram = async () => {
 const onRunProgram = async () => {
   if (program.value) {
     try {
-      await CodeNShareProgramApi.execute(program.value.programId);
+      //todo mélissa
+      const result = await CodeNShareProgramApi.execute(program.value.programId);
+      output.value = 'Hello World';
       toastNotifications.showSuccess("Programme exécuté");
     } catch (e) {
       console.error(e);
@@ -212,7 +215,7 @@ const onRunProgram = async () => {
       <!-- Console     -->
       <div class="flex flex-column gap-2">
         <h3 class="text-lg m-0 p-0">Console</h3>
-        <code>Error: Cannot convert undefined or null to object</code>
+        <code>{{ output }}</code>
       </div>
 
     </SideBar>
