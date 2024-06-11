@@ -55,7 +55,7 @@ export class CodeNShareProgramApi {
         return request<ProgramId>({method: 'POST', url: `/programs/${programId}/import`});
     }
 
-    static async execute(programId: ProgramId): Promise<void> {
-        return request({method: 'POST', url: `/programs/${programId}/execute`});
+    static async execute(programId: ProgramId): Promise<string> {
+        return request<string>({method: 'POST', url: `/programs/${programId}/execute`});
     }
 }

@@ -4,98 +4,81 @@ import {ref} from "vue";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import AuthPage from "@/components/auth/AuthPage.vue";
-import axios from 'axios';
 import dayjs from "dayjs/esm";
 import {CodeNShareAuthApi} from "@/api/codenshare";
-import router from "@/router";
+import {useRouter} from "vue-router";
+import {userCreateSchema} from "@/validations/user-form.validation";
+import * as yup from "yup";
 
+const router = useRouter();
 const toastNotifications = new ToastService(useToast())
 
 const loading = ref(false);
 
-const firstname = ref('');
-const lastname = ref('');
-const birthDate = ref<Date>('');
-const email = ref('');
-const password = ref('');
-const cgu = ref(false);
+const firstname = ref('bernard');
+const lastname = ref('lechene');
+const birthDate = ref(new Date(new Date().getFullYear() - 18, 0, 1));
+const email = ref('b.lechene@gmail.com');
+const password = ref('adminfiters');
+const cgu = ref(true);
 
-const firstnameError = ref('');
-const lastnameError = ref('');
-const birthDateError = ref('');
-const emailError = ref('');
-const passwordError = ref('');
-const cguError = ref('');
-
-// todo add utils functions to validate form
-function isRegisterFormValid(): boolean {
-  let isValid = true;
-
-  if (!firstname.value) {
-    firstnameError.value = 'Le prénom est requis';
-    isValid = false;
+const formErrors = ref({
+  firstname: '',
+  lastname: '',
+  birthDate: '',
+  email: '',
+  password: '',
+  cgu: '',
+  reset() {
+    this.firstname = '';
+    this.lastname = '';
+    this.birthDate = '';
+    this.email = '';
+    this.password = '';
+    this.cgu = '';
   }
-
-  if (!lastname.value) {
-    lastnameError.value = 'Le nom est requis';
-    isValid = false;
-  }
-
-  if (!birthDate.value) {
-    birthDateError.value = 'La date de naissance est requise';
-    isValid = false;
-  }
-
-  if (!email.value) {
-    emailError.value = 'L\'email est requis';
-    isValid = false;
-  }
-
-  if (!password.value) {
-    passwordError.value = 'Le mot de passe est requis';
-    isValid = false;
-  }
-
-  if (!cgu.value) {
-    cguError.value = 'Vous devez accepter les conditions d\'utilisation';
-    isValid = false;
-  }
-
-  return isValid;
-}
-
-function resetErrors() {
-  firstnameError.value = '';
-  lastnameError.value = '';
-  birthDateError.value = '';
-  emailError.value = '';
-  passwordError.value = '';
-  cguError.value = '';
-}
+});
 
 async function onSubmitRegisterForm() {
   try {
     loading.value = true;
-    resetErrors();
+    formErrors.value.reset();
 
-    if (!isRegisterFormValid()) {
-      return toastNotifications.showError("Le formulaire contient des erreurs");
-    }
-
-    const formattedBirthDate = dayjs(birthDate.value).format('YYYY-MM-DD');
+    console.log(birthDate.value)
+    const createUser = await userCreateSchema.validate({
+      firstname: firstname.value,
+      lastname: lastname.value,
+      birthdate: birthDate.value,
+      email: email.value,
+      password: password.value,
+      cgu: cgu.value
+    }, {abortEarly: false});
 
     await CodeNShareAuthApi.register(
-        firstname.value,
-        lastname.value,
-        formattedBirthDate,
-        email.value,
-        password.value
+        createUser.firstname,
+        createUser.lastname,
+        dayjs(createUser.birthdate).format('YYYY-MM-DD'),
+        createUser.email,
+        createUser.password
     );
-    await router.push({ name: 'login' });
+
     toastNotifications.showSuccess("Votre compte a été créé avec succès");
-  } catch (e) {
+    await router.push({name: 'login'});
+  } catch (e: any | yup.ValidationError) {
     console.error(e);
-    toastNotifications.showError("Une erreur s'est produite lors de la création de votre compte");
+    if (e instanceof yup.ValidationError) {
+      e.errors.forEach(error => {
+        if (error.includes('firstname')) formErrors.value.firstname = error;
+        if (error.includes('lastname')) formErrors.value.lastname = error;
+        if (error.includes('birthdate')) formErrors.value.birthDate = error;
+        if (error.includes('email')) formErrors.value.email = error;
+        if (error.includes('password')) formErrors.value.password = error;
+        if (error.includes('cgu')) formErrors.value.cgu = error;
+      });
+      toastNotifications.showError("Veuillez vérifier les erreurs dans le formulaire");
+    } else {
+      toastNotifications.showError(e.message);
+    }
   } finally {
     loading.value = false;
   }
@@ -111,7 +94,7 @@ async function onSubmitRegisterForm() {
           <h1 class="text-4xl lg:text-5xl mb-4 lg:col-8 p-0">Créer ton compte</h1>
           <div class="text-white-alpha-50 text-lg font-semibold mb-2">
             <span class="mr-1">Déjà inscrit ?</span>
-            <span class="gradient-text-primary hover:underline text-base"
+            <span class="gradient-text-primary hover:underline text-base cursor-pointer"
                   @click="$router.push('/login')">Connecte-toi.</span>
           </div>
         </div>
@@ -120,57 +103,57 @@ async function onSubmitRegisterForm() {
             <div class="flex gap-3">
               <InputText
                   v-model="firstname"
-                  v-tooltip.bottom="firstnameError"
-                  :invalid="!!firstnameError"
+                  v-tooltip.bottom="formErrors.firstname"
+                  :invalid="!!formErrors.firstname"
                   class="w-full"
-                  placeholder="John"
-                  @update:modelValue="firstnameError = ''"
+                  placeholder="Prénom"
+                  @update:modelValue="formErrors.firstname = ''"
               />
               <InputText
                   v-model="lastname"
-                  v-tooltip.bottom="lastnameError"
-                  :invalid="!!lastnameError"
+                  v-tooltip.bottom="formErrors.lastname"
+                  :invalid="!!formErrors.lastname"
                   class="w-full"
-                  placeholder="Doe"
-                  @update:modelValue="lastnameError = ''"
+                  placeholder="Nom"
+                  @update:modelValue="formErrors.lastname = ''"
               />
             </div>
             <Calendar
                 v-model="birthDate"
-                v-tooltip.bottom="birthDateError"
-                :invalid="!!birthDateError"
+                v-tooltip.bottom="formErrors.birthDate"
+                :invalid="!!formErrors.birthDate"
                 class="w-full"
                 placeholder="Date de naissance"
-                @update:modelValue="birthDateError = ''"
+                @update:modelValue="formErrors.birthDate = ''"
             />
             <InputText
                 v-model="email"
-                v-tooltip.bottom="emailError"
-                :invalid="!!emailError"
+                v-tooltip.bottom="formErrors.email"
+                :invalid="!!formErrors.email"
                 class="w-full"
+                inputmode="email"
                 placeholder="john.doe@email.com"
                 type="email"
-                @update:modelValue="emailError = ''"
+                @update:modelValue="formErrors.email = ''"
             />
             <Password
                 v-model="password"
-                v-tooltip.bottom="passwordError"
-                :invalid="!!passwordError"
+                v-tooltip.bottom="formErrors.password"
+                :invalid="!!formErrors.password"
                 class="w-full"
-                placeholder="Mot de passe"
-                toggleMask
-                @update:modelValue="passwordError = ''"
+                placeholder="*********"
+                @update:modelValue="formErrors.password = ''"
             />
 
             <div class="flex align-items-center">
               <Checkbox
                   id="cgu"
                   v-model="cgu"
-                  v-tooltip.bottom="cguError"
-                  :invalid="!!cguError"
+                  v-tooltip.bottom="formErrors.cgu"
+                  :invalid="!!formErrors.cgu"
                   binary
                   class="mr-2"
-                  @update:modelValue="cguError = ''"
+                  @update:modelValue="formErrors.cgu = ''"
               />
               <label class="text-sm" for="cgu">
                 <span class="mr-1">J'accepte les</span>

@@ -21,12 +21,15 @@ export const request = async <T>({method, url, body}: Request) => {
         method,
         headers: {
             'Content-Type': 'application/json',
+            //todo auth: add token
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify(body),
     });
     if (!response.ok) {
-        throw new Error('Request failed');
+        //todo auth: ck if token expired
+        const responseData = await response.json();
+        throw new Error(responseData.message);
     }
     const responseData = await response.json();
     console.log(url, '=>', responseData)

@@ -18,40 +18,25 @@ export const useUserStore = defineStore('user', {
     },
     persist: true,
     actions: {
+        //todo auth: pas de trycatch ici
+
+
         async login(email: string, password: string) {
-            this.loading = true;
-            try {
-                this.currentUser = await CodeNShareAuthApi.login(email, password);
-                this.isAuthenticated = true;
-                localStorage.setItem('userId', this.currentUser.userId);
-            } catch (e) {
-                console.error(e);
-            } finally {
-                this.loading = false;
-            }
+            return CodeNShareAuthApi.login(email, password)
+                .then(user => {
+                    this.currentUser = user;
+                    this.isAuthenticated = true;
+                    localStorage.setItem('userId', this.currentUser.userId);
+                });
         },
         async register(firstname: string, lastname: string, birthdate: string, email: string, password: string) {
-            this.loading = true;
-            try {
-                await CodeNShareAuthApi.register(firstname, lastname, birthdate, email, password);
-                this.isAuthenticated = true;
-            } catch (e) {
-                console.error(e);
-            } finally {
-                this.loading = false;
-            }
+            await CodeNShareAuthApi.register(firstname, lastname, birthdate, email, password);
+            this.isAuthenticated = true;
         },
         async logout() {
-            this.loading = true;
-            try {
-                this.currentUser = null;
-                this.isAuthenticated = false;
-                await CodeNShareAuthApi.logout();
-            } catch (e) {
-                console.error(e);
-            } finally {
-                this.loading = false;
-            }
+            // await CodeNShareAuthApi.logout();
+            this.currentUser = null;
+            this.isAuthenticated = false;
         },
 
         async fetchUser(userId: UserId) {

@@ -7,6 +7,8 @@ import {useRouter} from "vue-router";
 import ResetPasswordRequestDialog from "@/components/dialogs/ResetPasswordRequestDialog.vue";
 import AuthPage from "@/components/auth/AuthPage.vue";
 import {useUserStore} from "@/stores/user.store";
+import {userLoginSchema} from "@/validations/user-form.validation";
+import * as yup from "yup";
 
 const toastNotifications = new ToastService(useToast());
 const router = useRouter();
@@ -14,57 +16,43 @@ const router = useRouter();
 const loading = ref(false);
 const openResetPasswordDialog = ref(false);
 
-const email = ref('');
-const password = ref('');
+const email = ref('c.lechene@gmail.com');
+const password = ref('adminfiters');
 const stayLogin = ref(false);
 
-const emailError = ref('');
-const passwordError = ref('');
-
-function isLoginFormValid(): boolean {
-  let isValid = true;
-
-  if (!email.value) {
-    emailError.value = 'L\'email est requis';
-    isValid = false;
+const formErrors = ref({
+  email: '',
+  password: '',
+  reset() {
+    this.email = '';
+    this.password = '';
   }
-
-  if (!password.value) {
-    passwordError.value = 'Le mot de passe est requis';
-    isValid = false;
-  }
-
-  return isValid;
-}
-
-function resetErrors() {
-  emailError.value = '';
-  passwordError.value = '';
-}
+});
 
 
 async function onSubmitLoginForm() {
   try {
     loading.value = true;
-    resetErrors();
+    formErrors.value.reset();
 
-    if (!isLoginFormValid()) {
-      toastNotifications.showError('Veuillez vérifier les erreurs dans le formulaire');
-      return;
-    }
-
+    await userLoginSchema.validate({
+      email: email.value,
+      password: password.value,
+    }, {abortEarly: false});
     const userStore = useUserStore();
     await userStore.login(email.value, password.value);
-
-    if (userStore.error) {
-      toastNotifications.showError(userStore.error);
-    } else {
-      toastNotifications.showSuccess('Connexion réussie');
-      await router.push({ name: 'home' });
-    }
-  } catch (e) {
+    toastNotifications.showSuccess('Connexion réussie');
+    await router.push({name: 'home'});
+  } catch (e: any | yup.ValidationError) {
     console.error(e);
-    toastNotifications.showError('Une erreur est survenue');
+    if (e instanceof yup.ValidationError) {
+      e.errors.forEach(error => {
+        if (error.includes('email')) formErrors.value.email = error;
+        if (error.includes('password')) formErrors.value.password = error;
+      });
+    } else {
+      toastNotifications.showError(e.message);
+    }
   } finally {
     loading.value = false;
   }
@@ -101,35 +89,33 @@ async function onSubmitAdminLoginForm() {
         <form ref="registerFormRef" class="flex flex-column gap-3">
           <InputText
               v-model="email"
-              v-tooltip.bottom="emailError"
-              inputmode="email"
-              :invalid="!!emailError"
+              v-tooltip.bottom="(formErrors.email)"
+              :invalid="!!formErrors.email"
               class="w-full"
+              inputmode="email"
               placeholder="john.doe@email.com"
               type="email"
-              @update:modelValue="emailError = ''"
+              @update:modelValue="formErrors.email = ''"
           />
-          <Password
+          <InputText
               v-model="password"
-              v-tooltip.bottom="passwordError"
-              :invalid="!!passwordError"
+              v-tooltip.bottom="(formErrors.password)"
+              :invalid="!!formErrors.password"
               class="w-full"
-              placeholder="Mot de passe"
-              toggleMask
-              @update:modelValue="passwordError = ''"
+              inputmode="text"
+              placeholder="*********"
+              type="password"
+              @update:modelValue="formErrors.password = ''"
           />
 
           <div class="flex align-items-center justify-content-between">
             <div class="flex align-items-center">
-              <Checkbox
-                  id="cgu"
-                  v-model="stayLogin"
-                  binary
-                  class="mr-2"
-              />
+              <Checkbox id="cgu" v-model="stayLogin" binary class="mr-2"/>
               <label class="text-sm" for="cgu">Rester connecté</label>
             </div>
-            <div class="text-sm text-blue-600" @click="openResetPasswordDialog = true">Mot de passe oublié ?</div>
+            <div class="text-sm text-blue-600" @click="openResetPasswordDialog = true">
+              Mot de passe oublié ?
+            </div>
           </div>
 
           <Button
