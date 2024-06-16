@@ -58,7 +58,11 @@ export class CodeNShareProgramApi {
         return request<ProgramId>({method: 'POST', url: `/programs/${programId}/import`, body: body});
     }
 
-    static async execute(programId: ProgramId): Promise<string> {
-        return request<string>({method: 'POST', url: `/programs/${programId}/execute`});
+    static async run(programId: ProgramId): Promise<string> {
+        const body = {
+            userId: localStorage.getItem('userId'),
+            programId: programId
+        }
+        return request<string>({method: 'POST', url: `/programs/${programId}/run`, body: body});
     }
 }

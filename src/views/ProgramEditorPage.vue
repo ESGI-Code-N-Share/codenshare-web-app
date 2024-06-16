@@ -11,10 +11,13 @@ import {Program, ProgramId, ProgramLanguages} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import {SocketListener} from "@/listener/socket-listener";
 
 const route = useRoute();
 const router = useRouter();
 const toastNotifications = new ToastService(useToast());
+
+const loading = ref(false);
 
 const program = ref<Program>();
 const language = ref();
@@ -75,10 +78,20 @@ const onSaveProgram = async () => {
 const onRunProgram = async () => {
   if (program.value) {
     try {
-      //todo mélissa
-      const result = await CodeNShareProgramApi.execute(program.value.programId);
-      output.value = 'Hello World';
-      toastNotifications.showSuccess("Programme exécuté");
+      loading.value = true;
+      await CodeNShareProgramApi.update(program.value);
+      const task = await CodeNShareProgramApi.run(program.value.programId);
+
+      await SocketListener.getResult(task, (data: string) => {
+        output.value = data
+        loading.value = false;
+      }, (e: string) => {
+        console.error(e);
+        loading.value = false;
+        toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
+      });
+
+
     } catch (e) {
       console.error(e);
       toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
@@ -197,14 +210,14 @@ const onRunProgram = async () => {
         <OutputFile/>
 
         <Button
+            :loading="loading"
             class="text-center justify-content-center mt-2"
             severity="secondary"
+            :label="$t('program.buttons.execute')"
             style="color: #49DE80; background: linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), #27272A;"
+            icon-pos="right"
             @click="onRunProgram()"
-        >
-          <div>{{ $t('program.buttons.execute') }}</div>
-          <i class="pi pi-play px-2"></i>
-        </Button>
+        />
       </div>
 
       <!-- Divider     -->
@@ -215,7 +228,7 @@ const onRunProgram = async () => {
       <!-- Console     -->
       <div class="flex flex-column gap-2">
         <h3 class="text-lg m-0 p-0">Console</h3>
-        <code>{{ output }}</code>
+        <pre><code>{{ output }}</code></pre>
       </div>
 
     </SideBar>
