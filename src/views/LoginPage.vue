@@ -79,7 +79,7 @@ async function onSubmitAdminLoginForm() {
       <div class="flex flex-column justify-content-center h-full p-4 surface-card border-round-3xl"
            style="min-height: 43rem">
         <div class="text-center mb-5 sm:mb-7">
-          <img alt="Image" class="mb-3" height="50" src="/src/assets/vue.svg"/>
+          <img alt="Image" class="mb-3" height="150" src="/src/assets/logo.png"/>
           <div class="text-900 text-2xl sm:text-3xl font-medium mb-3">Content de te revoir !</div>
           <span class="text-600 font-medium line-height-3">Pas encore de compte ?</span>
           <a class="font-medium ml-2 gradient-text-primary cursor-pointer"
