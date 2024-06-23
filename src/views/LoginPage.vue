@@ -16,8 +16,8 @@ const router = useRouter();
 const loading = ref(false);
 const openResetPasswordDialog = ref(false);
 
-const email = ref('c.lechene@gmail.com');
-const password = ref('adminfiters');
+const email = ref('john.doe@example.com');
+const password = ref('password123');
 const stayLogin = ref(false);
 
 const formErrors = ref({
@@ -40,7 +40,8 @@ async function onSubmitLoginForm() {
       password: password.value,
     }, {abortEarly: false});
     const userStore = useUserStore();
-    await userStore.login(email.value, password.value);
+    await userStore.login(email.value, password.value, stayLogin.value);
+    console.log('login', stayLogin.value);
     toastNotifications.showSuccess('Connexion réussie');
     await router.push({name: 'home'});
   } catch (e: any | yup.ValidationError) {
@@ -62,7 +63,7 @@ async function onSubmitLoginForm() {
 async function onSubmitAdminLoginForm() {
   try {
     const userStore = useUserStore();
-    await userStore.login('admin@cns.fr', 'adminfiters');
+    await userStore.login('admin@cns.fr', 'adminfiters', true);
     toastNotifications.showSuccess('Connexion réussie');
     await router.push({name: 'home'});
   } catch (e) {
