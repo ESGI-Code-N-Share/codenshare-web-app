@@ -16,8 +16,8 @@ const router = useRouter();
 const loading = ref(false);
 const openResetPasswordDialog = ref(false);
 
-const email = ref('john.doe@example.com');
-const password = ref('password123');
+const email = ref('c.lechene@gmail.com');
+const password = ref('adminfiters');
 const stayLogin = ref(false);
 
 const formErrors = ref({

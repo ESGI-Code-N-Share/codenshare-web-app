@@ -14,7 +14,6 @@ export const onBeforeEach: NavigationGuard = async (to, _, next) => {
     console.log("--------------------");
     console.log('Checking if user is authenticated');
     console.log('CurrentUser: ', userStore.currentUser)
-    console.log('CurrentUser: ', userStore.currentUser)
     console.log('User is authenticated: ', userStore.isAuthenticated)
 
     // if user is authenticated and trying to access login or register page, redirect to home
