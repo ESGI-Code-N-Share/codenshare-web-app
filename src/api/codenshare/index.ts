@@ -1,3 +1,4 @@
+import {useUserStore} from '@/stores/user.store';
 export * from './codenshare-auth.api';
 export * from './codenshare-user.api';
 export * from './codenshare-conversation.api';
@@ -17,18 +18,20 @@ export interface Request {
 
 export const request = async <T>({method, url, body}: Request) => {
     const baseUrl = `${import.meta.env.VITE_API_URL}/api/v1`;
+
     const response = await fetch(`${baseUrl}${url}`, {
         method,
         headers: {
             'Content-Type': 'application/json',
-            //todo auth: add token
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify(body),
     });
     if (!response.ok) {
-        //todo auth: ck if token expired
         const responseData = await response.json();
+        const userStore= useUserStore()
+        await userStore.logout();
+        window.location.hash = '/login'
         throw new Error(responseData.message);
     }
     const responseData = await response.json();
