@@ -20,7 +20,6 @@ export const useUserStore = defineStore('user', {
     actions: {
         async login(email: string, password: string, stayLogin: boolean) {
             const user = await CodeNShareAuthApi.login(email, password, stayLogin);
-            console.log(user)
             this.currentUser = user;
             this.isAuthenticated = true;
             localStorage.setItem('userId', user.userId)
