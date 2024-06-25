@@ -20,6 +20,7 @@ export const useUserStore = defineStore('user', {
     actions: {
         async login(email: string, password: string, stayLogin: boolean) {
             const user = await CodeNShareAuthApi.login(email, password, stayLogin);
+            console.log(user)
             this.currentUser = user;
             this.isAuthenticated = true;
             localStorage.setItem('userId', user.userId)
@@ -30,11 +31,11 @@ export const useUserStore = defineStore('user', {
             this.isAuthenticated = true;
         },
         async logout() {
+            localStorage.removeItem('token')
             await CodeNShareAuthApi.logout(this.currentUser!.userId);
             this.currentUser = null;
             this.isAuthenticated = false;
             localStorage.removeItem('userId')
-            localStorage.removeItem('token')
         },
         async updateUser({firstname, lastname, avatar}: { firstname: string, lastname: string, avatar: string }) {
             if (this.currentUser?.userId)

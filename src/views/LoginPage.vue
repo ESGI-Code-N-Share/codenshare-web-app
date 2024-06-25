@@ -41,7 +41,6 @@ async function onSubmitLoginForm() {
     }, {abortEarly: false});
     const userStore = useUserStore();
     await userStore.login(email.value, password.value, stayLogin.value);
-    console.log('login', stayLogin.value);
     toastNotifications.showSuccess('Connexion réussie');
     await router.push({name: 'home'});
   } catch (e: any | yup.ValidationError) {

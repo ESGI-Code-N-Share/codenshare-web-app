@@ -1,4 +1,5 @@
 import {useUserStore} from '@/stores/user.store';
+
 export * from './codenshare-auth.api';
 export * from './codenshare-user.api';
 export * from './codenshare-conversation.api';
@@ -19,19 +20,24 @@ export interface Request {
 export const request = async <T>({method, url, body}: Request) => {
     const baseUrl = `${import.meta.env.VITE_API_URL}/api/v1`;
 
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+    headers.append('Cache-Control', 'no-cache');
+    if (localStorage.getItem('token') !== null) {
+        headers.append('Authorization', `Bearer ${localStorage.getItem('token')}`);
+    }
     const response = await fetch(`${baseUrl}${url}`, {
         method,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
+        headers: headers,
         body: JSON.stringify(body),
     });
     if (!response.ok) {
         const responseData = await response.json();
-        const userStore= useUserStore()
-        await userStore.logout();
-        window.location.hash = '/login'
+        if (response.status === 410) {
+            const userStore = useUserStore();
+            await userStore.logout();
+            window.location.href = '/login';
+        }
         throw new Error(responseData.message);
     }
     const responseData = await response.json();
