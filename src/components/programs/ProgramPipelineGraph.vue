@@ -1,9 +1,12 @@
 <script lang="ts" setup>
 
-import {Program} from "@/models";
+import {Program, ProgramInstructionsInput, ProgramInstructionsOutput} from "@/models";
 import {onMounted, ref} from "vue";
 import {dia, shapes} from "@joint/core";
 import {ImageRectangle, ProgramRectangle} from "@/utils/graph.util";
+import {CodeNShareProgramApi} from "@/api/codenshare";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
 interface ProgramPipelineGraphProps {
   program: Program;
@@ -11,6 +14,8 @@ interface ProgramPipelineGraphProps {
 
 const props = defineProps<ProgramPipelineGraphProps>()
 const emit = defineEmits(['onUpdate'])
+
+const toastNotifications = new ToastService(useToast());
 
 const pipelineEl = ref<HTMLDivElement>()
 
@@ -27,6 +32,7 @@ const filetypeModel = ref<typeof filetypes[0]>({label: '', value: ''})
 const selectedElement = ref<dia.ElementView>()
 const filename = ref('')
 const filetype = ref('')
+const loading = ref({update: false})
 
 const graph = ref<dia.Graph>()
 const paper = ref<dia.Paper>()
@@ -40,12 +46,6 @@ onMounted(() => {
 function setLinkEventHandlers() {
   if (!graph.value || !paper.value) return
 
-
-}
-
-function setSelectedElementEventHandlers() {
-  if (!graph.value || !paper.value) return
-
   let tempLink: dia.Link | null = null;
   paper.value.on('link:pointerdown', function (linkView) {
     tempLink = linkView.model;
@@ -56,6 +56,39 @@ function setSelectedElementEventHandlers() {
       tempLink.set('target', {x: x, y: y});
     }
   });
+
+  paper.value.on('link:connect', function (linkView) {
+    const link = linkView.model;
+    const sourceId = link.get('source').id;
+    const targetId = link.get('target').id;
+    const sourcePort = link.get('source').port;
+    const targetPort = link.get('target').port;
+
+    if (sourceId && targetId && sourcePort && targetPort) {
+      const newLink = new shapes.standard.Link({
+        source: {id: sourceId, port: sourcePort},
+        target: {id: targetId, port: targetPort},
+        attrs: {
+          line: {
+            stroke: 'white',
+            strokeWidth: 1,
+          }
+        },
+      });
+      graph.value!.addCell(newLink);
+    }
+  });
+
+  paper.value.on('link:mouseleave', function (linkView) {
+    if (tempLink) {
+      tempLink.remove();
+    }
+  });
+
+}
+
+function setSelectedElementEventHandlers() {
+  if (!graph.value || !paper.value) return
 
   // handle selecting an element
   paper.value.on('element:pointerclick', function (cellView) {
@@ -83,15 +116,23 @@ function initElements() {
   const programRectangle = new ProgramRectangle({x: 250, y: 150})
   const program = programRectangle.toJointJsElement();
 
-  const images = []
-  for (let i = 0; i < programRectangle.inputs + programRectangle.outputs; i++) {
-    const imageRectangle = new ImageRectangle({x: 100, y: 30 + i * 100})
-    images.push(imageRectangle.toJointJsElement());
-  }
+  const inputs = props.program.instructions.inputs.map((input, index) => {
+    const imageRectangle = new ImageRectangle({x: 100, y: 50 + index * 100})
+    const image = imageRectangle.toJointJsElement();
+    image.prop('metadata', {name: input.name || '', type: input.type || ''})
+    return image
+  })
+  const outputs = props.program.instructions.outputs.map((output, index) => {
+    const imageRectangle = new ImageRectangle({x: 400, y: 50 + index * 100})
+    const image = imageRectangle.toJointJsElement();
+    image.prop('metadata', {name: output.name || '', type: output.type || ''})
+    return image
+  })
 
   // Add the area to the graph
   graph.value.addCell(program);
-  graph.value.addCells(images);
+  graph.value.addCells(inputs);
+  graph.value.addCells(outputs);
 }
 
 
@@ -143,7 +184,14 @@ function initPaper() {
       }
       // if the target port is full (length === 1), return false
       const connections = graph.value!.getConnectedLinks(cellViewT.model)
-      return connections.filter(link => link.get('target').port === portTarget).length !== 1;
+      if (connections.filter(link => link.get('target').port === portTarget).length === 1) {
+        return false;
+      }
+      // // if the source port is already connected to a port, return false
+      // if(connections.filter(link => link.get('source').port === portSource).length === 1) {
+      //   return false;
+      // }
+      return true
     },
   })
 }
@@ -166,6 +214,62 @@ const saveElement = () => {
   cellView.update(cell)
   selectedElement.value = undefined
   paper.value?.update()
+}
+
+const mapToJsObject = async () => {
+  if (!graph.value) {
+    toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
+    return;
+  }
+
+  const cells = graph.value!.getCells()
+  const program = cells.find(cell => cell.attributes.type === 'standard.ProgramRectangle')
+  if (!program) {
+    toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
+    return;
+  }
+
+  const inputs: ProgramInstructionsInput[] = graph.value.getConnectedLinks(program, {inbound: true}).map(link => {
+    const cell = link.get('source').id
+    const metadata = graph.value!.getCell(cell)?.prop('metadata')
+    return {
+      name: metadata?.name || '',
+      type: metadata?.type || '',
+    }
+  })
+  const outputs: ProgramInstructionsOutput[] = graph.value.getConnectedLinks(program, {outbound: true}).map(link => {
+    const cell = link.get('target').id
+    const metadata = graph.value!.getCell(cell)?.prop('metadata')
+    return {
+      name: metadata?.name || '',
+      type: metadata?.type || '',
+    }
+  })
+
+  console.log({
+    programId: props.program.programId,
+    inputs: inputs,
+    outputs: outputs,
+  })
+
+  if (inputs.length !== props.program.instructions.inputs.length || outputs.length !== props.program.instructions.outputs.length) {
+    toastNotifications.showError("Le programme doit avoir le même nombre d'entrées et de sorties");
+    return;
+  }
+
+  try {
+    loading.value.update = true;
+    await CodeNShareProgramApi.updateInstructions(props.program.programId, {
+      inputs: inputs,
+      outputs: outputs,
+    })
+    toastNotifications.showSuccess("Modifications enregistrées");
+  } catch (e) {
+    console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
+  } finally {
+    loading.value.update = false;
+  }
 }
 
 const initGraph = () => {
@@ -206,8 +310,22 @@ const reloadGraph = () => {
           option-label="label"
           @change="filetype = $event.value.value"
       />
-      <Button v-if="selectedElement" icon="pi pi-check" severity="success" @click="saveElement()"/>
-      <Button v-else icon="pi pi-sync" severity="success" @click="reloadGraph()"/>
+      <Button
+          v-if="!selectedElement"
+          icon="pi pi-sync"
+          severity="secondary"
+          @click="reloadGraph()"
+      />
+      <Button
+          v-if="!selectedElement"
+          :loading="loading.update"
+          icon="pi pi-save"
+          severity="secondary"
+          style="background: #4ade80; color: #000;"
+          @click="mapToJsObject()"
+      />
+      <Button v-else icon="pi pi-check" severity="success" @click="saveElement()"/>
+
     </div>
     <div ref="pipelineEl"></div>
   </div>

@@ -1,5 +1,5 @@
 import {request} from "@/api/codenshare";
-import {Program, ProgramId, ProgramsRequest} from "@/models/program.model";
+import {Program, ProgramId, ProgramInstructions, ProgramsRequest} from "@/models/program.model";
 import {UserId} from "@/models";
 
 export class CodeNShareProgramApi {
@@ -27,6 +27,10 @@ export class CodeNShareProgramApi {
 
     static async get(programId: ProgramId): Promise<Program> {
         return request<Program>({method: 'GET', url: `/programs/${programId}`});
+    }
+
+    static async updateInstructions(programId: ProgramId, instructions: ProgramInstructions): Promise<void> {
+        return request<void>({method: 'PATCH', url: `/programs/${programId}/instructions`, body: instructions});
     }
 
     static async update(program: Program): Promise<void> {

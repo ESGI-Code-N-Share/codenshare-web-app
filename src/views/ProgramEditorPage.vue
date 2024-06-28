@@ -74,6 +74,19 @@ const fetchProgram = async (programId: ProgramId) => {
     if (!program.value) {
       return await router.push({name: 'programs'});
     }
+
+    //todo remove the instruction below
+    program.value!.instructions = {
+      inputs: [
+        {name: 'input1', type: 'image'},
+        {name: 'input2', type: 'image'},
+      ],
+      outputs: [
+        {name: 'output1', type: 'image'},
+        {name: 'output2', type: 'image'},
+      ]
+    }
+
     language.value = languages.value.find(l => l.value === program.value?.language);
     version.value = versions.value.find(v => v.value === program.value?.version);
   } catch (e) {
@@ -127,8 +140,14 @@ const onRunProgram = async () => {
       <Button icon="pi pi-arrow-left" severity="secondary" @click="router.back()"/>
       <h2 class="p-0 m-0">{{ $t('global.pages.editor') }}</h2>
       <div class="flex gap-2">
-        <SplitButton :label="$t('program.buttons.save')" :model="programItemOptions" severity="secondary"
-                     style="" @click="onSaveProgram()"/>
+        <SplitButton
+            :label="$t('program.buttons.save')"
+            :model="programItemOptions"
+            :pt="{button: {label: {style: 'color: #49DE80;'}}}"
+            class="text-blue-100"
+            severity="secondary"
+            @click="onSaveProgram()"
+        />
       </div>
     </div>
     <div v-if="!program" class="flex justify-content-center align-items-center h-full">
@@ -262,7 +281,7 @@ const onRunProgram = async () => {
     </SideBar>
 
     <!-- Modal Pipeline Graph   -->
-    <Dialog v-model:visible="openPipelineGraph" :header="$t('$__Pipeline')" modal>
+    <Dialog v-model:visible="openPipelineGraph" :header="$t('program.pipeline')" modal>
       <ProgramPipelineGraph v-if="program" :program="program"/>
     </Dialog>
   </div>

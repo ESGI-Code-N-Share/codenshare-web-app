@@ -1,6 +1,7 @@
 export const program = {
     programs: "Programmes",
     configure: "Configuration",
+    pipeline: "Configuration des pipelines",
     test: "Test",
     output_files: {
         title: "Fichiers de sortie",
