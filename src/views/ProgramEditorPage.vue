@@ -12,6 +12,7 @@ import {CodeNShareProgramApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import {SocketListener} from "@/listener/socket-listener";
+import ProgramPipelineGraph from "@/components/programs/ProgramPipelineGraph.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -27,7 +28,7 @@ const programItemOptions = ref([
   {
     label: 'Pipeline',
     icon: 'pi pi-bolt',
-    command: () => openPipelineGraph()
+    command: () => openPipelineGraph.value = true
   },
   {
     label: 'Test',
@@ -44,6 +45,7 @@ const output = ref('')
 
 const sidebarProgramEditor = ref(false);
 const sidebarProgramTest = ref(false);
+const openPipelineGraph = ref(false)
 
 const languages = ref<{ label: string, value: ProgramLanguages }[]>([
   {label: 'Javascript', value: 'javascript'},
@@ -65,10 +67,6 @@ onMounted(async () => {
 
   await fetchProgram(programId);
 })
-
-function openPipelineGraph() {
-
-}
 
 const fetchProgram = async (programId: ProgramId) => {
   try {
@@ -262,6 +260,11 @@ const onRunProgram = async () => {
       </div>
 
     </SideBar>
+
+    <!-- Modal Pipeline Graph   -->
+    <Dialog v-model:visible="openPipelineGraph" :header="$t('$__Pipeline')" modal>
+      <ProgramPipelineGraph v-if="program" :program="program"/>
+    </Dialog>
   </div>
 
 </template>

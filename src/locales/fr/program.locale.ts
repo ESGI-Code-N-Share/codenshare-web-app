@@ -36,6 +36,15 @@ export const program = {
             label: "Programme suivant",
             placeholder: "Ajouter un autre programme",
         },
+        filename: {
+            label: "Nom du fichier",
+            placeholder: "Nom du fichier",
+            limit: "Doit être inférieur à 15 lettres",
+        },
+        type: {
+            label: "Type",
+            placeholder: "Choisissez le type",
+        },
     },
     visibilities: {
         private: "Privé",
