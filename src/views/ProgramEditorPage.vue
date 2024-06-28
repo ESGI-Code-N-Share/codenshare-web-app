@@ -18,11 +18,29 @@ const router = useRouter();
 const toastNotifications = new ToastService(useToast());
 
 const loading = ref(false);
+const programItemOptions = ref([
+  {
+    label: 'Edit',
+    icon: 'pi pi-pencil',
+    command: () => sidebarProgramEditor.value = true
+  },
+  {
+    label: 'Pipeline',
+    icon: 'pi pi-bolt',
+    command: () => openPipelineGraph()
+  },
+  {
+    label: 'Test',
+    icon: 'pi pi-play',
+    command: () => sidebarProgramTest.value = true
+  },
+]);
+const consoleExpanded = ref(false);
 
 const program = ref<Program>();
 const language = ref();
 const version = ref();
-const output = ref('');
+const output = ref('')
 
 const sidebarProgramEditor = ref(false);
 const sidebarProgramTest = ref(false);
@@ -47,6 +65,10 @@ onMounted(async () => {
 
   await fetchProgram(programId);
 })
+
+function openPipelineGraph() {
+
+}
 
 const fetchProgram = async (programId: ProgramId) => {
   try {
@@ -107,37 +129,44 @@ const onRunProgram = async () => {
       <Button icon="pi pi-arrow-left" severity="secondary" @click="router.back()"/>
       <h2 class="p-0 m-0">{{ $t('global.pages.editor') }}</h2>
       <div class="flex gap-2">
-        <Button severity="secondary" style="color: #49DE80;" @click="sidebarProgramTest = true">
-          <span class="hidden sm:block mr-2">{{ $t('program.buttons.test') }}</span>
-          <svg height="14" viewBox="0 0 384 512" width="10.5" xmlns="http://www.w3.org/2000/svg">
-            <path
-                d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
-                fill="#49de80"/>
-          </svg>
-        </Button>
-        <Button icon="pi pi-pencil" severity="secondary" style="" @click="sidebarProgramEditor = true"/>
+        <SplitButton :label="$t('program.buttons.save')" :model="programItemOptions" severity="secondary"
+                     style="" @click="onSaveProgram()"/>
       </div>
     </div>
     <div v-if="!program" class="flex justify-content-center align-items-center h-full">
       <ProgressSpinner/>
     </div>
 
-    <div v-if="program" class="h-full">
+    <div v-if="program" class="h-full relative">
       <VAceEditor
           v-model:value="program.code"
           lang="javascript"
           style="height: 10em; min-height: 100%;"
           theme="monokai"/>
+      <div class="w-full absolute bottom-0 z-5 bg-black-alpha-90 p-2">
+        <div :class="{'w-full': consoleExpanded}" class="bg-black-alpha-90">
+          <Button
+              :label="$t('program.buttons.console')"
+              class="hover:bg-gray-800 text-sm"
+              severity="secondary"
+              text
+              @click="consoleExpanded = !consoleExpanded"
+          />
+          <div v-if="consoleExpanded" class="pl-3 bg-gray-900 p-2 mt-2 border-round">
+            <pre><code>{{ output }}</code></pre>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Sidebar Program   -->
     <SideBar
         v-if="program"
         v-model:visible="sidebarProgramEditor"
+        :header="$t('program.configure')"
         :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
         blockScroll
         class="border-0 "
-        :header="$t('program.configure')"
         modal
         position="right"
         style="min-width: 350px;"
@@ -148,24 +177,25 @@ const onRunProgram = async () => {
                    @onFileSelected="program.imageURL = $event.fileUrl"/>
 
         <InputText v-model="program.name" :placeholder="$t('program.forms.name.placeholder')"/>
-        <Textarea v-model="program.description" :placeholder="$t('program.forms.description.placeholder')" class="h-5rem w-full text-sm"
+        <Textarea v-model="program.description" :placeholder="$t('program.forms.description.placeholder')"
+                  class="h-5rem w-full text-sm"
                   cols="30"
                   rows="5"/>
 
         <Dropdown
             v-model="language"
             :options="languages"
+            :placeholder="$t('program.forms.language.placeholder')"
             data-key="value"
             option-label="label"
-            :placeholder="$t('program.forms.language.placeholder')"
             @change="program.language = $event.value.value"
         />
         <Dropdown
             v-if="program.language === 'java' && program.version !== undefined"
             v-model="version"
             :options="versions"
-            option-label="label"
             :placeholder="$t('program.forms.version.placeholder')"
+            option-label="label"
             @change="program.version = $event.value.value"
         />
 
@@ -178,9 +208,9 @@ const onRunProgram = async () => {
     <SideBar
         v-if="program"
         v-model:visible="sidebarProgramTest"
+        :header="$t('program.test')"
         :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
         blockScroll
-        :header="$t('program.test')"
         class="border-0 md:w-30rem"
         modal
         position="right"
@@ -196,10 +226,10 @@ const onRunProgram = async () => {
         <!--        <ProgramListItem />-->
         <Button
             v-tooltip.bottom="'Unavailable for now'"
+            :label="$t('program.forms.nextProgram.placeholder')"
             class="text-color-secondary"
             icon="pi pi-plus"
             icon-pos="right"
-            :label="$t('program.forms.nextProgram.placeholder')"
             severity="secondary"
         />
 
@@ -210,12 +240,12 @@ const onRunProgram = async () => {
         <OutputFile/>
 
         <Button
+            :label="$t('program.buttons.execute')"
             :loading="loading"
             class="text-center justify-content-center mt-2"
-            severity="secondary"
-            :label="$t('program.buttons.execute')"
-            style="color: #49DE80; background: linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), #27272A;"
             icon-pos="right"
+            severity="secondary"
+            style="color: #49DE80; background: linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), #27272A;"
             @click="onRunProgram()"
         />
       </div>

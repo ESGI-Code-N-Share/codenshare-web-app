@@ -53,6 +53,7 @@ export const program = {
         test: "Tester",
         execute: "Exécuter",
         download: "Télécharger",
+        console: "Console",
     },
     no_programs: "Vous n'avez pas encore de programme.",
 }
