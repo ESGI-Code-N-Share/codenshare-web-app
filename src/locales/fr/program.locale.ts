@@ -55,15 +55,20 @@ export const program = {
     buttons: {
         new: "Nouveau",
         save: "Enregistrer",
+        reload: "Recharger",
         use: "Utiliser",
         share: "Partager",
         delete: "Supprimer",
         import: "Importer",
         edit: "Modifier",
+        pipeline: "Pipeline",
         test: "Tester",
         execute: "Exécuter",
         download: "Télécharger",
         console: "Console",
+    },
+    errors: {
+        not_enough_ports: "Pas assez de port. Attendu: {inputs} entrée(s) et {outputs} sortie(s).",
     },
     no_programs: "Vous n'avez pas encore de programme.",
 }

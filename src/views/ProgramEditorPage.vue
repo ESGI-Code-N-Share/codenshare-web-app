@@ -5,7 +5,6 @@ import {useRoute, useRouter} from "vue-router";
 import {VAceEditor} from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
-import OutputFile from "@/components/files/OutputFile.vue";
 import InputFile from "@/components/files/InputFile.vue";
 import {Program, ProgramId, ProgramLanguages} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
@@ -13,6 +12,8 @@ import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import {SocketListener} from "@/listener/socket-listener";
 import ProgramPipelineGraph from "@/components/programs/ProgramPipelineGraph.vue";
+import ProgramPipelineTest from "@/components/programs/ProgramPipelineTest.vue";
+import ProgramPipelinesGraph from "@/components/programs/ProgramPipelinesGraph.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -21,22 +22,43 @@ const toastNotifications = new ToastService(useToast());
 const loading = ref(false);
 const programItemOptions = ref([
   {
-    label: 'Edit',
-    icon: 'pi pi-pencil',
-    command: () => sidebarProgramEditor.value = true
-  },
-  {
     label: 'Pipeline',
     icon: 'pi pi-bolt',
     command: () => openPipelineGraph.value = true
   },
   {
-    label: 'Test',
+    label: 'Historique',
     icon: 'pi pi-play',
-    command: () => sidebarProgramTest.value = true
+    command: () => openCodeHistory.value = true
+  },
+  {
+    label: 'Configurer',
+    icon: 'pi pi-cog',
+    command: () => sidebarProgramEditor.value = true
+  },
+  {
+    separator: true
+  },
+  {
+    label: 'Supprimer',
+    icon: 'pi pi-trash',
+    command: async () => {
+      try {
+        if (program.value) {
+          await CodeNShareProgramApi.delete(program.value.programId);
+          await router.push({name: 'programs'});
+        }
+        toastNotifications.showSuccess("Programme supprimé");
+      } catch (e) {
+        console.error(e);
+        toastNotifications.showError("Une erreur s'est produite lors de la suppression du programme");
+      }
+    }
   },
 ]);
 const consoleExpanded = ref(false);
+const testExpanded = ref(false);
+const pipelineExpanded = ref(false);
 
 const program = ref<Program>();
 const language = ref();
@@ -44,8 +66,9 @@ const version = ref();
 const output = ref('')
 
 const sidebarProgramEditor = ref(false);
-const sidebarProgramTest = ref(false);
+const openCodeHistory = ref(false);
 const openPipelineGraph = ref(false)
+const openPipelineTest = ref(false)
 
 const languages = ref<{ label: string, value: ProgramLanguages }[]>([
   {label: 'Javascript', value: 'javascript'},
@@ -154,26 +177,68 @@ const onRunProgram = async () => {
       <ProgressSpinner/>
     </div>
 
-    <div v-if="program" class="h-full relative">
+    <div v-if="program" ref="pipelineContainerHeight" class="h-full relative">
       <VAceEditor
           v-model:value="program.code"
           lang="javascript"
           style="height: 10em; min-height: 100%;"
           theme="monokai"/>
-      <div class="w-full absolute bottom-0 z-5 bg-black-alpha-90 p-2">
-        <div :class="{'w-full': consoleExpanded}" class="bg-black-alpha-90">
-          <Button
-              :label="$t('program.buttons.console')"
-              class="hover:bg-gray-800 text-sm"
-              severity="secondary"
-              text
-              @click="consoleExpanded = !consoleExpanded"
-          />
-          <div v-if="consoleExpanded" class="pl-3 bg-gray-900 p-2 mt-2 border-round">
-            <pre><code>{{ output }}</code></pre>
+      <div
+          :class="{'h-full sm:px-3 sm:pb-3': testExpanded || pipelineExpanded}"
+          class="w-full absolute bottom-0 z-5 bg-black-alpha-90 p-3 sm:p-2 overflow-scroll">
+        <div ref="pipelineContainer"
+             class="flex justify-content-between align-items-center gap-2 overflow-hidden overflow-x-scroll">
+          <div class="flex">
+            <Button
+                :class="{ 'bg-gray-800 text-base': consoleExpanded }"
+                :label="$t('program.buttons.console')"
+                class="hover:bg-gray-800 text-sm mr-2"
+                severity="secondary"
+                text
+                @click="consoleExpanded = !consoleExpanded; testExpanded = false;"
+            />
+            <Button
+                :class="{ 'bg-gray-800 text-base': testExpanded }"
+                :label="$t('program.buttons.test')"
+                class="hover:bg-gray-800 text-sm mr-2"
+                severity="secondary"
+                text
+                @click="testExpanded = !testExpanded; consoleExpanded = false;"
+            />
+            <Button
+                v-if="testExpanded"
+                :label="$t('program.buttons.pipeline')"
+                class="hover:bg-gray-800 text-sm mr-2 gradient-text-primary"
+                severity="secondary"
+                text
+                @click="pipelineExpanded = true"
+            />
+          </div>
+          <div>
+            <Button :loading="loading" severity="secondary" style="color: #49DE80;" @click="onRunProgram()">
+              <span class="hidden sm:block mr-2 text-sm">{{ $t('program.buttons.execute') }}</span>
+              <svg height="14" viewBox="0 0 384 512" width="10.5" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
+                    fill="#49de80"/>
+              </svg>
+            </Button>
           </div>
         </div>
+        <!-- Console   -->
+        <div v-if="consoleExpanded" class="bg-gray-900 p-3 mt-3 border-round">
+          <pre><code>{{ output }}</code></pre>
+        </div>
+        <!-- Pipelines Test   -->
+        <div v-show="testExpanded" class="bg-gray-900 p-3 mt-3 border-round">
+          <ProgramPipelineTest :programs="[program, program]"/>
+        </div>
+        <!-- Modal Pipelines Graph   -->
+        <Dialog v-model:visible="pipelineExpanded" :draggable="false" :header="$t('program.pipeline')" modal>
+          <ProgramPipelinesGraph :programs="[program, program]"/>
+        </Dialog>
       </div>
+
     </div>
 
     <!-- Sidebar Program   -->
@@ -219,65 +284,6 @@ const onRunProgram = async () => {
         <Button :label="$t('program.buttons.save')" icon="pi pi-save" icon-pos="right" severity="success"
                 @click="onSaveProgram()"/>
       </div>
-    </SideBar>
-
-    <!-- Sidebar Test   -->
-    <SideBar
-        v-if="program"
-        v-model:visible="sidebarProgramTest"
-        :header="$t('program.test')"
-        :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
-        blockScroll
-        class="border-0 md:w-30rem"
-        modal
-        position="right"
-        style="min-width: 350px;"
-    >
-      <div class="flex flex-column align-items-stretch gap-3">
-        <InputFile accept="image/*" @onFileSelected="program.imageURL = $event.fileUrl"/>
-
-        <div class="text-center">
-          <i class="pi pi-chevron-down text-3xl gradient-text-primary"/>
-        </div>
-
-        <!--        <ProgramListItem />-->
-        <Button
-            v-tooltip.bottom="'Unavailable for now'"
-            :label="$t('program.forms.nextProgram.placeholder')"
-            class="text-color-secondary"
-            icon="pi pi-plus"
-            icon-pos="right"
-            severity="secondary"
-        />
-
-        <div class="text-center">
-          <i class="pi pi-equals text-3xl gradient-text-primary"/>
-        </div>
-
-        <OutputFile/>
-
-        <Button
-            :label="$t('program.buttons.execute')"
-            :loading="loading"
-            class="text-center justify-content-center mt-2"
-            icon-pos="right"
-            severity="secondary"
-            style="color: #49DE80; background: linear-gradient(0deg, rgba(0, 0, 0, 0.20) 0%, rgba(0, 0, 0, 0.20) 100%), #27272A;"
-            @click="onRunProgram()"
-        />
-      </div>
-
-      <!-- Divider     -->
-      <div class="flex justify-content-center py-4">
-        <Divider class="m-0" style="width: 75%;" type="dashed"/>
-      </div>
-
-      <!-- Console     -->
-      <div class="flex flex-column gap-2">
-        <h3 class="text-lg m-0 p-0">Console</h3>
-        <pre><code>{{ output }}</code></pre>
-      </div>
-
     </SideBar>
 
     <!-- Modal Pipeline Graph   -->
