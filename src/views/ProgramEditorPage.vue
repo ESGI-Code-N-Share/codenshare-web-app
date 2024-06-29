@@ -14,6 +14,7 @@ import {SocketListener} from "@/listener/socket-listener";
 import ProgramPipelineGraph from "@/components/programs/ProgramPipelineGraph.vue";
 import ProgramPipelineTest from "@/components/programs/ProgramPipelineTest.vue";
 import ProgramPipelinesGraph from "@/components/programs/ProgramPipelinesGraph.vue";
+import ProgramCodeHistory from "@/components/programs/ProgramCodeHistory.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -28,7 +29,7 @@ const programItemOptions = ref([
   },
   {
     label: 'Historique',
-    icon: 'pi pi-play',
+    icon: 'pi pi-clock',
     command: () => openCodeHistory.value = true
   },
   {
@@ -99,6 +100,7 @@ const fetchProgram = async (programId: ProgramId) => {
     }
 
     //todo remove the instruction below
+    program.value!.code = 'console.log("Hello World, sounds a bit cliché but it works!")'
     program.value!.instructions = {
       inputs: [
         {name: 'input1', type: 'image'},
@@ -109,6 +111,18 @@ const fetchProgram = async (programId: ProgramId) => {
         {name: 'output2', type: 'image'},
       ]
     }
+    program.value!.codeHistories = [
+      {
+        codeHistoryId: '1',
+        code: 'console.log("Hello World, sounds a bit cliché but it works!")',
+        createdAt: new Date(),
+      },
+      {
+        codeHistoryId: '2',
+        code: 'console.log("My first program")',
+        createdAt: new Date(),
+      },
+    ]
 
     language.value = languages.value.find(l => l.value === program.value?.language);
     version.value = versions.value.find(v => v.value === program.value?.version);
@@ -289,6 +303,21 @@ const onRunProgram = async () => {
     <!-- Modal Pipeline Graph   -->
     <Dialog v-model:visible="openPipelineGraph" :header="$t('program.pipeline')" modal>
       <ProgramPipelineGraph v-if="program" :program="program"/>
+    </Dialog>
+
+    <!-- Modal Code History   -->
+    <Dialog
+        v-model:visible="openCodeHistory"
+        :header="$t('program.code_history')"
+        :pt="{content: 'h-full'}"
+        :style="{ width: '80%', height: '80%' }"
+        modal
+    >
+      <ProgramCodeHistory
+          v-if="program"
+          :program="program"
+          @on-import="program.code = $event.code; openCodeHistory = false"
+      />
     </Dialog>
   </div>
 

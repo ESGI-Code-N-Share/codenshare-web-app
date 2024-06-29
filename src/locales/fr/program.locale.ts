@@ -3,6 +3,7 @@ export const program = {
     configure: "Configuration",
     pipeline: "Configuration des pipelines",
     test: "Test",
+    code_history: "Historique du code",
     output_files: {
         title: "Fichiers de sortie",
         empty: "Aucun fichier de sortie",

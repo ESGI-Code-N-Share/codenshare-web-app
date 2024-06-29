@@ -52,6 +52,8 @@ import {createPinia} from "pinia";
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import {createI18n} from 'vue-i18n'
 import {fr, pt} from "@/locales";
+import Splitter from "primevue/splitter";
+import SplitterPanel from "primevue/splitterpanel";
 
 const currentLanguage = localStorage.getItem('language') || 'fr';
 
@@ -137,6 +139,8 @@ const app = createApp(App)
     .component('MultiSelect', MultiSelect)
     .component('ProgressSpinner', ProgressSpinner)
     .component('VirtualScroller', VirtualScroller)
+    .component('Splitter', Splitter)
+    .component('SplitterPanel', SplitterPanel)
 
 
 app.mount("#app");
