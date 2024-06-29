@@ -6,9 +6,10 @@ import {dia, shapes} from "@joint/core";
 import {ImageRectangle, ProgramRectangle} from "@/utils/graph.util";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import {CodeNShareProgramApi} from "@/api/codenshare";
 
 interface ProgramPipelinesGraphProps {
-  programs: Program[];
+  instructions: { programId: string, inputs: ProgramInstructionsInput, outputs: ProgramInstructionsOutput }[]
 }
 
 const props = defineProps<ProgramPipelinesGraphProps>()
@@ -18,12 +19,22 @@ const toastNotifications = new ToastService(useToast());
 
 const pipelineEl = ref<HTMLDivElement>()
 
+const programs = ref<Program[]>([])
 const graph = ref<dia.Graph>()
 const paper = ref<dia.Paper>()
 
-onMounted(() => {
-  // format the program into a graph
-  initGraph()
+onMounted(async () => {
+  try {
+    const promises = props.instructions.map((instruction) => CodeNShareProgramApi.get(instruction.programId))
+    programs.value = await Promise.all(promises);
+    if (programs.value.length > 0) {
+      toastNotifications.showSuccess("Programs fetched successfully");
+      initGraph()
+    }
+  } catch (e) {
+    console.error(e);
+    toastNotifications.showError("Failed to fetch programs");
+  }
 })
 
 
@@ -32,6 +43,12 @@ function setLinkEventHandlers() {
 
   let tempLink: dia.Link | null = null;
   paper.value.on('link:pointerdown', function (linkView) {
+    //if the link is image to program then it's indestructible
+    if (linkView.model.id) {
+      if (String(linkView.model.id).includes('indestructible')) {
+        return
+      }
+    }
     tempLink = linkView.model;
   });
 
@@ -75,21 +92,29 @@ function initElements() {
   if (!graph.value || !paper.value) return
 
   //fixme position must be inside the paper
-  const programs = []
   let offset = 0
-  for (const program of props.programs) {
-    const programRectangle = new ProgramRectangle({x: 250, y: 50 + offset})
+  for (const program of programs.value) {
+    const programRectangle = new ProgramRectangle({x: 200, y: 125 + (offset * 3)})
     const p = programRectangle.toJointJsElement();
-    programs.push(p)
+    graph.value.addCell(p);
+
 
     const inputs = program.instructions.inputs.map((input, index) => {
-      const imageRectangle = new ImageRectangle({x: 100, y: 50 + (offset * 2) + index * 100})
+      const imageRectangle = new ImageRectangle(
+          {x: 100 + index * 200, y: 50 + (offset * 3)},
+          input.name || '',
+          {name: program.instructions.inputs[index].name, type: program.instructions.inputs[index].type}
+      )
       const image = imageRectangle.toJointJsElement();
       image.prop('metadata', {name: input.name || '', type: input.type || ''})
       return image
     })
     const outputs = program.instructions.outputs.map((output, index) => {
-      const imageRectangle = new ImageRectangle({x: 400, y: 50 + (offset * 2) + index * 100})
+      const imageRectangle = new ImageRectangle(
+          {x: 100 + index * 200, y: 200 + (offset * 3)},
+          output.name || '',
+          {name: program.instructions.outputs[index].name, type: program.instructions.outputs[index].type}
+      )
       const image = imageRectangle.toJointJsElement();
       image.prop('metadata', {name: output.name || '', type: output.type || ''})
       return image
@@ -98,8 +123,38 @@ function initElements() {
     graph.value.addCells(inputs);
     graph.value.addCells(outputs);
     offset += 100
+
+    // link program to inputs and outputs (indestructible)
+    for (const [index, input] of Object.entries(inputs)) {
+      const link = new shapes.standard.Link({
+        id: `indestructible-${input.id}-${p.id}-${index}`,
+        source: {id: input.id, port: 'out0'},
+        target: {id: p.id, port: `in${index}`},
+        attrs: {
+          line: {
+            stroke: 'white',
+            strokeWidth: 1,
+          }
+        },
+      });
+      graph.value.addCells([link]);
+    }
+
+    for (const [index, output] of Object.entries(outputs)) {
+      const link = new shapes.standard.Link({
+        id: `indestructible-${p.id}-${output.id}-${index}`,
+        source: {id: p.id, port: `out${index}`},
+        target: {id: output.id, port: 'in0'},
+        attrs: {
+          line: {
+            stroke: 'white',
+            strokeWidth: 1,
+          }
+        },
+      });
+      graph.value.addCells([link]);
+    }
   }
-  graph.value.addCells(programs);
 }
 
 
@@ -141,24 +196,16 @@ function initPaper() {
       if (!portSource || !portTarget) {
         return false;
       }
-      // image and programs can only be connected to programs
-      if (cellViewS.model.attributes.type === 'standard.ImageRectangle' && cellViewT.model.attributes.type !== 'standard.ProgramRectangle') {
-        return false;
-      }
-      //only out can be connected to in and vice versa
+
+      // image "out" can be linked to image "in" only
       if (portSource.includes('out') && portTarget.includes('out')) {
-        return false;
+        return false
       }
-      // if the target port is full (length === 1), return false
-      const connections = graph.value!.getConnectedLinks(cellViewT.model)
-      if (connections.filter(link => link.get('target').port === portTarget).length === 1) {
-        return false;
+      // only one link to "in" port
+      if (portTarget.includes('in') && graph.value!.getConnectedLinks(cellViewT.model, {inbound: true}).length > 0) {
+        return false
       }
-      // // if the source port is already connected to a port, return false
-      // if(connections.filter(link => link.get('source').port === portSource).length === 1) {
-      //   return false;
-      // }
-      return true
+      return true;
     },
   })
 }
@@ -170,53 +217,85 @@ const mapToJsObject = async () => {
   }
 
   const cells = graph.value!.getCells()
-  const program = cells.find(cell => cell.attributes.type === 'standard.ProgramRectangle')
-  if (!program) {
-    toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
-    return;
+  const programCells = cells.filter(cell => cell.attributes.type === 'standard.ProgramRectangle')
+
+  //objectif d'avoir ce format la
+  type ProgramInstructionsInputOutput = {
+    name: string,
+    type: string,
+    file: null,
+  }
+  type ProgramInstructions = {
+    programId: string,
+    inputs: ProgramInstructionsInputOutput[],
+    outputs: ProgramInstructionsInputOutput[],
   }
 
-  const inputs: ProgramInstructionsInput[] = graph.value.getConnectedLinks(program, {inbound: true}).map(link => {
-    const cell = link.get('source').id
-    const metadata = graph.value!.getCell(cell)?.prop('metadata')
-    return {
-      name: metadata?.name || '',
-      type: metadata?.type || '',
-    }
-  })
-  const outputs: ProgramInstructionsOutput[] = graph.value.getConnectedLinks(program, {outbound: true}).map(link => {
-    const cell = link.get('target').id
-    const metadata = graph.value!.getCell(cell)?.prop('metadata')
-    return {
-      name: metadata?.name || '',
-      type: metadata?.type || '',
-    }
-  })
+  const instructions: ProgramInstructions[] = []
+  let index = 0
+  for (const program of programCells) {
+    //récupérer les inputs des rectangles qui sont connectés à ce program
 
-  // console.log({
-  //   programId: props.program.programId,
-  //   inputs: inputs,
-  //   outputs: outputs,
-  // })
-  //
-  // if (inputs.length !== props.program.instructions.inputs.length || outputs.length !== props.program.instructions.outputs.length) {
-  //   toastNotifications.showError("Le programme doit avoir le même nombre d'entrées et de sorties");
-  //   return;
-  // }
-  //
-  // try {
-  //   loading.value.update = true;
-  //   await CodeNShareProgramApi.updateInstructions(props.program.programId, {
-  //     inputs: inputs,
-  //     outputs: outputs,
-  //   })
-  //   toastNotifications.showSuccess("Modifications enregistrées");
-  // } catch (e) {
-  //   console.error(e);
-  //   toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
-  // } finally {
-  //   loading.value.update = false;
-  // }
+    const programLinkInputs = graph.value!.getConnectedLinks(program, {inbound: true})
+    const inputs = programLinkInputs.map(programLink => {
+      const source = programLink.get('source').id
+      const sourceCell = graph.value!.getCell(source)
+
+      if (index === 0) {
+        const metadata = sourceCell?.prop('metadata')
+        return {
+          name: metadata?.name || '',
+          type: metadata?.type || '',
+          file: null,
+        }
+      }
+
+      const _inputs = graph.value?.getConnectedLinks(sourceCell, {inbound: true})
+      if (_inputs && _inputs.length > 0) {
+        const _sourceCell = _inputs[0].get('source').id
+        const _source = graph.value!.getCell(_sourceCell)
+        const metadata = _source?.prop('metadata')
+        return {
+          name: metadata?.name || '',
+          type: metadata?.type || '',
+          file: null,
+        }
+      }
+
+      //todo cannot continue
+      return {
+        name: '',
+        type: '',
+        file: null,
+      }
+    })
+
+    const programLinkOutputs = graph.value!.getConnectedLinks(program, {outbound: true})
+    const outputs = programLinkOutputs.map(programLink => {
+      const target = programLink.get('target').id
+      const targetCell = graph.value!.getCell(target)
+      const metadata = targetCell?.prop('metadata')
+      return {
+        name: metadata?.name || '',
+        type: metadata?.type || '',
+        file: null,
+      }
+    })
+
+    console.log(inputs)
+    console.log(outputs)
+
+    instructions.push({
+      programId: programs.value[index].programId,
+      inputs: inputs,
+      outputs: outputs,
+    })
+    index += 1
+  }
+
+  console.log(instructions)
+
+  emit('onUpdate', instructions)
 }
 
 const initGraph = () => {

@@ -113,26 +113,62 @@ function initElements() {
   if (!graph.value || !paper.value) return
 
   //fixme position must be inside the paper
-  const programRectangle = new ProgramRectangle({x: 250, y: 150})
+  const programRectangle = new ProgramRectangle({x: 200, y: 175})
   const program = programRectangle.toJointJsElement();
+  graph.value.addCell(program);
 
   const inputs = props.program.instructions.inputs.map((input, index) => {
-    const imageRectangle = new ImageRectangle({x: 100, y: 50 + index * 100})
+    const imageRectangle = new ImageRectangle(
+        {x: 100 + index * 200, y: 50},
+        input.name || '',
+        {name: props.program.instructions.inputs[index].name, type: props.program.instructions.inputs[index].type}
+    )
     const image = imageRectangle.toJointJsElement();
     image.prop('metadata', {name: input.name || '', type: input.type || ''})
     return image
   })
   const outputs = props.program.instructions.outputs.map((output, index) => {
-    const imageRectangle = new ImageRectangle({x: 400, y: 50 + index * 100})
+    const imageRectangle = new ImageRectangle(
+        {x: 100 + index * 200, y: 300},
+        output.name || '',
+        {name: props.program.instructions.outputs[index].name, type: props.program.instructions.outputs[index].type}
+    )
     const image = imageRectangle.toJointJsElement();
     image.prop('metadata', {name: output.name || '', type: output.type || ''})
     return image
   })
 
-  // Add the area to the graph
-  graph.value.addCell(program);
   graph.value.addCells(inputs);
   graph.value.addCells(outputs);
+
+  // link program to inputs and outputs
+  for (const [index, input] of Object.entries(inputs)) {
+    const link = new shapes.standard.Link({
+      source: {id: input.id, port: 'out0'},
+      target: {id: program.id, port: `in${index}`},
+      attrs: {
+        line: {
+          stroke: 'white',
+          strokeWidth: 1,
+        }
+      },
+    });
+    graph.value.addCells([link]);
+  }
+
+  for (const [index, output] of Object.entries(outputs)) {
+    const link = new shapes.standard.Link({
+      source: {id: program.id, port: `out${index}`},
+      target: {id: output.id, port: 'in0'},
+      attrs: {
+        line: {
+          stroke: 'white',
+          strokeWidth: 1,
+        }
+      },
+    });
+    graph.value.addCells([link]);
+  }
 }
 
 
@@ -174,10 +210,19 @@ function initPaper() {
       if (!portSource || !portTarget) {
         return false;
       }
-      // image and programs can only be connected to programs
-      if (cellViewS.model.attributes.type === 'standard.ImageRectangle' && cellViewT.model.attributes.type !== 'standard.ProgramRectangle') {
-        return false;
+      //image "out" can be only connected to program "in"
+      if (cellViewS.model.attributes.type === 'standard.ImageRectangle' && cellViewT.model.attributes.type === 'standard.ProgramRectangle') {
+        if (portSource.includes('out') && portTarget.includes('in')) {
+          return true;
+        }
       }
+      // image out can be connected to image in
+      if (cellViewS.model.attributes.type === 'standard.ImageRectangle' && cellViewT.model.attributes.type === 'standard.ImageRectangle') {
+        if (portSource.includes('out') && portTarget.includes('in')) {
+          return true;
+        }
+      }
+
       //only out can be connected to in and vice versa
       if (portSource.includes('out') && portTarget.includes('out')) {
         return false;

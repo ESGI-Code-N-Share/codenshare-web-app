@@ -18,10 +18,12 @@ abstract class Shape implements IShape {
     abstract readonly fontSize: number;
     text: string;
     position: IPosition;
+    metadata: { name: string, type: string };
 
-    protected constructor(position: IPosition, text: string) {
+    protected constructor(position: IPosition, text: string, metadata = {name: "", type: ""}) {
         this.position = position;
         this.text = text;
+        this.metadata = metadata;
     }
 
     toJointJsElement(): shapes.standard.Rectangle {
@@ -43,6 +45,7 @@ abstract class Shape implements IShape {
                     fontSize: this.fontSize,
                     fontWeight: 'bold',
                 },
+                metadata: this.metadata,
             },
         });
 
@@ -64,8 +67,8 @@ class Rectangle extends Shape {
     inputs = 1;
     outputs = 1;
 
-    constructor(position: IPosition, text: string, color: string) {
-        super(position, text);
+    constructor(position: IPosition, text: string, color: string, metadata = {name: "", type: ""}) {
+        super(position, text, metadata);
         this.color = color;
     }
 
@@ -115,8 +118,8 @@ class Rectangle extends Shape {
 }
 
 class ImageRectangle extends Rectangle {
-    constructor(position: IPosition, text = "Image") {
-        super(position, text, "#2ECC71");
+    constructor(position: IPosition, text: string, metadata: { name: string, type: string }) {
+        super(position, text, "#2ECC71", metadata);
     }
 }
 

@@ -61,6 +61,12 @@ const consoleExpanded = ref(false);
 const testExpanded = ref(false);
 const pipelineExpanded = ref(false);
 
+const globalInstructions = ref<{
+  programId: string,
+  inputs: { name: string, type: string, file: File | null }[],
+  outputs: { name: string, type: string, file: File | null }[],
+}[]>([])
+
 const program = ref<Program>();
 const language = ref();
 const version = ref();
@@ -104,7 +110,6 @@ const fetchProgram = async (programId: ProgramId) => {
     program.value!.instructions = {
       inputs: [
         {name: 'input1', type: 'image'},
-        {name: 'input2', type: 'image'},
       ],
       outputs: [
         {name: 'output1', type: 'image'},
@@ -126,6 +131,22 @@ const fetchProgram = async (programId: ProgramId) => {
 
     language.value = languages.value.find(l => l.value === program.value?.language);
     version.value = versions.value.find(v => v.value === program.value?.version);
+
+    //
+    if (program.value) {
+      const programId = program.value.programId;
+      const inputs = program.value.instructions.inputs;
+      const outputs = program.value.instructions.outputs;
+      if (!programId || !inputs || !outputs) {
+        return;
+      }
+      globalInstructions.value.push({
+        programId,
+        inputs: inputs.map(i => ({name: i.name, type: i.type, file: null})),
+        outputs: outputs.map(o => ({name: o.name, type: o.type, file: null})),
+      })
+    }
+
   } catch (e) {
     console.error(e);
     toastNotifications.showError("Une erreur s'est produite lors du chargement du programme");
@@ -149,6 +170,9 @@ const onRunProgram = async () => {
   if (program.value) {
     try {
       loading.value = true;
+      const instructions = globalInstructions.value;
+      //todo: Melissa instructions here
+
       await CodeNShareProgramApi.update(program.value);
       const task = await CodeNShareProgramApi.run(program.value.programId);
 
@@ -245,11 +269,11 @@ const onRunProgram = async () => {
         </div>
         <!-- Pipelines Test   -->
         <div v-show="testExpanded" class="bg-gray-900 p-3 mt-3 border-round">
-          <ProgramPipelineTest :programs="[program, program]"/>
+          <ProgramPipelineTest :instructions="globalInstructions" @on-update="globalInstructions = $event"/>
         </div>
         <!-- Modal Pipelines Graph   -->
         <Dialog v-model:visible="pipelineExpanded" :draggable="false" :header="$t('program.pipeline')" modal>
-          <ProgramPipelinesGraph :programs="[program, program]"/>
+          <ProgramPipelinesGraph :instructions="globalInstructions" @on-update="globalInstructions = $event"/>
         </Dialog>
       </div>
 

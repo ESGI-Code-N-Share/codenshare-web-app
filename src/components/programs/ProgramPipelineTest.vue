@@ -6,37 +6,89 @@ import {onMounted, ref} from "vue";
 import InputFile from "@/components/files/InputFile.vue";
 import OutputFile from "@/components/files/OutputFile.vue";
 import ProgramListItem from "@/components/programs/ProgramListItem.vue";
+import {CodeNShareProgramApi} from "@/api/codenshare";
+
+
+type ProgramInstructionsInputOutput = {
+  name: string,
+  type: string,
+  file: File | null,
+}
+type ProgramInstructions = {
+  programId: string,
+  inputs: ProgramInstructionsInputOutput[],
+  outputs: ProgramInstructionsInputOutput[],
+}
 
 interface ProgramPipelineTestProps {
-  programs: Program[];
+  instructions: ProgramInstructions[],
 }
 
 const props = defineProps<ProgramPipelineTestProps>()
 const emit = defineEmits(['onUpdate'])
 
 const toastNotifications = new ToastService(useToast());
-const programs = ref<Program[]>([])
 
-onMounted(() => {
-  programs.value = props.programs;
+const programs = ref<Program[]>([]);
+
+onMounted(async () => {
+  await initProgramsFetch()
 })
+
+const initProgramsFetch = async () => {
+  try {
+    const promises = props.instructions.map((instruction) => CodeNShareProgramApi.get(instruction.programId))
+    programs.value = await Promise.all(promises);
+    if (programs.value.length > 0) {
+      toastNotifications.showSuccess("Programs fetched successfully");
+    }
+  } catch (e) {
+    console.error(e);
+    toastNotifications.showError("Failed to fetch programs");
+  }
+}
 
 const isNextProgramHasEnoughPorts = (index: number) => {
   //fixme check if the next program has enough ports
-  return true;
+  // const currProgram = programs.value![index];
+  // const nextProgram = programs.value![index + 1];
+
+  // if(currProgram) {
+  //   console.log("curr =>", currProgram.instructions.inputs)
+  //   console.log("curr =>", currProgram.instructions.outputs)
+  // }
+  // if(nextProgram) {
+  //   console.log("next =>", nextProgram.instructions.inputs)
+  //   console.log("next =>", nextProgram.instructions.outputs)
+  // }
+
+  return true
 }
 
 
 const addProgram = () => {
-  const copyProgram: Program = JSON.parse(JSON.stringify(props.programs[0]))
-  copyProgram.instructions.inputs.pop()
-  copyProgram.instructions.outputs.pop()
-  programs.value!.push(copyProgram);
+  const globalInstructions = props.instructions
+  globalInstructions.push({
+    programId: "fbf3a3aa-d8fc-40d5-ad7b-fb135f7ecd31",
+    inputs: [],
+    outputs: [],
+  })
+  initProgramsFetch()
+  emit('onUpdate', globalInstructions)
+}
+
+const onFileSelected = (instruction: number, input: number, fileEvent: { file: File }) => {
+  const instructions = props.instructions
+  if (!instructions[instruction].inputs[input]) {
+    return
+  }
+  instructions[instruction].inputs[input].file = fileEvent.file
 }
 </script>
 
 <template>
   <div v-if="programs" class="flex flex-column align-items-stretch">
+    {{ instructions }}
     <div v-for="(program, i) in programs" class="flex flex-column gap-3">
       <div v-if="i < 1" class="flex justify-content-between flex-wrap gap-2">
         <div
@@ -46,8 +98,8 @@ const addProgram = () => {
             style="width: 47.5%"
         >
           <div class="text-lg">{{ input.name }}</div>
-          <!-- todo save the blob         -->
-          <InputFile :accept="input.type"/>
+          <!-- todo: Melissa save the blob or file        -->
+          <InputFile :accept="input.type" @on-file-selected="onFileSelected(i, y, $event)"/>
         </div>
       </div>
       <div v-else></div>
@@ -83,6 +135,7 @@ const addProgram = () => {
             class="flex flex-column gap-2"
             style="width: 47.5%;"
         >
+          <!-- todo check if input file is output or new input         -->
           <div class="text-lg">{{ output.name }}</div>
           <OutputFile/>
         </div>
@@ -90,7 +143,7 @@ const addProgram = () => {
     </div>
 
     <Button
-        :disabled="programs.length >= 5"
+        :disabled="programs.length >= 3"
         :label="$t('program.forms.nextProgram.placeholder')"
         class="text-color-secondary w-full mt-3 mb-2"
         icon="pi pi-plus"
