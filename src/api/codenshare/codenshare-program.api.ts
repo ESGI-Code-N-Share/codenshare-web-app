@@ -61,7 +61,6 @@ export class CodeNShareProgramApi {
     static async run(programId: ProgramId): Promise<string> {
         const body = {
             userId: localStorage.getItem('userId'),
-            programId: programId
         }
         return request<string>({method: 'POST', url: `/programs/${programId}/run`, body: body});
     }

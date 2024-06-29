@@ -5,17 +5,19 @@ import {useRoute, useRouter} from "vue-router";
 import {VAceEditor} from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
-import OutputFile from "@/components/files/OutputFile.vue";
 import InputFile from "@/components/files/InputFile.vue";
 import {Program, ProgramId, ProgramLanguages} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
+import {StorageService} from "@/services/storage.service";
 import {useToast} from "primevue/usetoast";
 import {SocketListener} from "@/listener/socket-listener";
+
 
 const route = useRoute();
 const router = useRouter();
 const toastNotifications = new ToastService(useToast());
+const storageService = new StorageService();
 
 const loading = ref(false);
 
@@ -23,6 +25,8 @@ const program = ref<Program>();
 const language = ref();
 const version = ref();
 const output = ref('');
+const input = ref<File>();
+const fileUrl = ref('');
 
 const sidebarProgramEditor = ref(false);
 const sidebarProgramTest = ref(false);
@@ -76,25 +80,37 @@ const onSaveProgram = async () => {
 }
 
 const onRunProgram = async () => {
+  // todo : adapt when Corentin's pipeline
   if (program.value) {
     try {
       loading.value = true;
       await CodeNShareProgramApi.update(program.value);
+
+      if(program.value && input.value) {
+        await storageService.upload(input.value, program.value.programId)
+      }
+
       const task = await CodeNShareProgramApi.run(program.value.programId);
 
-      await SocketListener.getResult(task, (data: string) => {
+      await SocketListener.getResult(task,  async (data: string) => {
         output.value = data
+
+        if(program.value && input.value) {
+          fileUrl.value = await storageService.getResult(program.value.programId)
+        }
+
         loading.value = false;
+
       }, (e: string) => {
         console.error(e);
         loading.value = false;
         toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
       });
 
-
     } catch (e) {
       console.error(e);
       toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
+      loading.value = false;
     }
   }
 }
@@ -187,7 +203,8 @@ const onRunProgram = async () => {
         style="min-width: 350px;"
     >
       <div class="flex flex-column align-items-stretch gap-3">
-        <InputFile accept="image/*" @onFileSelected="program.imageURL = $event.fileUrl"/>
+<!--        <InputFile accept="image/*" @onFileSelected="input = $event.fileUrl; fileName=$event.fileName"/>-->
+        <InputFile accept="image/*" @onFileSelected="input = $event.file;"/>
 
         <div class="text-center">
           <i class="pi pi-chevron-down text-3xl gradient-text-primary"/>
@@ -207,7 +224,9 @@ const onRunProgram = async () => {
           <i class="pi pi-equals text-3xl gradient-text-primary"/>
         </div>
 
-        <OutputFile/>
+<!--        <OutputFile/>-->
+<!--        <OutputFile :file="{id: fileId}" />-->
+        <InputFile v-model:file-url="fileUrl" accept="image/*"/>
 
         <Button
             :loading="loading"
