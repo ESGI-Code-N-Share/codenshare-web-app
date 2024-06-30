@@ -54,6 +54,9 @@ import {createI18n} from 'vue-i18n'
 import {fr, pt} from "@/locales";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
+import Stepper from "primevue/stepper";
+import StepperPanel from "primevue/stepperpanel";
+import PickList from "primevue/picklist";
 
 const currentLanguage = localStorage.getItem('language') || 'fr';
 
@@ -141,6 +144,9 @@ const app = createApp(App)
     .component('VirtualScroller', VirtualScroller)
     .component('Splitter', Splitter)
     .component('SplitterPanel', SplitterPanel)
+    .component('Stepper', Stepper)
+    .component('StepperPanel', StepperPanel)
+    .component('PickList', PickList)
 
 
 app.mount("#app");

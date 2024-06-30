@@ -12,7 +12,7 @@ const downloadFile = () => {
 
 <template>
   <div
-      class="drop-zone border-dashed border-gray-500 border-round p-3 text-center text-color-secondary cursor-pointer h-auto"
+      class="drop-zone border-gray-500 border-round p-3 text-center text-color-secondary cursor-pointer h-auto"
       style="background-color: var(--gray-800);"
   >
     <div v-if="!file" class="flex flex-column gap-1 justify-content-center align-items-center">

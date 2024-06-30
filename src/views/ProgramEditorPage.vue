@@ -13,7 +13,6 @@ import {useToast} from "primevue/usetoast";
 import {SocketListener} from "@/listener/socket-listener";
 import ProgramPipelineGraph from "@/components/programs/ProgramPipelineGraph.vue";
 import ProgramPipelineTest from "@/components/programs/ProgramPipelineTest.vue";
-import ProgramPipelinesGraph from "@/components/programs/ProgramPipelinesGraph.vue";
 import ProgramCodeHistory from "@/components/programs/ProgramCodeHistory.vue";
 
 const route = useRoute();
@@ -60,11 +59,12 @@ const programItemOptions = ref([
 const consoleExpanded = ref(false);
 const testExpanded = ref(false);
 const pipelineExpanded = ref(false);
+const pipelineTest = ref<InstanceType<typeof ProgramPipelineTest>>();
 
 const globalInstructions = ref<{
   programId: string,
-  inputs: { name: string, type: string, file: File | null }[],
-  outputs: { name: string, type: string, file: File | null }[],
+  inputs: { filename: string, filetype: string, type: 'input' | 'output', file: File | null }[],
+  outputs: { filename: string, filetype: string, type: 'input' | 'output', file: File | null }[],
 }[]>([])
 
 const program = ref<Program>();
@@ -142,8 +142,8 @@ const fetchProgram = async (programId: ProgramId) => {
       }
       globalInstructions.value.push({
         programId,
-        inputs: inputs.map(i => ({name: i.name, type: i.type, file: null})),
-        outputs: outputs.map(o => ({name: o.name, type: o.type, file: null})),
+        inputs: inputs.map(i => ({filename: i.name, filetype: i.type, type: 'input', file: null})),
+        outputs: outputs.map(i => ({filename: i.name, filetype: i.type, type: 'output', file: null})),
       })
     }
 
@@ -170,7 +170,8 @@ const onRunProgram = async () => {
   if (program.value) {
     try {
       loading.value = true;
-      const instructions = globalInstructions.value;
+      const instructions = pipelineTest.value?.getInstructions();
+      console.log(instructions)
       //todo: Melissa instructions here
 
       await CodeNShareProgramApi.update(program.value);
@@ -222,10 +223,10 @@ const onRunProgram = async () => {
           style="height: 10em; min-height: 100%;"
           theme="monokai"/>
       <div
-          :class="{'h-full sm:px-3 sm:pb-3': testExpanded || pipelineExpanded}"
-          class="w-full absolute bottom-0 z-5 bg-black-alpha-90 p-3 sm:p-2 overflow-scroll">
+          :class="{'h-full sm:px-3': testExpanded || pipelineExpanded}"
+          class="flex flex-column w-full absolute bottom-0 z-5 bg-black-alpha-90 p-3 sm:p-2 overflow-scroll">
         <div ref="pipelineContainer"
-             class="flex justify-content-between align-items-center gap-2 overflow-hidden overflow-x-scroll">
+             class="flex justify-content-between align-items-center gap-2 overflow-x-scroll">
           <div class="flex">
             <Button
                 :class="{ 'bg-gray-800 text-base': consoleExpanded }"
@@ -242,14 +243,6 @@ const onRunProgram = async () => {
                 severity="secondary"
                 text
                 @click="testExpanded = !testExpanded; consoleExpanded = false;"
-            />
-            <Button
-                v-if="testExpanded"
-                :label="$t('program.buttons.pipeline')"
-                class="hover:bg-gray-800 text-sm mr-2 gradient-text-primary"
-                severity="secondary"
-                text
-                @click="pipelineExpanded = true"
             />
           </div>
           <div>
@@ -268,13 +261,9 @@ const onRunProgram = async () => {
           <pre><code>{{ output }}</code></pre>
         </div>
         <!-- Pipelines Test   -->
-        <div v-show="testExpanded" class="bg-gray-900 p-3 mt-3 border-round">
-          <ProgramPipelineTest :instructions="globalInstructions" @on-update="globalInstructions = $event"/>
+        <div v-show="testExpanded" class="bg-gray-900 p-3 mt-3 border-round h-full overflow-scroll">
+          <ProgramPipelineTest ref="pipelineTest"/>
         </div>
-        <!-- Modal Pipelines Graph   -->
-        <Dialog v-model:visible="pipelineExpanded" :draggable="false" :header="$t('program.pipeline')" modal>
-          <ProgramPipelinesGraph :instructions="globalInstructions" @on-update="globalInstructions = $event"/>
-        </Dialog>
       </div>
 
     </div>

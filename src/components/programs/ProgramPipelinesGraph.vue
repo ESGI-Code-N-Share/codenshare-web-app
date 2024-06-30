@@ -1,36 +1,28 @@
 <script lang="ts" setup>
 
-import {Program, ProgramInstructionsInput, ProgramInstructionsOutput} from "@/models";
-import {onMounted, ref} from "vue";
+import {Program} from "@/models";
+import {nextTick, onMounted, ref} from "vue";
 import {dia, shapes} from "@joint/core";
-import {ImageRectangle, ProgramRectangle} from "@/utils/graph.util";
-import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
-import {CodeNShareProgramApi} from "@/api/codenshare";
+import {ToastService} from "@/services/toast.service";
+import {ImageRectangle, ProgramRectangle} from "@/utils/graph.util";
+import {DAG, IO, SimpleNode} from "@/utils/dag.util";
 
-interface ProgramPipelinesGraphProps {
-  instructions: { programId: string, inputs: ProgramInstructionsInput, outputs: ProgramInstructionsOutput }[]
-}
 
-const props = defineProps<ProgramPipelinesGraphProps>()
-const emit = defineEmits(['onUpdate'])
+const programs = defineModel('programs', {type: Array as () => Program[], default: []})
+const props = defineProps()
+const emit = defineEmits(['onInstructions'])
 
 const toastNotifications = new ToastService(useToast());
 
 const pipelineEl = ref<HTMLDivElement>()
 
-const programs = ref<Program[]>([])
 const graph = ref<dia.Graph>()
 const paper = ref<dia.Paper>()
 
 onMounted(async () => {
   try {
-    const promises = props.instructions.map((instruction) => CodeNShareProgramApi.get(instruction.programId))
-    programs.value = await Promise.all(promises);
-    if (programs.value.length > 0) {
-      toastNotifications.showSuccess("Programs fetched successfully");
-      initGraph()
-    }
+    initGraph()
   } catch (e) {
     console.error(e);
     toastNotifications.showError("Failed to fetch programs");
@@ -89,42 +81,61 @@ function setLinkEventHandlers() {
 }
 
 function initElements() {
-  if (!graph.value || !paper.value) return
+  if (!graph.value || !paper.value) return;
 
-  //fixme position must be inside the paper
-  let offset = 0
-  for (const program of programs.value) {
-    const programRectangle = new ProgramRectangle({x: 200, y: 125 + (offset * 3)})
+  // Constants for grid layout
+  const horizontalSpacing = 400;
+  const verticalSpacing = 250;
+  const programYOffset = 125;
+
+  let offsetX = 0;
+  let offsetY = 0;
+
+  for (const [index, program] of Object.entries(programs.value)) {
+    // Calculate grid positions
+    const row = Math.floor(parseInt(index) / 2);
+    const col = parseInt(index) % 2;
+    offsetX = col * horizontalSpacing;
+    offsetY = row * verticalSpacing;
+
+    // Position for program
+    const programRectangle = new ProgramRectangle(program.programId, {
+      x: 150 + offsetX,
+      y: programYOffset + offsetY
+    }, program.name || '');
     const p = programRectangle.toJointJsElement();
     graph.value.addCell(p);
 
-
     const inputs = program.instructions.inputs.map((input, index) => {
-      const imageRectangle = new ImageRectangle(
-          {x: 100 + index * 200, y: 50 + (offset * 3)},
-          input.name || '',
-          {name: program.instructions.inputs[index].name, type: program.instructions.inputs[index].type}
-      )
+      const x = 100 + index * 200 + offsetX;
+      const y = 50 + offsetY;
+      const randomId = Math.random().toString(36).substring(7);
+      const imageRectangle = new ImageRectangle(`input-${randomId}`, {x, y}, input.name || '', {
+        name: input.name,
+        type: input.type
+      });
       const image = imageRectangle.toJointJsElement();
-      image.prop('metadata', {name: input.name || '', type: input.type || ''})
-      return image
-    })
+      image.prop('metadata', {name: input.name || '', type: input.type || ''});
+      return image;
+    });
+
     const outputs = program.instructions.outputs.map((output, index) => {
-      const imageRectangle = new ImageRectangle(
-          {x: 100 + index * 200, y: 200 + (offset * 3)},
-          output.name || '',
-          {name: program.instructions.outputs[index].name, type: program.instructions.outputs[index].type}
-      )
+      const x = 100 + index * 200 + offsetX;
+      const y = 200 + offsetY;
+      const randomId = Math.random().toString(36).substring(7);
+      const imageRectangle = new ImageRectangle(`output-${randomId}`, {x, y}, output.name || '', {
+        name: output.name,
+        type: output.type
+      });
       const image = imageRectangle.toJointJsElement();
-      image.prop('metadata', {name: output.name || '', type: output.type || ''})
-      return image
-    })
+      image.prop('metadata', {name: output.name || '', type: output.type || ''});
+      return image;
+    });
 
     graph.value.addCells(inputs);
     graph.value.addCells(outputs);
-    offset += 100
 
-    // link program to inputs and outputs (indestructible)
+    // Link program to inputs and outputs (indestructible)
     for (const [index, input] of Object.entries(inputs)) {
       const link = new shapes.standard.Link({
         id: `indestructible-${input.id}-${p.id}-${index}`,
@@ -157,15 +168,14 @@ function initElements() {
   }
 }
 
-
 function initPaper() {
   if (!graph.value) return
 
   paper.value = new dia.Paper({
     el: pipelineEl.value,
     model: graph.value,
-    width: window.innerWidth - 75,
-    height: window.innerHeight - 200,
+    width: pipelineEl.value?.offsetWidth,
+    height: '100%',
     gridSize: 10,
     background: {
       color: 'rgba(214,214,214,0.1)',
@@ -216,101 +226,115 @@ const mapToJsObject = async () => {
     return;
   }
 
+  const instructions = new DAG()
   const cells = graph.value!.getCells()
-  const programCells = cells.filter(cell => cell.attributes.type === 'standard.ProgramRectangle')
 
-  //objectif d'avoir ce format la
-  type ProgramInstructionsInputOutput = {
-    name: string,
-    type: string,
-    file: null,
-  }
-  type ProgramInstructions = {
-    programId: string,
-    inputs: ProgramInstructionsInputOutput[],
-    outputs: ProgramInstructionsInputOutput[],
-  }
+  for (const [index, program] of Object.entries(programs.value)) {
+    const programCell = cells.find(cell => cell.id === program.programId)
+    if (!programCell) {
+      toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
+      return;
+    }
 
-  const instructions: ProgramInstructions[] = []
-  let index = 0
-  for (const program of programCells) {
-    //récupérer les inputs des rectangles qui sont connectés à ce program
-
-    const programLinkInputs = graph.value!.getConnectedLinks(program, {inbound: true})
-    const inputs = programLinkInputs.map(programLink => {
+    // inputs
+    const programLinkInputs = graph.value!.getConnectedLinks(programCell, {inbound: true})
+    const inputs: IO[] = programLinkInputs.map(programLink => {
       const source = programLink.get('source').id
       const sourceCell = graph.value!.getCell(source)
+      const metadata = sourceCell?.prop('metadata')
 
-      if (index === 0) {
-        const metadata = sourceCell?.prop('metadata')
+      if (!metadata?.type || !metadata?.name) {
+        toastNotifications.showError(`Le programme ${program.name} a une entrée invalide`)
+        throw new Error("Entrée de programme invalide")
+      }
+
+      // first program has on "in" port
+      if (parseInt(index) === 0) {
         return {
-          name: metadata?.name || '',
-          type: metadata?.type || '',
+          filename: metadata.name || '',
+          filetype: metadata.type || '',
+          type: 'input',
           file: null,
         }
       }
 
+      //else
       const _inputs = graph.value?.getConnectedLinks(sourceCell, {inbound: true})
       if (_inputs && _inputs.length > 0) {
         const _sourceCell = _inputs[0].get('source').id
         const _source = graph.value!.getCell(_sourceCell)
         const metadata = _source?.prop('metadata')
+
+        if (!metadata?.type || !metadata?.name) {
+          toastNotifications.showError(`Program ${program.name} has invalid input`)
+          throw new Error("Invalid program input")
+        }
+
         return {
-          name: metadata?.name || '',
-          type: metadata?.type || '',
+          filename: metadata.name || '',
+          filetype: metadata.type || '',
+          // if its connected to an output program => type: output
+          // else type: input
+          type: _sourceCell.includes('output') ? 'output' : 'input',
           file: null,
         }
       }
 
-      //todo cannot continue
-      return {
-        name: '',
-        type: '',
-        file: null,
-      }
+      toastNotifications.showError("Invalid program pipeline")
+      throw new Error("Invalid program pipeline")
     })
 
-    const programLinkOutputs = graph.value!.getConnectedLinks(program, {outbound: true})
-    const outputs = programLinkOutputs.map(programLink => {
+    // outputs
+    const programLinkOutputs = graph.value!.getConnectedLinks(programCell, {outbound: true})
+    const outputs: IO[] = programLinkOutputs.map(programLink => {
       const target = programLink.get('target').id
       const targetCell = graph.value!.getCell(target)
       const metadata = targetCell?.prop('metadata')
+
+      if (!metadata?.type || !metadata?.name) {
+        toastNotifications.showError(`Program ${program.name} has invalid output`)
+        throw new Error("Invalid program output")
+      }
+
       return {
-        name: metadata?.name || '',
-        type: metadata?.type || '',
+        filename: metadata.name || '',
+        filetype: metadata.type || '',
+        type: 'output',
         file: null,
       }
     })
 
-    console.log(inputs)
-    console.log(outputs)
-
-    instructions.push({
-      programId: programs.value[index].programId,
-      inputs: inputs,
-      outputs: outputs,
-    })
-    index += 1
+    instructions.addNode(new SimpleNode(program.programId, inputs, outputs))
   }
 
-  console.log(instructions)
+  try {
+    instructions.topologicalSort()
+    instructions.visualize()
 
-  emit('onUpdate', instructions)
+    const object = instructions.toJsObject()
+    const formattedInstructions = object.map(instruction => {
+      return {
+        program: programs.value.find(program => program.programId === instruction.id),
+        inputs: instruction.inputs,
+        outputs: instruction.outputs,
+      }
+    })
+    console.log(formattedInstructions)
+    emit('onInstructions', formattedInstructions)
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 const initGraph = () => {
   graph.value = new dia.Graph()
 
-  initPaper();
-  initElements();
-  setLinkEventHandlers();
-}
-
-const reloadGraph = () => {
-  if (!graph.value || !paper.value) return
-
-  graph.value.clear()
-  initGraph()
+  nextTick(() => {
+    initPaper();
+    initElements();
+    setLinkEventHandlers();
+    paper.value?.transformToFitContent({padding: 25, maxScale: 1})
+  })
 }
 
 const saveElement = () => {
@@ -321,16 +345,27 @@ const saveElement = () => {
 </script>
 
 <template>
-  <div class="relative">
+  <div class="parent-container">
     <div class="flex gap-2 justify-content-end align-items-baseline absolute top-0 right-0 p-2 z-5">
       <Button icon="pi pi-save" severity="success" @click="saveElement()"/>
     </div>
-    <div ref="pipelineEl"></div>
+    <div ref="pipelineEl" class="paper-container"></div>
   </div>
 </template>
 
 <style scoped>
 Button {
   margin: 0.15em auto;
+}
+
+.parent-container {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.paper-container {
+  width: 100%;
+  height: 100%;
 }
 </style>

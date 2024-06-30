@@ -1,4 +1,5 @@
-import {shapes} from "@joint/core";
+import {g, shapes} from "@joint/core";
+
 
 interface IPosition {
     x: number;
@@ -19,15 +20,19 @@ abstract class Shape implements IShape {
     text: string;
     position: IPosition;
     metadata: { name: string, type: string };
+    id: string | undefined;
 
-    protected constructor(position: IPosition, text: string, metadata = {name: "", type: ""}) {
+    protected constructor(id: string | undefined, position: IPosition, text: string, metadata = {name: "", type: ""}) {
+        this.id = id;
         this.position = position;
         this.text = text;
         this.metadata = metadata;
     }
 
     toJointJsElement(): shapes.standard.Rectangle {
+        const text = this.text.length > 20 ? this.text.slice(0, 20) + "..." : this.text;
         const rectangle = new shapes.standard.Rectangle({
+            id: this.id,
             type: `standard.${this.constructor.name}`,
             position: {x: this.position.x, y: this.position.y},
             size: {width: this.width, height: this.height},
@@ -40,7 +45,7 @@ abstract class Shape implements IShape {
                     ry: 3,
                 },
                 label: {
-                    text: this.text,
+                    text: text,
                     fill: '#000000',
                     fontSize: this.fontSize,
                     fontWeight: 'bold',
@@ -60,15 +65,18 @@ abstract class Shape implements IShape {
 }
 
 class Rectangle extends Shape {
-    readonly width = 100;
+    width = 100;
     readonly height = 40;
     readonly fontSize = 14;
     readonly color: string;
     inputs = 1;
     outputs = 1;
 
-    constructor(position: IPosition, text: string, color: string, metadata = {name: "", type: ""}) {
-        super(position, text, metadata);
+    constructor(id: string | undefined, position: IPosition, text: string, color: string, metadata = {
+        name: "",
+        type: ""
+    }) {
+        super(id, position, text, metadata);
         this.color = color;
     }
 
@@ -118,17 +126,18 @@ class Rectangle extends Shape {
 }
 
 class ImageRectangle extends Rectangle {
-    constructor(position: IPosition, text: string, metadata: { name: string, type: string }) {
-        super(position, text, "#2ECC71", metadata);
+    constructor(id: string, position: IPosition, text: string, metadata: { name: string, type: string }) {
+        super(id, position, text, "#2ECC71", metadata);
     }
 }
 
 class ProgramRectangle extends Rectangle {
     inputs = 2;
     outputs = 2;
+    width = 200;
 
-    constructor(position: IPosition, text = "Program") {
-        super(position, text, "#3498DB");
+    constructor(id: string, position: IPosition, text = "Program") {
+        super(id, position, text, "#3498DB");
     }
 }
 

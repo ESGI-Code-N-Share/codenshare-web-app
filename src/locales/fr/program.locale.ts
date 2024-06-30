@@ -53,6 +53,17 @@ export const program = {
         public: "En ligne",
         protected: "En ligne (Protégé)",
     },
+    tests: {
+        step1: {
+            title: "Programmes",
+        },
+        step2: {
+            title: "Pipelines",
+        },
+        step3: {
+            title: "Test",
+        },
+    },
     buttons: {
         new: "Nouveau",
         save: "Enregistrer",

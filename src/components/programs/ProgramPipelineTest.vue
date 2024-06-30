@@ -3,159 +3,166 @@ import {Program} from "@/models";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import {onMounted, ref} from "vue";
-import InputFile from "@/components/files/InputFile.vue";
-import OutputFile from "@/components/files/OutputFile.vue";
-import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 import {CodeNShareProgramApi} from "@/api/codenshare";
+import {useUserStore} from "@/stores/user.store";
+import ProgramPipelinesGraph from "@/components/programs/ProgramPipelinesGraph.vue";
+import {IO} from "@/utils/dag.util";
+import ProgramListItem from "@/components/programs/ProgramListItem.vue";
+import OutputFile from "@/components/files/OutputFile.vue";
+import InputFile from "@/components/files/InputFile.vue";
 
 
-type ProgramInstructionsInputOutput = {
-  name: string,
-  type: string,
-  file: File | null,
-}
-type ProgramInstructions = {
-  programId: string,
-  inputs: ProgramInstructionsInputOutput[],
-  outputs: ProgramInstructionsInputOutput[],
-}
+// interface ProgramPipelineTestProps {
+//
+// }
 
-interface ProgramPipelineTestProps {
-  instructions: ProgramInstructions[],
-}
-
-const props = defineProps<ProgramPipelineTestProps>()
+const props = defineProps()
 const emit = defineEmits(['onUpdate'])
 
+const userStore = useUserStore();
+const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
 
-const programs = ref<Program[]>([]);
+const programs = ref<Program[][]>([[], []]);
+const instructions = ref<{ program: Program, inputs: IO[], outputs: IO[] }[]>([]);
+
 
 onMounted(async () => {
-  await initProgramsFetch()
+  await fetchUserPrograms()
 })
 
-const initProgramsFetch = async () => {
+const fetchUserPrograms = async () => {
   try {
-    const promises = props.instructions.map((instruction) => CodeNShareProgramApi.get(instruction.programId))
-    programs.value = await Promise.all(promises);
-    if (programs.value.length > 0) {
-      toastNotifications.showSuccess("Programs fetched successfully");
-    }
+    if (!currentUser) return;
+    const userPrograms = await CodeNShareProgramApi.getByUser(currentUser.userId);
+    const promises = userPrograms.map((program) => CodeNShareProgramApi.get(program.programId));
+    const p = await Promise.all(promises);//todo remove
+    programs.value = [p.slice(0, 2), p.slice(2)]
   } catch (e) {
     console.error(e);
     toastNotifications.showError("Failed to fetch programs");
   }
 }
 
-const isNextProgramHasEnoughPorts = (index: number) => {
-  //fixme check if the next program has enough ports
-  // const currProgram = programs.value![index];
-  // const nextProgram = programs.value![index + 1];
-
-  // if(currProgram) {
-  //   console.log("curr =>", currProgram.instructions.inputs)
-  //   console.log("curr =>", currProgram.instructions.outputs)
-  // }
-  // if(nextProgram) {
-  //   console.log("next =>", nextProgram.instructions.inputs)
-  //   console.log("next =>", nextProgram.instructions.outputs)
-  // }
-
-  return true
+const onNextStep = (e: { program: Program; inputs: IO[]; outputs: IO[] }[], next: (event: Event) => void) => {
+  instructions.value = e;
+  next(e as unknown as Event)
 }
 
-
-const addProgram = () => {
-  const globalInstructions = props.instructions
-  globalInstructions.push({
-    programId: "fbf3a3aa-d8fc-40d5-ad7b-fb135f7ecd31",
-    inputs: [],
-    outputs: [],
-  })
-  initProgramsFetch()
-  emit('onUpdate', globalInstructions)
+function getInstructions() {
+  return instructions.value;
 }
 
-const onFileSelected = (instruction: number, input: number, fileEvent: { file: File }) => {
-  const instructions = props.instructions
-  if (!instructions[instruction].inputs[input]) {
-    return
-  }
-  instructions[instruction].inputs[input].file = fileEvent.file
-}
+defineExpose({
+  getInstructions
+})
+
 </script>
 
 <template>
-  <div v-if="programs" class="flex flex-column align-items-stretch">
-    {{ instructions }}
-    <div v-for="(program, i) in programs" class="flex flex-column gap-3">
-      <div v-if="i < 1" class="flex justify-content-between flex-wrap gap-2">
-        <div
-            v-for="(input, y) in program.instructions.inputs"
-            :class="{'w-full': program.instructions.inputs.length === 1}"
-            class="flex flex-column gap-2"
-            style="width: 47.5%"
-        >
-          <div class="text-lg">{{ input.name }}</div>
-          <!-- todo: Melissa save the blob or file        -->
-          <InputFile :accept="input.type" @on-file-selected="onFileSelected(i, y, $event)"/>
+  <Stepper class="h-full" linear>
+    <StepperPanel :header="$t('program.tests.step1.title')" :pt="{content: 'h-full'}">
+      <template #content="{nextCallback}">
+        <div class="flex flex-column gap-2 h-full p-2">
+          <PickList v-model="programs" class="h-full" dataKey="programId">
+            <template #sourceheader> Available</template>
+            <template #targetheader> Selected</template>
+            <template #item="slotProps">
+              {{ slotProps.item.name }}
+            </template>
+          </PickList>
+          <div class="flex justify-content-end">
+            <Button v-if="programs[1].length > 0" label="Next" @click="nextCallback"/>
+          </div>
         </div>
-      </div>
-      <div v-else></div>
+      </template>
+    </StepperPanel>
+    <StepperPanel :header="$t('program.tests.step2.title')" :pt="{content: 'h-full'}">
+      <template #content="{active, nextCallback, prevCallback}">
+        <ProgramPipelinesGraph v-if="active" v-model:programs="programs[1]"
+                               @on-instructions="onNextStep($event, nextCallback)"/>
+      </template>
+    </StepperPanel>
+    <StepperPanel :header="$t('program.tests.step3.title')" :pt="{content: 'h-full'}">
+      <template #content="{}">
+        <div class="flex flex-column gap-3 overflow-y-scroll py-4">
+          <div v-for="(instruction, i) in instructions" class="flex flex-column gap-3">
+            <div class="flex justify-content-between flex-wrap gap-2">
+              <div
+                  v-for="(input, y) in instruction.inputs.filter(g => g.type === 'input')"
+                  :class="{'w-full': instruction.inputs.filter(g => g.type === 'input').length === 1}"
+                  class="flex flex-column gap-2"
+                  style="width: 47.5%"
+              >
+                <div class="text-lg">{{ input.filename }}</div>
+                <!-- todo: Melissa save the blob or file        -->
+                <InputFile :accept="input.filetype"/>
+              </div>
+            </div>
 
-      <div class="text-center">
-        <i class="pi pi-chevron-down text-3xl gradient-text-primary"/>
-      </div>
+            <div class="text-center">
+              <i class="pi pi-chevron-down text-3xl gradient-text-primary"/>
+            </div>
 
-      <div class="flex flex-column gap-2">
-        <ProgramListItem
-            :class="{'error-ports': !isNextProgramHasEnoughPorts(i)}"
-            :program="program"
-            @on-delete="programs.splice(i, 1)"
-        />
-        <small v-if="!isNextProgramHasEnoughPorts(i)">
-          {{
-            $t('program.errors.not_enough_ports', {
-              inputs: program.instructions.outputs.length,
-              outputs: programs[i + 1]?.instructions?.inputs?.length
-            })
-          }}
-        </small>
-      </div>
+            <div class="flex flex-column gap-2">
+              <ProgramListItem
+                  :class="{'error-ports': false}"
+                  :program="instruction.program"
+                  @on-delete="programs.splice(i, 1)"
+              />
+              <!--              <small v-if="!isNextProgramHasEnoughPorts(i)">-->
+              <!--                {{-->
+              <!--                  $t('program.errors.not_enough_ports', {-->
+              <!--                    inputs: program.instructions.outputs.length,-->
+              <!--                    outputs: programs[i + 1]?.instructions?.inputs?.length-->
+              <!--                  })-->
+              <!--                }}-->
+              <!--              </small>-->
+            </div>
 
-      <div class="text-center">
-        <i class="pi pi-equals text-3xl gradient-text-primary"/>
-      </div>
+            <div class="text-center">
+              <i class="pi pi-equals text-3xl gradient-text-primary"/>
+            </div>
 
-      <div class="flex justify-content-between flex-wrap gap-2">
-        <div
-            v-for="output in program.instructions.outputs"
-            :class="{'w-full': program.instructions.outputs.length === 1}"
-            class="flex flex-column gap-2"
-            style="width: 47.5%;"
-        >
-          <!-- todo check if input file is output or new input         -->
-          <div class="text-lg">{{ output.name }}</div>
-          <OutputFile/>
+            <div class="flex justify-content-between flex-wrap gap-2">
+              <div
+                  v-for="output in instruction.outputs"
+                  :class="{'w-full': instruction.outputs.length === 1}"
+                  class="flex flex-column gap-2"
+                  style="width: 47.5%;"
+              >
+                <!-- todo check if input file is output or new input         -->
+                <div class="text-lg">{{ output.filename }}</div>
+                <OutputFile/>
+              </div>
+            </div>
+          </div>
+
+          <Button
+              :disabled="programs.length >= 3"
+              :label="$t('program.forms.nextProgram.placeholder')"
+              class="text-color-secondary w-full"
+              icon="pi pi-plus"
+              icon-pos="right"
+              severity="secondary"
+          />
+
         </div>
-      </div>
-    </div>
-
-    <Button
-        :disabled="programs.length >= 3"
-        :label="$t('program.forms.nextProgram.placeholder')"
-        class="text-color-secondary w-full mt-3 mb-2"
-        icon="pi pi-plus"
-        icon-pos="right"
-        severity="secondary"
-        @click="addProgram()"
-    />
-  </div>
+      </template>
+    </StepperPanel>
+  </Stepper>
 </template>
 
 <style scoped>
 .error-ports {
   border: 2px solid red;
+}
+
+.p-stepper {
+  flex-basis: 50rem;
+}
+
+::v-deep .p-stepper-panels {
+  height: 95%;
 }
 </style>
