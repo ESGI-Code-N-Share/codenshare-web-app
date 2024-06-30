@@ -60,7 +60,6 @@ const onSearch = async () => {
       ...users.map(u => ({type: 'user', value: u})),
       ...programs.map(p => ({type: 'program', value: p})),
     ] as Result[];
-    console.log(results.value)
   } catch (e) {
     console.error(e);
     toastNotifications.showError("Une erreur s'est produite lors de la recherche");

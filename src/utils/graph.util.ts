@@ -1,4 +1,4 @@
-import {g, shapes} from "@joint/core";
+import {shapes} from "@joint/core";
 
 
 interface IPosition {
@@ -75,9 +75,11 @@ class Rectangle extends Shape {
     constructor(id: string | undefined, position: IPosition, text: string, color: string, metadata = {
         name: "",
         type: ""
-    }) {
+    }, inputs = 1, outputs = 1) {
         super(id, position, text, metadata);
         this.color = color;
+        this.inputs = inputs;
+        this.outputs = outputs;
     }
 
     protected addPorts(rectangle: shapes.standard.Rectangle): shapes.standard.Rectangle {
@@ -132,12 +134,10 @@ class ImageRectangle extends Rectangle {
 }
 
 class ProgramRectangle extends Rectangle {
-    inputs = 2;
-    outputs = 2;
     width = 200;
 
-    constructor(id: string, position: IPosition, text = "Program") {
-        super(id, position, text, "#3498DB");
+    constructor(id: string, position: IPosition, text = "Program", input: number, output: number) {
+        super(id, position, text, "#3498DB", {name: '', type: ''}, input, output);
     }
 }
 

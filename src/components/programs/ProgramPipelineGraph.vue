@@ -28,11 +28,11 @@ const filetypes = [
 ]
 const filetypeModel = ref<typeof filetypes[0]>({label: '', value: ''})
 
-//
+const loading = ref({update: false})
+
 const selectedElement = ref<dia.ElementView>()
 const filename = ref('')
 const filetype = ref('')
-const loading = ref({update: false})
 
 const graph = ref<dia.Graph>()
 const paper = ref<dia.Paper>()
@@ -41,7 +41,6 @@ onMounted(() => {
   // format the program into a graph
   initGraph()
 })
-
 
 function setLinkEventHandlers() {
   if (!graph.value || !paper.value) return
@@ -93,16 +92,35 @@ function setSelectedElementEventHandlers() {
   // handle selecting an element
   paper.value.on('element:pointerclick', function (cellView) {
     if (cellView.model.attributes.type === 'standard.ImageRectangle') {
+      if (selectedElement.value?.model?.attributes?.attrs?.body) {
+        selectedElement.value.model.attributes.attrs.body.stroke = 'black';
+        selectedElement.value.model.attributes.attrs.body.strokeWidth = 1;
+        selectedElement.value.update(selectedElement.value.model);
+      }
+
       selectedElement.value = cellView;
-      const metadata = cellView.model.attributes.metadata || {name: '', type: ''};
+      const metadata = cellView.model.attr('metadata') || {name: '', type: ''};
       filename.value = metadata.name;
       filetype.value = metadata.type;
       filetypeModel.value = filetypes.find(f => f.value === metadata.type) || {label: '', value: ''};
+
+      //add a border to the selected element
+      if (cellView.model.attributes?.attrs?.body) {
+        cellView.model.attributes.attrs.body.stroke = 'white';
+        cellView.model.attributes.attrs.body.strokeWidth = 2;
+        cellView.update(cellView.model);
+      }
     }
   });
 
   //handle deselecting an element
   paper.value.on('blank:pointerclick', function () {
+    //Remove border from the selected element
+    if (selectedElement.value?.model?.attributes?.attrs?.body) {
+      selectedElement.value.model.attributes.attrs.body.stroke = 'black';
+      selectedElement.value.model.attributes.attrs.body.strokeWidth = 1;
+      selectedElement.value.update(selectedElement.value.model);
+    }
     selectedElement.value = undefined;
     filename.value = '';
     filetype.value = '';
@@ -113,12 +131,20 @@ function initElements() {
   if (!graph.value || !paper.value) return
 
   //fixme position must be inside the paper
-  const programRectangle = new ProgramRectangle({x: 200, y: 175})
+  const programRectangle = new ProgramRectangle(
+      props.program.programId,
+      {x: 100, y: 200},
+      props.program.name || '',
+      props.program.instructions.inputs.length,
+      props.program.instructions.outputs.length
+  )
   const program = programRectangle.toJointJsElement();
   graph.value.addCell(program);
 
   const inputs = props.program.instructions.inputs.map((input, index) => {
+    const random = Math.floor(100 + Math.random() * 1000)
     const imageRectangle = new ImageRectangle(
+        `input-${random}`,
         {x: 100 + index * 200, y: 50},
         input.name || '',
         {name: props.program.instructions.inputs[index].name, type: props.program.instructions.inputs[index].type}
@@ -128,7 +154,9 @@ function initElements() {
     return image
   })
   const outputs = props.program.instructions.outputs.map((output, index) => {
+    const random = Math.floor(100 + Math.random() * 1000)
     const imageRectangle = new ImageRectangle(
+        `output-${random}`,
         {x: 100 + index * 200, y: 300},
         output.name || '',
         {name: props.program.instructions.outputs[index].name, type: props.program.instructions.outputs[index].type}
@@ -261,6 +289,83 @@ const saveElement = () => {
   paper.value?.update()
 }
 
+
+const addPort = (type: 'in' | 'out') => {
+  if (!graph.value || !paper.value) return
+
+  const program = graph.value.getCells().find(cell => cell.attributes.type === 'standard.ProgramRectangle')
+  if (!program) return
+
+  const ports = graph.value.getConnectedLinks(program, {inbound: type === 'in', outbound: type === 'out'}).length
+  const text = type === 'in' ? 'input' : 'output'
+  const imageRectangle = new ImageRectangle(
+      `${text}-${ports + 1}`,
+      {x: 100 + ports * 200, y: type === 'in' ? 50 : 300},
+      `${text}_${ports + 1}`,
+      {name: `${text}_${ports + 1}`, type: 'image'} //default to image
+  )
+  const image = imageRectangle.toJointJsElement();
+  graph.value.addCell(image)
+
+  //get program element
+  const programElement = graph.value!.getElements().find(cell => cell.id === program.id)
+  programElement?.addPort({group: type, id: `${type}${ports}`})
+
+  if (type == 'in') {
+    const link = new shapes.standard.Link({
+      source: {id: image.id, port: 'out0'},
+      target: {id: program.id, port: `${type}${ports}`},
+      attrs: {
+        line: {
+          stroke: 'white',
+          strokeWidth: 1,
+        }
+      },
+    });
+    graph.value.addCells([link]);
+  } else if (type == 'out') {
+    const link = new shapes.standard.Link({
+      source: {id: program.id, port: `${type}${ports}`},
+      target: {id: image.id, port: 'in0'},
+      attrs: {
+        line: {
+          stroke: 'white',
+          strokeWidth: 1,
+        }
+      },
+    });
+    graph.value.addCells([link]);
+  }
+}
+
+const removeElement = () => {
+  if (!graph.value || !selectedElement.value) return
+
+  const program = graph.value.getCells().find(cell => cell.attributes.type === 'standard.ProgramRectangle')
+  if (!program) return
+
+  //1. get the port of the program it is connected to
+  const links = graph.value.getConnectedLinks(selectedElement.value.model)
+  links.forEach(link => {
+    const source = link.get('source')
+    const target = link.get('target')
+    if (source.id === program.id) {
+      const port = source.port
+      const programElement = graph.value!.getElements().find(cell => cell.id === program.id)
+      programElement?.removePort(port)
+    } else if (target.id === program.id) {
+      const port = target.port
+      const programElement = graph.value!.getElements().find(cell => cell.id === program.id)
+      programElement?.removePort(port)
+    }
+  })
+
+  //2. remove the element
+  selectedElement.value.model.remove()
+  selectedElement.value = undefined
+  paper.value?.update()
+}
+
 const mapToJsObject = async () => {
   if (!graph.value) {
     toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
@@ -276,7 +381,7 @@ const mapToJsObject = async () => {
 
   const inputs: ProgramInstructionsInput[] = graph.value.getConnectedLinks(program, {inbound: true}).map(link => {
     const cell = link.get('source').id
-    const metadata = graph.value!.getCell(cell)?.prop('metadata')
+    const metadata = graph.value!.getCell(cell)?.attr('metadata')
     return {
       name: metadata?.name || '',
       type: metadata?.type || '',
@@ -284,20 +389,14 @@ const mapToJsObject = async () => {
   })
   const outputs: ProgramInstructionsOutput[] = graph.value.getConnectedLinks(program, {outbound: true}).map(link => {
     const cell = link.get('target').id
-    const metadata = graph.value!.getCell(cell)?.prop('metadata')
+    const metadata = graph.value!.getCell(cell)?.attr('metadata')
     return {
       name: metadata?.name || '',
       type: metadata?.type || '',
     }
   })
 
-  console.log({
-    programId: props.program.programId,
-    inputs: inputs,
-    outputs: outputs,
-  })
-
-  if (inputs.length !== props.program.instructions.inputs.length || outputs.length !== props.program.instructions.outputs.length) {
+  if (inputs.length < 1 || outputs.length < 1) {
     toastNotifications.showError("Le programme doit avoir le même nombre d'entrées et de sorties");
     return;
   }
@@ -309,6 +408,8 @@ const mapToJsObject = async () => {
       outputs: outputs,
     })
     toastNotifications.showSuccess("Modifications enregistrées");
+    emit('onUpdate')
+    await reloadGraph()
   } catch (e) {
     console.error(e);
     toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
@@ -324,13 +425,21 @@ const initGraph = () => {
   initElements();
   setLinkEventHandlers();
   setSelectedElementEventHandlers();
+  paper.value?.transformToFitContent({padding: 100, maxScale: 1})
 }
 
-const reloadGraph = () => {
+const reloadGraph = async () => {
   if (!graph.value || !paper.value) return
 
-  graph.value.clear()
-  initGraph()
+  try {
+    const program = await CodeNShareProgramApi.get(props.program.programId)
+    props.program.instructions = program.instructions
+
+    graph.value.clear()
+    initGraph()
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 
@@ -338,6 +447,21 @@ const reloadGraph = () => {
 
 <template>
   <div class="relative">
+    <div class="flex gap-2 justify-content-start absolute top-0 left-0 p-2 z-5">
+      <Button
+          :label="$t('program.buttons.add_in_port')"
+          icon="pi pi-plus"
+          severity="primary"
+          @click="addPort('in')"
+      />
+      <Button
+          :label="$t('program.buttons.add_out_port')"
+          icon="pi pi-plus"
+          severity=""
+          style="background: #dc7a00; border-color: #dc7a00"
+          @click="addPort('out')"
+      />
+    </div>
     <div class="flex gap-2 justify-content-end align-items-baseline absolute top-0 right-0 p-2 z-5">
       <InputText
           v-if="selectedElement"
@@ -354,6 +478,12 @@ const reloadGraph = () => {
           data-key="value"
           option-label="label"
           @change="filetype = $event.value.value"
+      />
+      <Button
+          v-if="selectedElement"
+          icon="pi pi-trash"
+          severity="danger"
+          @click="removeElement()"
       />
       <Button
           v-if="!selectedElement"

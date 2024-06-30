@@ -75,7 +75,7 @@ const output = ref('')
 const sidebarProgramEditor = ref(false);
 const openCodeHistory = ref(false);
 const openPipelineGraph = ref(false)
-const openPipelineTest = ref(false)
+const resetTestExpanded = ref(false)
 
 const languages = ref<{ label: string, value: ProgramLanguages }[]>([
   {label: 'Javascript', value: 'javascript'},
@@ -104,30 +104,6 @@ const fetchProgram = async (programId: ProgramId) => {
     if (!program.value) {
       return await router.push({name: 'programs'});
     }
-
-    //todo remove the instruction below
-    program.value!.code = 'console.log("Hello World, sounds a bit cliché but it works!")'
-    program.value!.instructions = {
-      inputs: [
-        {name: 'input1', type: 'image'},
-      ],
-      outputs: [
-        {name: 'output1', type: 'image'},
-        {name: 'output2', type: 'image'},
-      ]
-    }
-    program.value!.codeHistories = [
-      {
-        codeHistoryId: '1',
-        code: 'console.log("Hello World, sounds a bit cliché but it works!")',
-        createdAt: new Date(),
-      },
-      {
-        codeHistoryId: '2',
-        code: 'console.log("My first program")',
-        createdAt: new Date(),
-      },
-    ]
 
     language.value = languages.value.find(l => l.value === program.value?.language);
     version.value = versions.value.find(v => v.value === program.value?.version);
@@ -234,7 +210,7 @@ const onRunProgram = async () => {
                 class="hover:bg-gray-800 text-sm mr-2"
                 severity="secondary"
                 text
-                @click="consoleExpanded = !consoleExpanded; testExpanded = false;"
+                @click="consoleExpanded = !consoleExpanded; testExpanded = false; resetTestExpanded = false"
             />
             <Button
                 :class="{ 'bg-gray-800 text-base': testExpanded }"
@@ -242,7 +218,7 @@ const onRunProgram = async () => {
                 class="hover:bg-gray-800 text-sm mr-2"
                 severity="secondary"
                 text
-                @click="testExpanded = !testExpanded; consoleExpanded = false;"
+                @click="testExpanded = !testExpanded; resetTestExpanded = false; consoleExpanded = false;"
             />
           </div>
           <div>
@@ -261,7 +237,8 @@ const onRunProgram = async () => {
           <pre><code>{{ output }}</code></pre>
         </div>
         <!-- Pipelines Test   -->
-        <div v-show="testExpanded" class="bg-gray-900 p-3 mt-3 border-round h-full overflow-scroll">
+        <div v-if="!resetTestExpanded" v-show="testExpanded"
+             class="bg-gray-900 p-3 mt-3 border-round h-full overflow-scroll">
           <ProgramPipelineTest ref="pipelineTest"/>
         </div>
       </div>
@@ -315,7 +292,11 @@ const onRunProgram = async () => {
 
     <!-- Modal Pipeline Graph   -->
     <Dialog v-model:visible="openPipelineGraph" :header="$t('program.pipeline')" modal>
-      <ProgramPipelineGraph v-if="program" :program="program"/>
+      <ProgramPipelineGraph
+          v-if="program"
+          :program="program"
+          @on-update="fetchProgram(program.programId); resetTestExpanded = true; testExpanded = false"
+      />
     </Dialog>
 
     <!-- Modal Code History   -->

@@ -30,7 +30,11 @@ export class CodeNShareProgramApi {
     }
 
     static async updateInstructions(programId: ProgramId, instructions: ProgramInstructions): Promise<void> {
-        return request<void>({method: 'PATCH', url: `/programs/${programId}/instructions`, body: instructions});
+        return request<void>({
+            method: 'PATCH', url: `/programs/${programId}/instructions`, body: {
+                instructions: instructions
+            }
+        });
     }
 
     static async update(program: Program): Promise<void> {

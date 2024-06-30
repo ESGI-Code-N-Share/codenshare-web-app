@@ -99,10 +99,13 @@ function initElements() {
     offsetY = row * verticalSpacing;
 
     // Position for program
-    const programRectangle = new ProgramRectangle(program.programId, {
-      x: 150 + offsetX,
-      y: programYOffset + offsetY
-    }, program.name || '');
+    const programRectangle = new ProgramRectangle(
+        program.programId,
+        {x: 150 + offsetX, y: programYOffset + offsetY},
+        program.name || '',
+        program.instructions.inputs.length,
+        program.instructions.outputs.length
+    );
     const p = programRectangle.toJointJsElement();
     graph.value.addCell(p);
 
@@ -319,7 +322,6 @@ const mapToJsObject = async () => {
         outputs: instruction.outputs,
       }
     })
-    console.log(formattedInstructions)
     emit('onInstructions', formattedInstructions)
   } catch (e) {
     console.error(e);
@@ -347,7 +349,7 @@ const saveElement = () => {
 <template>
   <div class="parent-container">
     <div class="flex gap-2 justify-content-end align-items-baseline absolute top-0 right-0 p-2 z-5">
-      <Button icon="pi pi-save" severity="success" @click="saveElement()"/>
+      <Button icon="pi pi-arrow-right" severity="success" @click="saveElement()"/>
     </div>
     <div ref="pipelineEl" class="paper-container"></div>
   </div>

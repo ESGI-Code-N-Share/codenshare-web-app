@@ -78,6 +78,8 @@ export const program = {
         execute: "Exécuter",
         download: "Télécharger",
         console: "Console",
+        add_in_port: 'Port entrée',
+        add_out_port: 'Port sortie',
     },
     errors: {
         not_enough_ports: "Pas assez de port. Attendu: {inputs} entrée(s) et {outputs} sortie(s).",

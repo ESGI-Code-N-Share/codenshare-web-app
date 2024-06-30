@@ -79,8 +79,11 @@ defineExpose({
     </StepperPanel>
     <StepperPanel :header="$t('program.tests.step2.title')" :pt="{content: 'h-full'}">
       <template #content="{active, nextCallback, prevCallback}">
-        <ProgramPipelinesGraph v-if="active" v-model:programs="programs[1]"
-                               @on-instructions="onNextStep($event, nextCallback)"/>
+        <ProgramPipelinesGraph
+            v-if="active"
+            v-model:programs="programs[1]"
+            @on-instructions="onNextStep($event, nextCallback)"
+        />
       </template>
     </StepperPanel>
     <StepperPanel :header="$t('program.tests.step3.title')" :pt="{content: 'h-full'}">
@@ -137,16 +140,6 @@ defineExpose({
               </div>
             </div>
           </div>
-
-          <Button
-              :disabled="programs.length >= 3"
-              :label="$t('program.forms.nextProgram.placeholder')"
-              class="text-color-secondary w-full"
-              icon="pi pi-plus"
-              icon-pos="right"
-              severity="secondary"
-          />
-
         </div>
       </template>
     </StepperPanel>
