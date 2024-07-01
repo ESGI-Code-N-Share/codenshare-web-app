@@ -72,7 +72,7 @@ defineExpose({
             </template>
           </PickList>
           <div class="flex justify-content-end">
-            <Button v-if="programs[1].length > 0" label="Next" @click="nextCallback"/>
+            <Button v-if="programs[1].length > 0 && programs[1].length <= 3" label="Next" @click="nextCallback"/>
           </div>
         </div>
       </template>
