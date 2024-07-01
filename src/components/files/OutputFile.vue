@@ -1,8 +1,18 @@
 <script lang="ts" setup>
 
 
-defineProps<{ file?: { id: string } }>();
+import {ref, watch} from "vue";
 
+const props = defineProps<{ file?: File | null }>();
+
+const url = ref('')
+
+//watch the file
+watch(() => props.file, (file) => {
+  if (file) {
+    url.value = URL.createObjectURL(file);
+  }
+})
 
 const downloadFile = () => {
   // todo download file
@@ -15,7 +25,10 @@ const downloadFile = () => {
       class="drop-zone border-gray-500 border-round p-3 text-center text-color-secondary cursor-pointer h-auto"
       style="background-color: var(--gray-800);"
   >
-    <div v-if="!file" class="flex flex-column gap-1 justify-content-center align-items-center">
+    <img v-if="url" :class="`max-h-15rem`" :src="url" alt="image"
+         class="w-full h-full"
+         style="object-fit: contain"/>
+    <div v-else-if="!file" class="flex flex-column gap-1 justify-content-center align-items-center">
       <i class="pi pi-image text-6xl"/>
       <small class="text-color-secondary">{{ $t('program.output_files.title') }}</small>
     </div>
@@ -24,7 +37,7 @@ const downloadFile = () => {
         <i class="pi pi-image text-6xl"/>
         <div>{{ $t('program.output_files.download') }}</div>
       </div>
-      <Button v-if="file?.id" icon="pi pi-download" severity="secondary" size="large" @click="downloadFile()"/>
+      <Button v-if="file" icon="pi pi-download" severity="secondary" size="large" @click="downloadFile()"/>
     </div>
   </div>
 </template>

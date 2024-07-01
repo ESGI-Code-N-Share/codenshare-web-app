@@ -99,7 +99,7 @@ defineExpose({
               >
                 <div class="text-lg">{{ input.filename }}</div>
                 <!-- todo: Melissa save the blob or file        -->
-                <InputFile :accept="input.filetype"/>
+                <InputFile :accept="input.filetype" @on-file-selected="input.file=$event.file"/>
               </div>
             </div>
 
@@ -136,7 +136,7 @@ defineExpose({
               >
                 <!-- todo check if input file is output or new input         -->
                 <div class="text-lg">{{ output.filename }}</div>
-                <OutputFile/>
+                <OutputFile :file="output.file"/>
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import {
+    GetObjectCommand,
     ListObjectsV2Command,
     PutObjectCommand
 } from "@aws-sdk/client-s3";
@@ -48,6 +49,8 @@ export class StorageService {
 
         try {
             const command = new ListObjectsV2Command(params);
+            // const command = new GetObjectCommand(params);
+
             const data = await this.s3Client.send(command);
             const outputFiles: string[] = []
 
@@ -65,5 +68,12 @@ export class StorageService {
             console.error("Error listing objects:", err);
             throw err;
         }
+
     }
+
+    async getFile(folder: string, filename: string) {
+        return this.awsHost + folder + '/output/' + filename;
+    }
+
+
 }

@@ -282,8 +282,8 @@ const saveElement = () => {
   if (cell.attributes?.attrs?.label?.text) {
     cell.attributes.attrs.label.text = text
     cell.attributes.attrs.label.fontSize = text.length > 10 ? 10 : 14
+    cell.attributes.attrs.metadata = metadata
   }
-  cell.prop('metadata', metadata)
   cellView.update(cell)
   selectedElement.value = undefined
   paper.value?.update()
@@ -337,6 +337,7 @@ const addPort = (type: 'in' | 'out') => {
     graph.value.addCells([link]);
   }
 }
+
 
 const removeElement = () => {
   if (!graph.value || !selectedElement.value) return

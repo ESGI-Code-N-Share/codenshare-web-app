@@ -15,6 +15,7 @@ import {SocketListener} from "@/listener/socket-listener";
 import ProgramPipelineGraph from "@/components/programs/ProgramPipelineGraph.vue";
 import ProgramPipelineTest from "@/components/programs/ProgramPipelineTest.vue";
 import ProgramCodeHistory from "@/components/programs/ProgramCodeHistory.vue";
+import {IO} from "@/utils/dag.util";
 
 
 const route = useRoute();
@@ -111,7 +112,6 @@ const fetchProgram = async (programId: ProgramId) => {
     language.value = languages.value.find(l => l.value === program.value?.language);
     version.value = versions.value.find(v => v.value === program.value?.version);
 
-    //
     if (program.value) {
       const programId = program.value.programId;
       const inputs = program.value.instructions.inputs;
@@ -146,16 +146,89 @@ const onSaveProgram = async () => {
 }
 
 const onRunProgram = async () => {
+      const instructions = pipelineTest.value?.getInstructions() as {program: Program, inputs: IO[], outputs: IO[]}[];
+      if(instructions && instructions.length > 0) {
+        await runPipeline(instructions);
+      } else {
+        await runProgram()
+      }
+}
+
+
+const runPipeline = async (instructions: {program: Program, inputs: IO[], outputs: IO[]}[]) => { // todo : to change
+  console.log(instructions)
+  for (const instruction of instructions) {
+    console.log(instruction.inputs)
+    console.log(instruction.outputs)
+    console.log(instruction.program)
+
+    console.log(1)
+
+    for(const input of instruction.inputs) {
+      console.log(input.file)
+      if(input.file) {
+        console.log("fichier")
+        await t(input.file, instruction.program.programId)
+      }
+    }
+
+    if(instruction.program) {
+      console.log("run")
+
+      await CodeNShareProgramApi.update(instruction.program);
+      await run(instruction.program);
+    }
+
+    for(const output of instruction.outputs) {
+      console.log("output")
+
+      if(output && instruction.program) {
+        await i(output, instruction.program.programId)
+      }
+    }
+  }
+}
+
+const t = async (file: File, id: ProgramId) => {
+  console.log(file)
+  await storageService.upload(file, id)
+}
+
+const run = async (program: Program) => {
+  try {
+    const task = await CodeNShareProgramApi.run(program.programId);
+
+    await SocketListener.getResult(task, (data: string) => {
+      output.value = data
+      loading.value = false;
+    }, (e: string) => {
+      console.error(e);
+      loading.value = false;
+      toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
+    });
+  } catch (e) {
+    console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
+  }
+
+}
+
+const i = async (output: IO, id: ProgramId) => {
+   // const url = await storageService.getResult(id)
+   const url = await storageService.getFile(id, output.filename + ".png")
+
+  console.log("URL " + url)
+
+  output.file = await urlToFile(url);
+}
+
+const runProgram = async () => {
   if (program.value) {
     try {
       loading.value = true;
-      const instructions = pipelineTest.value?.getInstructions();
-      console.log(instructions)
-      //todo: Melissa instructions here
 
       await CodeNShareProgramApi.update(program.value);
       const task = await CodeNShareProgramApi.run(program.value.programId);
-
       await SocketListener.getResult(task, (data: string) => {
         output.value = data
         loading.value = false;
@@ -165,12 +238,24 @@ const onRunProgram = async () => {
         toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
       });
 
-
     } catch (e) {
       console.error(e);
       toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
     }
   }
+}
+
+async function urlToFile(url: string) {
+  const response = await fetch(url);
+  const data = await response.blob();
+
+  // Extract filename and mime type from URL
+  const urlParts = url.split('/');
+  const filename = urlParts[urlParts.length - 1];
+  const mimeType = filename.split(".")[1]; // Default to binary if mime type is not available
+
+  console.log(filename, mimeType);
+  return new File([data], filename, { type: mimeType });
 }
 
 </script>
