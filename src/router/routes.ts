@@ -94,6 +94,14 @@ const routes: Array<RouteRecordRaw> = [
         meta: {
             public: true
         }
+    },
+    {
+        path: "/email-verified",
+        name: "email-verified",
+        component: () => import("@/views/EmailVerifiedPage.vue"),
+        meta: {
+            public: true
+        }
     }
 ];
 
