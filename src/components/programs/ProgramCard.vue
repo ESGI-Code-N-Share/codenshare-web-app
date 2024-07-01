@@ -80,7 +80,7 @@ onMounted(() => {
     <div class="flex flex-column surface-card border-round-xl p-2 h-full">
       <img
           alt="meeting"
-          class="border-round-xl"
+          class="border-round-xl cursor-pointer"
           :src="program.imageURL"
           style="object-fit: cover; width: 100%; height: auto; max-height: 125px"
           @click="$router.push({name: 'program', params: {program: program.programId}})"

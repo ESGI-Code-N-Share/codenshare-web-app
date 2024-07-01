@@ -56,6 +56,8 @@ export const program = {
     tests: {
         step1: {
             title: "Programmes",
+            available: "Disponibles",
+            selected: "Sélectionnés",
         },
         step2: {
             title: "Pipelines",

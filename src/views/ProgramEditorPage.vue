@@ -202,10 +202,10 @@ const onRunProgram = async () => {
           :class="{'h-full sm:px-3': testExpanded || pipelineExpanded}"
           class="flex flex-column w-full absolute bottom-0 z-5 bg-black-alpha-90 p-3 sm:p-2 overflow-scroll">
         <div ref="pipelineContainer"
-             class="flex justify-content-between align-items-center gap-2 overflow-x-scroll">
+             class="flex justify-content-between align-items-center gap-2">
           <div class="flex">
             <Button
-                :class="{ 'bg-gray-800 text-base': consoleExpanded }"
+                :class="{ 'bg-gray-800 text-base text-white': consoleExpanded }"
                 :label="$t('program.buttons.console')"
                 class="hover:bg-gray-800 text-sm mr-2"
                 severity="secondary"
@@ -213,7 +213,7 @@ const onRunProgram = async () => {
                 @click="consoleExpanded = !consoleExpanded; testExpanded = false; resetTestExpanded = false"
             />
             <Button
-                :class="{ 'bg-gray-800 text-base': testExpanded }"
+                :class="{ 'bg-gray-800 text-base text-white': testExpanded }"
                 :label="$t('program.buttons.test')"
                 class="hover:bg-gray-800 text-sm mr-2"
                 severity="secondary"

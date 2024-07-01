@@ -63,10 +63,10 @@ defineExpose({
   <Stepper class="h-full" linear>
     <StepperPanel :header="$t('program.tests.step1.title')" :pt="{content: 'h-full'}">
       <template #content="{nextCallback}">
-        <div class="flex flex-column gap-2 h-full p-2">
+        <div class="flex flex-column gap-2 h-full">
           <PickList v-model="programs" class="h-full" dataKey="programId">
-            <template #sourceheader> Available</template>
-            <template #targetheader> Selected</template>
+            <template #sourceheader> {{ $t('program.tests.step1.available') }}</template>
+            <template #targetheader> {{ $t('program.tests.step1.selected') }}</template>
             <template #item="slotProps">
               {{ slotProps.item.name }}
             </template>
@@ -157,5 +157,7 @@ defineExpose({
 
 ::v-deep .p-stepper-panels {
   height: 95%;
+  padding-left: 0.15em;
+  padding-right: 0.15em;
 }
 </style>
