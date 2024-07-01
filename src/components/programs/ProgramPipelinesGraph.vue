@@ -6,7 +6,7 @@ import {dia, shapes} from "@joint/core";
 import {useToast} from "primevue/usetoast";
 import {ToastService} from "@/services/toast.service";
 import {ImageRectangle, ProgramRectangle} from "@/utils/graph.util";
-import {DAG, IO, SimpleNode} from "@/utils/dag.util";
+import {DAG, IInput, IOutput, SimpleNode} from "@/utils/dag.util";
 
 
 const programs = defineModel('programs', {type: Array as () => Program[], default: []})
@@ -112,7 +112,7 @@ function initElements() {
     const inputs = program.instructions.inputs.map((input, index) => {
       const x = 100 + index * 200 + offsetX;
       const y = 50 + offsetY;
-      const randomId = Math.random().toString(36).substring(7);
+      const randomId = Date.now() + '-' + index;
       const imageRectangle = new ImageRectangle(`input-${randomId}`, {x, y}, input.name || '', {
         name: input.name,
         type: input.type
@@ -125,7 +125,7 @@ function initElements() {
     const outputs = program.instructions.outputs.map((output, index) => {
       const x = 100 + index * 200 + offsetX;
       const y = 200 + offsetY;
-      const randomId = Math.random().toString(36).substring(7);
+      const randomId = Date.now() + '-' + index;
       const imageRectangle = new ImageRectangle(`output-${randomId}`, {x, y}, output.name || '', {
         name: output.name,
         type: output.type
@@ -241,7 +241,7 @@ const mapToJsObject = async () => {
 
     // inputs
     const programLinkInputs = graph.value!.getConnectedLinks(programCell, {inbound: true})
-    const inputs: IO[] = programLinkInputs.map(programLink => {
+    const inputs: IInput[] = programLinkInputs.map(programLink => {
       const source = programLink.get('source').id
       const sourceCell = graph.value!.getCell(source)
       const metadata = sourceCell?.prop('metadata')
@@ -251,45 +251,38 @@ const mapToJsObject = async () => {
         throw new Error("Entrée de programme invalide")
       }
 
-      // first program has on "in" port
-      if (parseInt(index) === 0) {
-        return {
-          filename: metadata.name || '',
-          filetype: metadata.type || '',
-          type: 'input',
-          file: null,
-        }
-      }
-
-      //else
       const _inputs = graph.value?.getConnectedLinks(sourceCell, {inbound: true})
-      if (_inputs && _inputs.length > 0) {
-        const _sourceCell = _inputs[0].get('source').id
-        const _source = graph.value!.getCell(_sourceCell)
-        const metadata = _source?.prop('metadata')
-
-        if (!metadata?.type || !metadata?.name) {
-          toastNotifications.showError(`Program ${program.name} has invalid input`)
-          throw new Error("Invalid program input")
-        }
-
+      // first program has on "in" port
+      if (parseInt(index) === 0 || !_inputs || _inputs.length === 0) {
         return {
+          id: source,
           filename: metadata.name || '',
           filetype: metadata.type || '',
-          // if its connected to an output program => type: output
-          // else type: input
-          type: _sourceCell.includes('output') ? 'output' : 'input',
           file: null,
+          relatedTo: null,
         }
       }
+      const _sourceCell = _inputs[0].get('source').id
+      const _source = graph.value!.getCell(_sourceCell)
+      const _metadata = _source?.prop('metadata')
 
-      toastNotifications.showError("Invalid program pipeline")
-      throw new Error("Invalid program pipeline")
+      if (!_metadata?.type || !_metadata?.name) {
+        toastNotifications.showError(`Program ${program.name} has invalid input`)
+        throw new Error("Invalid program input")
+      }
+
+      return {
+        id: source,
+        relatedTo: _sourceCell,
+        filename: _metadata.name || '',
+        filetype: _metadata.type || '',
+        file: null,
+      }
     })
 
     // outputs
     const programLinkOutputs = graph.value!.getConnectedLinks(programCell, {outbound: true})
-    const outputs: IO[] = programLinkOutputs.map(programLink => {
+    const outputs: IOutput[] = programLinkOutputs.map(programLink => {
       const target = programLink.get('target').id
       const targetCell = graph.value!.getCell(target)
       const metadata = targetCell?.prop('metadata')
@@ -300,31 +293,38 @@ const mapToJsObject = async () => {
       }
 
       return {
+        id: target,
         filename: metadata.name || '',
         filetype: metadata.type || '',
-        type: 'output',
-        file: null,
+        url: null,
       }
     })
 
     instructions.addNode(new SimpleNode(program.programId, inputs, outputs))
   }
 
+  //check if programs are connected
+
   try {
     instructions.topologicalSort()
     instructions.visualize()
 
     const object = instructions.toJsObject()
-    const formattedInstructions = object.map(instruction => {
-      return {
-        program: programs.value.find(program => program.programId === instruction.id),
-        inputs: instruction.inputs,
-        outputs: instruction.outputs,
-      }
-    })
-    emit('onInstructions', formattedInstructions)
+    try {
+      const formattedInstructions = object.map(instruction => {
+        return {
+          program: programs.value.find(program => program.programId === instruction.id),
+          inputs: instruction.inputs,
+          outputs: instruction.outputs,
+        }
+      })
+      emit('onInstructions', formattedInstructions)
+    } catch (e) {
+      console.error(e);
+      toastNotifications.showError("Failed to save program");
+    }
   } catch (e) {
-    console.error(e);
+    toastNotifications.showError("Les programmes ne sont pas connectés")
   }
 }
 

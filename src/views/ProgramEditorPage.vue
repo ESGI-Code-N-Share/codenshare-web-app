@@ -15,7 +15,7 @@ import {SocketListener} from "@/listener/socket-listener";
 import ProgramPipelineGraph from "@/components/programs/ProgramPipelineGraph.vue";
 import ProgramPipelineTest from "@/components/programs/ProgramPipelineTest.vue";
 import ProgramCodeHistory from "@/components/programs/ProgramCodeHistory.vue";
-import {IO} from "@/utils/dag.util";
+import {IInput, IOutput} from "@/utils/dag.util";
 
 
 const route = useRoute();
@@ -146,16 +146,20 @@ const onSaveProgram = async () => {
 }
 
 const onRunProgram = async () => {
-      const instructions = pipelineTest.value?.getInstructions() as {program: Program, inputs: IO[], outputs: IO[]}[];
-      if(instructions && instructions.length > 0) {
-        await runPipeline(instructions);
-      } else {
-        await runProgram()
-      }
+  const instructions = pipelineTest.value?.getInstructions() as {
+    program: Program,
+    inputs: IInput[],
+    outputs: IOutput[]
+  }[] | undefined;
+  if (instructions && instructions.length > 0) {
+    await runPipeline(instructions);
+  } else {
+    await runProgram()
+  }
 }
 
 
-const runPipeline = async (instructions: {program: Program, inputs: IO[], outputs: IO[]}[]) => { // todo : to change
+const runPipeline = async (instructions: { program: Program, inputs: IInput[], outputs: IOutput[] }[]) => { // todo : to change
   console.log(instructions)
   for (const instruction of instructions) {
     console.log(instruction.inputs)
@@ -164,25 +168,25 @@ const runPipeline = async (instructions: {program: Program, inputs: IO[], output
 
     console.log(1)
 
-    for(const input of instruction.inputs) {
+    for (const input of instruction.inputs) {
       console.log(input.file)
-      if(input.file) {
+      if (input.file) {
         console.log("fichier")
         await t(input.file, instruction.program.programId)
       }
     }
 
-    if(instruction.program) {
+    if (instruction.program) {
       console.log("run")
 
       await CodeNShareProgramApi.update(instruction.program);
       await run(instruction.program);
     }
 
-    for(const output of instruction.outputs) {
+    for (const output of instruction.outputs) {
       console.log("output")
 
-      if(output && instruction.program) {
+      if (output && instruction.program) {
         await i(output, instruction.program.programId)
       }
     }
@@ -213,13 +217,10 @@ const run = async (program: Program) => {
 
 }
 
-const i = async (output: IO, id: ProgramId) => {
-   // const url = await storageService.getResult(id)
-   const url = await storageService.getFile(id, output.filename + ".png")
-
-  console.log("URL " + url)
-
-  output.file = await urlToFile(url);
+const i = async (output: IOutput, id: ProgramId) => {
+  const url = await storageService.getResult(id)
+  // const url = await storageService.getFile(id, output.filename + ".png")
+  output.url = url; //todo
 }
 
 const runProgram = async () => {
@@ -255,7 +256,7 @@ async function urlToFile(url: string) {
   const mimeType = filename.split(".")[1]; // Default to binary if mime type is not available
 
   console.log(filename, mimeType);
-  return new File([data], filename, { type: mimeType });
+  return new File([data], filename, {type: mimeType});
 }
 
 </script>

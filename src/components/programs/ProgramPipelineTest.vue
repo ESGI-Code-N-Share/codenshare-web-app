@@ -6,7 +6,7 @@ import {onMounted, ref} from "vue";
 import {CodeNShareProgramApi} from "@/api/codenshare";
 import {useUserStore} from "@/stores/user.store";
 import ProgramPipelinesGraph from "@/components/programs/ProgramPipelinesGraph.vue";
-import {IO} from "@/utils/dag.util";
+import {IInput, IOutput} from "@/utils/dag.util";
 import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 import OutputFile from "@/components/files/OutputFile.vue";
 import InputFile from "@/components/files/InputFile.vue";
@@ -24,7 +24,7 @@ const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
 
 const programs = ref<Program[][]>([[], []]);
-const instructions = ref<{ program: Program, inputs: IO[], outputs: IO[] }[]>([]);
+const instructions = ref<{ program: Program, inputs: IInput[], outputs: IOutput[] }[]>([]);
 
 
 onMounted(async () => {
@@ -44,7 +44,7 @@ const fetchUserPrograms = async () => {
   }
 }
 
-const onNextStep = (e: { program: Program; inputs: IO[]; outputs: IO[] }[], next: (event: Event) => void) => {
+const onNextStep = (e: { program: Program; inputs: IInput[]; outputs: IOutput[] }[], next: (event: Event) => void) => {
   instructions.value = e;
   next(e as unknown as Event)
 }
@@ -92,8 +92,8 @@ defineExpose({
           <div v-for="(instruction, i) in instructions" class="flex flex-column gap-3">
             <div class="flex justify-content-between flex-wrap gap-2">
               <div
-                  v-for="(input, y) in instruction.inputs.filter(g => g.type === 'input')"
-                  :class="{'w-full': instruction.inputs.filter(g => g.type === 'input').length === 1}"
+                  v-for="(input, y) in instruction.inputs.filter(g => g.relatedTo === null)"
+                  :class="{'w-full': instruction.inputs.filter(g => g.relatedTo === null).length === 1}"
                   class="flex flex-column gap-2"
                   style="width: 47.5%"
               >
@@ -111,7 +111,6 @@ defineExpose({
               <ProgramListItem
                   :class="{'error-ports': false}"
                   :program="instruction.program"
-                  @on-delete="programs.splice(i, 1)"
               />
               <!--              <small v-if="!isNextProgramHasEnoughPorts(i)">-->
               <!--                {{-->
@@ -136,7 +135,7 @@ defineExpose({
               >
                 <!-- todo check if input file is output or new input         -->
                 <div class="text-lg">{{ output.filename }}</div>
-                <OutputFile :file="output.file"/>
+                <OutputFile :file="output.url"/>
               </div>
             </div>
           </div>

@@ -28,7 +28,7 @@ defineEmits(['onDelete']);
         </div>
       </div>
     </div>
-    <Button icon="pi pi-trash" severity="danger" text @click="$emit('onDelete')"/>
+    <!--    <Button icon="pi pi-trash" severity="danger" text @click="$emit('onDelete')"/>-->
   </div>
 </template>
 
