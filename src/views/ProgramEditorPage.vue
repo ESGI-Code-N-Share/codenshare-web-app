@@ -64,6 +64,7 @@ const consoleExpanded = ref(false);
 const testExpanded = ref(false);
 const pipelineExpanded = ref(false);
 const pipelineTest = ref<InstanceType<typeof ProgramPipelineTest>>();
+const canExecute = ref(false);
 
 const globalInstructions = ref<{
   programId: string,
@@ -246,18 +247,6 @@ const runProgram = async () => {
   }
 }
 
-async function urlToFile(url: string) {
-  const response = await fetch(url);
-  const data = await response.blob();
-
-  // Extract filename and mime type from URL
-  const urlParts = url.split('/');
-  const filename = urlParts[urlParts.length - 1];
-  const mimeType = filename.split(".")[1]; // Default to binary if mime type is not available
-
-  console.log(filename, mimeType);
-  return new File([data], filename, {type: mimeType});
-}
 
 </script>
 
@@ -311,7 +300,13 @@ async function urlToFile(url: string) {
             />
           </div>
           <div>
-            <Button :loading="loading" severity="secondary" style="color: #49DE80;" @click="onRunProgram()">
+            <Button
+                :disabled="!canExecute"
+                :loading="loading"
+                severity="secondary"
+                style="color: #49DE80;"
+                @click="onRunProgram()"
+            >
               <span class="hidden sm:block mr-2 text-sm">{{ $t('program.buttons.execute') }}</span>
               <svg height="14" viewBox="0 0 384 512" width="10.5" xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -328,7 +323,7 @@ async function urlToFile(url: string) {
         <!-- Pipelines Test   -->
         <div v-if="!resetTestExpanded" v-show="testExpanded"
              class="bg-gray-900 p-3 mt-3 border-round h-full overflow-scroll">
-          <ProgramPipelineTest ref="pipelineTest"/>
+          <ProgramPipelineTest ref="pipelineTest" v-model:can-execute="canExecute"/>
         </div>
       </div>
 

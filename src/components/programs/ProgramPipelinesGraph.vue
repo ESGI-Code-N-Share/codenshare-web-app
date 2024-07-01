@@ -11,7 +11,7 @@ import {DAG, IInput, IOutput, SimpleNode} from "@/utils/dag.util";
 
 const programs = defineModel('programs', {type: Array as () => Program[], default: []})
 const props = defineProps()
-const emit = defineEmits(['onInstructions'])
+const emit = defineEmits(['onInstructions', 'onBack'])
 
 const toastNotifications = new ToastService(useToast());
 
@@ -348,6 +348,9 @@ const saveElement = () => {
 
 <template>
   <div class="parent-container">
+    <div class="absolute top-0 left-0 p-2 z-5">
+      <Button icon="pi pi-arrow-left" severity="secondary" @click="$emit('onBack')"/>
+    </div>
     <div class="flex gap-2 justify-content-end align-items-baseline absolute top-0 right-0 p-2 z-5">
       <Button icon="pi pi-arrow-right" severity="success" @click="saveElement()"/>
     </div>

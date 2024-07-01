@@ -16,7 +16,7 @@ import InputFile from "@/components/files/InputFile.vue";
 //
 // }
 
-const props = defineProps()
+const canExecute = defineModel('canExecute', {type: Boolean, required: false, default: false})
 const emit = defineEmits(['onUpdate'])
 
 const userStore = useUserStore();
@@ -46,6 +46,7 @@ const fetchUserPrograms = async () => {
 
 const onNextStep = (e: { program: Program; inputs: IInput[]; outputs: IOutput[] }[], next: (event: Event) => void) => {
   instructions.value = e;
+  canExecute.value = true;
   next(e as unknown as Event)
 }
 
@@ -83,11 +84,15 @@ defineExpose({
             v-if="active"
             v-model:programs="programs[1]"
             @on-instructions="onNextStep($event, nextCallback)"
+            @on-back="prevCallback"
         />
       </template>
     </StepperPanel>
     <StepperPanel :header="$t('program.tests.step3.title')" :pt="{content: 'h-full'}">
-      <template #content="{}">
+      <template #content="{prevCallback}">
+        <div class="flex justify-content-between">
+          <Button icon="pi pi-arrow-left" @click="prevCallback"/>
+        </div>
         <div class="flex flex-column gap-3 overflow-y-scroll py-4">
           <div v-for="(instruction, i) in instructions" class="flex flex-column gap-3">
             <div class="flex justify-content-between flex-wrap gap-2">
