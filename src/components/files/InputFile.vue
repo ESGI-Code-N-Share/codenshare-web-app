@@ -67,12 +67,10 @@ const processFile = async (file: File) => {
     const formData = new FormData();
     formData.append('file', blob, file.name);
 
-    // temp
-    const fileName = 'image';
-
     fileUrl.value = URL.createObjectURL(blob);
     modelValue.value = fileUrl.value;
-    emit('onFileSelected', {fileName, fileUrl: fileUrl.value});
+    emit('onFileSelected', {file: file});
+
   } else {
     // todo call api to upload file
   }

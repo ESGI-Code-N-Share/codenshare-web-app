@@ -9,15 +9,18 @@ import InputFile from "@/components/files/InputFile.vue";
 import {Program, ProgramId, ProgramLanguages} from "@/models";
 import {CodeNShareProgramApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
+import {StorageService} from "@/services/storage.service";
 import {useToast} from "primevue/usetoast";
 import {SocketListener} from "@/listener/socket-listener";
 import ProgramPipelineGraph from "@/components/programs/ProgramPipelineGraph.vue";
 import ProgramPipelineTest from "@/components/programs/ProgramPipelineTest.vue";
 import ProgramCodeHistory from "@/components/programs/ProgramCodeHistory.vue";
 
+
 const route = useRoute();
 const router = useRouter();
 const toastNotifications = new ToastService(useToast());
+const storageService = new StorageService();
 
 const loading = ref(false);
 const programItemOptions = ref([
@@ -70,7 +73,7 @@ const globalInstructions = ref<{
 const program = ref<Program>();
 const language = ref();
 const version = ref();
-const output = ref('')
+const output = ref('');
 
 const sidebarProgramEditor = ref(false);
 const openCodeHistory = ref(false);
