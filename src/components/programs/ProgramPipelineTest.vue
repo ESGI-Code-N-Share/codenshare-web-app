@@ -54,8 +54,13 @@ function getInstructions() {
   return instructions.value;
 }
 
+function setInstructions(updatedInstruction: { program: Program, inputs: IInput[], outputs: IOutput[] }[]) {
+  instructions.value = updatedInstruction
+}
+
 defineExpose({
-  getInstructions
+  getInstructions,
+  setInstructions,
 })
 
 </script>

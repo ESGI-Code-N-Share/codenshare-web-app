@@ -192,6 +192,7 @@ const runPipeline = async (instructions: { program: Program, inputs: IInput[], o
       }
     }
   }
+  pipelineTest.value?.setInstructions(instructions)
 }
 
 const t = async (file: File, id: ProgramId) => {
