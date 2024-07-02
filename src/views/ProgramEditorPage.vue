@@ -301,7 +301,6 @@ const runProgram = async () => {
           </div>
           <div>
             <Button
-                :disabled="!canExecute"
                 :loading="loading"
                 severity="secondary"
                 style="color: #49DE80;"
