@@ -274,8 +274,8 @@ const mapToJsObject = async () => {
       return {
         id: source,
         relatedTo: _sourceCell,
-        filename: _metadata.name || '',
-        filetype: _metadata.type || '',
+        filename: metadata.name || '',
+        filetype: metadata.type || '',
         file: null,
       }
     })
@@ -318,6 +318,7 @@ const mapToJsObject = async () => {
           outputs: instruction.outputs,
         }
       })
+      console.log(formattedInstructions)
       emit('onInstructions', formattedInstructions)
     } catch (e) {
       console.error(e);
