@@ -9,6 +9,7 @@ const toastNotification = new ToastService(useToast());
 type Accept = 'image/*' | 'video/*' | 'audio/*';
 
 interface InputFileProps {
+  renameFile?: string;
   accept: Accept;
   maxHeightPreview?: string;
 }
@@ -69,8 +70,14 @@ const processFile = async (file: File) => {
 
     fileUrl.value = URL.createObjectURL(blob);
     modelValue.value = fileUrl.value;
-    emit('onFileSelected', {file: file});
 
+    const newFile = new File([blob], file.name, {type: file.type});
+    if (props.renameFile) {
+      formData.append('rename', props.renameFile);
+      emit('onFileSelected', {file: newFile, formData: formData});
+      return;
+    }
+    emit('onFileSelected', {file: file});
   } else {
     // todo call api to upload file
   }
