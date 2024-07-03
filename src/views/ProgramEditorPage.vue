@@ -15,8 +15,7 @@ import {SocketListener} from "@/listener/socket-listener";
 import ProgramPipelineGraph from "@/components/programs/ProgramPipelineGraph.vue";
 import ProgramPipelineTest from "@/components/programs/ProgramPipelineTest.vue";
 import ProgramCodeHistory from "@/components/programs/ProgramCodeHistory.vue";
-import {IInput, IOutput} from "@/utils/dag.util";
-
+import {IInput, IO, IOutput, isInput, isOutput} from "@/utils/dag.util";
 
 const route = useRoute();
 const router = useRouter();
@@ -147,58 +146,88 @@ const onSaveProgram = async () => {
 }
 
 const onRunProgram = async () => {
-  const instructions = pipelineTest.value?.getInstructions() as {
-    program: Program,
-    inputs: IInput[],
-    outputs: IOutput[]
-  }[] | undefined;
-  if (instructions && instructions.length > 0) {
-    await runPipeline(instructions);
-  } else {
-    await runProgram()
-  }
+      const instructions = pipelineTest.value?.getInstructions() as {program: Program, inputs: IInput[], outputs: IOutput[]}[];
+      if(instructions && instructions.length > 0) {
+        try {
+          console.log(instructions)
+          await runPipeline(instructions);
+        } catch (e) {
+          toastNotifications.showError("Une erreur s'est produite lors l'execution du programme'");
+        }
+      } else {
+        await runProgram()
+      }
 }
 
-
-const runPipeline = async (instructions: { program: Program, inputs: IInput[], outputs: IOutput[] }[]) => { // todo : to change
-  console.log(instructions)
+const runPipeline = async (instructions: {program: Program, inputs: IInput[], outputs: IOutput[]}[]) => {
+  // for each instruction
   for (const instruction of instructions) {
-    console.log(instruction.inputs)
-    console.log(instruction.outputs)
-    console.log(instruction.program)
+    console.log("current instruction to execute " + instruction.program.name)
 
-    console.log(1)
+    // prepare program's input
+    for(const input of instruction.inputs) {
 
-    for (const input of instruction.inputs) {
-      console.log(input.file)
+
+      console.log("current input to upload " + input.id)
+      console.log("current input to upload " + input.relatedTo)
+      console.log("current input to upload " + input.filename)
+
+
       if (input.file) {
-        console.log("fichier")
-        await t(input.file, instruction.program.programId)
+        await storageService.upload(input.file, instruction.program.programId)
+      } else { // if it's related, find it and upload it
+
+        const idRelatedTo = input.relatedTo
+        const targetIO: IO | undefined = instructions
+            .flatMap(instruction => [...instruction.inputs, ...instruction.outputs])
+            .find(file => file.id === idRelatedTo);
+
+        if (!targetIO) {
+          throw new Error("Missing input for program : " + instruction.program.programId)
+        }
+        else {
+          let file: File;
+
+          if(isInput(targetIO)) {
+            if(targetIO.file) {
+              file = targetIO.file;
+            } else {
+              throw new Error("File not found");
+            }
+
+
+          } else if(isOutput(targetIO)) {
+            if(targetIO.url) {
+              file = await storageService.getFileFromS3Url(targetIO.url);
+            } else {
+              throw new Error("Url not found");
+            }
+          } else {
+            throw new Error("Files missing !!!")
+          }
+
+          console.log("found the file for " + input.filename)
+          await storageService.upload(file, instruction.program.programId, input.filename)
+          input.file = file
+        }
       }
     }
 
+    // run program
     if (instruction.program) {
-      console.log("run")
-
-      await CodeNShareProgramApi.update(instruction.program);
       await run(instruction.program);
     }
 
+    // get ouput
     for (const output of instruction.outputs) {
-      console.log("output")
-
       if (output && instruction.program) {
-        await i(output, instruction.program.programId)
+        output.url = await storageService.getFile(instruction.program.programId, output.filename + ".png");
       }
     }
+
   }
-  pipelineTest.value?.setInstructions(instructions)
 }
 
-const t = async (file: File, id: ProgramId) => {
-  console.log(file)
-  await storageService.upload(file, id)
-}
 
 const run = async (program: Program) => {
   try {
@@ -217,12 +246,6 @@ const run = async (program: Program) => {
     toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
   }
 
-}
-
-const i = async (output: IOutput, id: ProgramId) => {
-  const url = await storageService.getResult(id)
-  // const url = await storageService.getFile(id, output.filename + ".png")
-  output.url = url; //todo
 }
 
 const runProgram = async () => {
@@ -247,8 +270,6 @@ const runProgram = async () => {
     }
   }
 }
-
-
 </script>
 
 <template>
@@ -344,7 +365,7 @@ const runProgram = async () => {
       <div class="flex flex-column gap-3">
         <div>{{ $t('global.drop_a_file.label') }}</div>
         <InputFile v-model:file-url="program.imageURL" accept="image/*"
-                   @onFileSelected="program.imageURL = $event.fileUrl"/>
+                   @onFileSelected="program.imageURL = $event.fileUrl" />
 
         <InputText v-model="program.name" :placeholder="$t('program.forms.name.placeholder')"/>
         <Textarea v-model="program.description" :placeholder="$t('program.forms.description.placeholder')"

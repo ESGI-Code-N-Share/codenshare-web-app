@@ -13,6 +13,14 @@ export interface IOutput extends IO {
     url: string | null;
 }
 
+export function isInput(io: IO): io is IInput {
+    return 'relatedTo' in io && 'file' in io;
+}
+
+export function isOutput(io: IO): io is IOutput {
+    return 'url' in io;
+}
+
 export class SimpleNode {
     constructor(public id: string, public inputs: IInput[], public outputs: IOutput[]) {
     }
