@@ -218,7 +218,7 @@ const runPipeline = async (instructions: {program: Program, inputs: IInput[], ou
       await run(instruction.program);
     }
 
-    // get ouput
+    // get output
     for (const output of instruction.outputs) {
       if (output && instruction.program) {
         output.url = await storageService.getFile(instruction.program.programId, output.filename + ".png");
@@ -226,6 +226,9 @@ const runPipeline = async (instructions: {program: Program, inputs: IInput[], ou
     }
 
   }
+
+  pipelineTest.value!.setInstructions(instructions);
+
 }
 
 

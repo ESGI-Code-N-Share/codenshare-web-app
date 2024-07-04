@@ -146,7 +146,7 @@ defineExpose({
               >
                 <!-- todo check if input file is output or new input         -->
                 <div class="text-lg">{{ output.filename }}</div>
-                <OutputFile :file="output.url"/>
+                <OutputFile v-model:url="output.url"/>
               </div>
             </div>
           </div>
