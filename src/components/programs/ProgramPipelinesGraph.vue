@@ -57,6 +57,9 @@ function setLinkEventHandlers() {
     const sourcePort = link.get('source').port;
     const targetPort = link.get('target').port;
 
+    const metadataSource = graph.value?.getCell(sourceId)?.prop('metadata')
+    const metadataPort = graph.value?.getCell(targetId)?.prop('metadata')
+
     if (sourceId && targetId && sourcePort && targetPort) {
       const newLink = new shapes.standard.Link({
         source: {id: sourceId, port: sourcePort},
@@ -65,9 +68,35 @@ function setLinkEventHandlers() {
           line: {
             stroke: 'white',
             strokeWidth: 1,
+            text: '0.10',
           }
         },
       });
+      newLink.labels([
+        {
+          attrs: {
+            text: {
+              text: metadataSource?.type || '',
+              fill: 'black'
+            }
+          },
+          position: {
+            distance: 0.25
+          }
+        },
+        {
+          attrs: {
+            text: {
+              text: metadataPort?.type || '',
+              fill: 'black'
+            }
+          },
+          position: {
+            distance: 0.75
+          }
+        }
+      ]);
+
       graph.value!.addCell(newLink);
     }
   });
@@ -191,14 +220,31 @@ function initPaper() {
       return true;
     },
     // Default link options
-    defaultLink: new shapes.standard.Link({
-      attrs: {
-        line: {
-          stroke: 'white',
-          strokeWidth: 1,
-        }
-      },
-    }),
+    defaultLink(cellView, magnet) {
+      const metadataSource = cellView.model.prop('metadata')
+      const link = new shapes.standard.Link({
+        attrs: {
+          line: {
+            stroke: 'white',
+            strokeWidth: 1,
+          }
+        },
+      });
+      link.labels([
+        {
+          attrs: {
+            text: {
+              text: metadataSource?.type || '',
+              fill: 'black'
+            }
+          },
+          position: {
+            distance: 0.25
+          }
+        },
+      ]);
+      return link;
+    },
     // validate link connection
     validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
       if (!cellViewS || !cellViewT || !magnetS || !magnetT || cellViewS === cellViewT) {
@@ -218,6 +264,11 @@ function initPaper() {
       if (portTarget.includes('in') && graph.value!.getConnectedLinks(cellViewT.model, {inbound: true}).length > 0) {
         return false
       }
+      // if the metadata.type is different from the target metadata.type, return false
+      if (cellViewS.model.attributes?.attrs?.metadata?.type !== cellViewT.model.attributes?.attrs?.metadata?.type) {
+        return false;
+      }
+      // else OK
       return true;
     },
   })
