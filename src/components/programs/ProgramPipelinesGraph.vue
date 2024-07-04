@@ -131,7 +131,7 @@ function initElements() {
     const programRectangle = new ProgramRectangle(
         program.programId,
         {x: 150 + offsetX, y: programYOffset + offsetY},
-        program.name || '',
+        `${parseInt(index) + 1}) ${program.name}` || '',
         program.instructions.inputs.length,
         program.instructions.outputs.length
     );
