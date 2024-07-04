@@ -109,7 +109,8 @@ defineExpose({
               >
                 <div class="text-lg">{{ input.filename }}</div>
                 <!-- todo: Melissa save the blob or file        -->
-                <InputFile :accept="input.filetype" @on-file-selected="input.file=$event.file" :rename-file="input.filename"/>
+                <InputFile :accept="input.filetype" :rename-file="input.filename"
+                           @on-file-selected="input.file=$event.file"/>
               </div>
             </div>
 

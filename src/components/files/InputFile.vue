@@ -66,14 +66,15 @@ const processFile = async (file: File) => {
 
     // todo call api to upload file
     const formData = new FormData();
-    formData.append('file', blob, file.name);
 
     fileUrl.value = URL.createObjectURL(blob);
     modelValue.value = fileUrl.value;
 
-    const newFile = new File([blob], file.name, {type: file.type});
     if (props.renameFile) {
-      formData.append('rename', props.renameFile);
+      const format = file.name.split('.').pop()
+      const newFile = new File([blob], `${props.renameFile}.${format}`, {type: file.type});
+      console.log("newFile.name: ", newFile.name);
+      formData.append('file', blob, file.name);
       emit('onFileSelected', {file: newFile, formData: formData});
       return;
     }
