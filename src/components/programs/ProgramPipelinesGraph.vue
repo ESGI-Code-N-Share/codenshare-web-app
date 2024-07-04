@@ -112,7 +112,7 @@ function initElements() {
     const inputs = program.instructions.inputs.map((input, index) => {
       const x = 100 + index * 200 + offsetX;
       const y = 50 + offsetY;
-      const randomId = Date.now() + '-' + index;
+      const randomId = Date.now() + '-' + (index + 1);
       const imageRectangle = new ImageRectangle(`input-${randomId}`, {x, y}, input.name || '', {
         name: input.name,
         type: input.type
@@ -125,7 +125,7 @@ function initElements() {
     const outputs = program.instructions.outputs.map((output, index) => {
       const x = 100 + index * 200 + offsetX;
       const y = 200 + offsetY;
-      const randomId = Date.now() + '-' + index;
+      const randomId = Date.now() + '-' + (index + 1) * 100;
       const imageRectangle = new ImageRectangle(`output-${randomId}`, {x, y}, output.name || '', {
         name: output.name,
         type: output.type
