@@ -146,12 +146,18 @@ const onSaveProgram = async () => {
 }
 
 const onRunProgram = async () => {
-      const instructions = pipelineTest.value?.getInstructions() as {program: Program, inputs: IInput[], outputs: IOutput[]}[];
+  const instructions = pipelineTest.value?.getInstructions() as {
+    program: Program,
+    inputs: IInput[],
+    outputs: IOutput[],
+    isProgramDone: boolean
+  }[];
       if(instructions && instructions.length > 0) {
         try {
           console.log(instructions)
           await runPipeline(instructions);
         } catch (e) {
+          pipelineTest.value!.isPipelineRunning = false;
           toastNotifications.showError("Une erreur s'est produite lors l'execution du programme'");
         }
       } else {
@@ -159,9 +165,15 @@ const onRunProgram = async () => {
       }
 }
 
-const runPipeline = async (instructions: {program: Program, inputs: IInput[], outputs: IOutput[]}[]) => {
+const runPipeline = async (instructions: {
+  program: Program,
+  inputs: IInput[],
+  outputs: IOutput[],
+  isProgramDone: boolean
+}[]) => {
+  pipelineTest.value!.isPipelineRunning = true;
   // for each instruction
-  for (const instruction of instructions) {
+  for (const [index, instruction] of Object.entries(instructions)) {
     console.log("current instruction to execute " + instruction.program.name)
 
     // prepare program's input
@@ -175,8 +187,8 @@ const runPipeline = async (instructions: {program: Program, inputs: IInput[], ou
 
       if (input.file) {
         await storageService.upload(input.file, instruction.program.programId)
-      } else { // if it's related, find it and upload it
-
+      } else {
+        // if it's related, find it and upload it
         const idRelatedTo = input.relatedTo
         const targetIO: IO | undefined = instructions
             .flatMap(instruction => [...instruction.inputs, ...instruction.outputs])
@@ -216,12 +228,15 @@ const runPipeline = async (instructions: {program: Program, inputs: IInput[], ou
     // run program
     if (instruction.program) {
       await run(instruction.program);
+      instructions.at(index as unknown as number)!.isProgramDone = true;
+      pipelineTest.value!.setInstructions(instructions);
     }
 
     // get output
     for (const output of instruction.outputs) {
       if (output && instruction.program) {
         output.url = await storageService.getFile(instruction.program.programId, output.filename + ".png");
+        pipelineTest.value!.setInstructions(instructions);
       }
     }
 
