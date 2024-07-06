@@ -170,6 +170,7 @@ function initElements() {
 
   // link program to inputs and outputs
   for (const [index, input] of Object.entries(inputs)) {
+    const metadataSource = input.prop('metadata')
     const link = new shapes.standard.Link({
       source: {id: input.id, port: 'out0'},
       target: {id: program.id, port: `in${index}`},
@@ -180,10 +181,24 @@ function initElements() {
         }
       },
     });
+    link.labels([
+      {
+        attrs: {
+          text: {
+            text: metadataSource?.type || '',
+            fill: 'black'
+          }
+        },
+        position: {
+          distance: 0.5
+        }
+      },
+    ]);
     graph.value.addCells([link]);
   }
 
   for (const [index, output] of Object.entries(outputs)) {
+    const metadataSource = output.prop('metadata')
     const link = new shapes.standard.Link({
       source: {id: program.id, port: `out${index}`},
       target: {id: output.id, port: 'in0'},
@@ -194,6 +209,19 @@ function initElements() {
         }
       },
     });
+    link.labels([
+      {
+        attrs: {
+          text: {
+            text: metadataSource?.type || '',
+            fill: 'black'
+          }
+        },
+        position: {
+          distance: 0.5
+        }
+      },
+    ]);
     graph.value.addCells([link]);
   }
 }
