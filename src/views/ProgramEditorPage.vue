@@ -329,6 +329,7 @@ const runProgram = async () => {
 function resetInstructions() {
   pipelineTest.value!.isPipelineRunning = false;
   pipelineTest.value!.isPipelineError = false;
+  pipelineTest.value!.setInstructions([]);
   pipelineTest.value!.setInstructions(initialInstructions.value);
 }
 </script>
