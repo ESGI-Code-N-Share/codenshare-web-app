@@ -338,7 +338,10 @@ function resetInstructions() {
   <div class="col flex flex-column gap-4 p-2">
     <div class="flex justify-content-between align-items-center">
       <Button icon="pi pi-arrow-left" severity="secondary" @click="router.back()"/>
-      <h2 class="p-0 m-0">{{ $t('global.pages.editor') }}</h2>
+      <div class="flex flex-column gap-1 justify-content-center text-center">
+        <h2 class="p-0 m-0">{{ $t('global.pages.editor') }}</h2>
+        <small>{{ program?.name?.slice(0, 25) }}</small>
+      </div>
       <div class="flex gap-2">
         <SplitButton
             :label="$t('program.buttons.save')"
