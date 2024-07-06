@@ -163,6 +163,8 @@ const onSaveProgram = async () => {
 }
 
 const onRunProgram = async () => {
+  await resetInstructions();
+
   const instructions = pipelineTest.value?.getInstructions() as {
     program: Program,
     inputs: IInput[],
@@ -170,11 +172,10 @@ const onRunProgram = async () => {
     isProgramError: boolean
     isProgramDone: boolean
   }[];
-  initialInstructions.value = JSON.parse(JSON.stringify(instructions));
+  initialInstructions.value = [...instructions];
 
   if (instructions && instructions.length > 0) {
     try {
-      resetInstructions();
       console.log(instructions)
       pipelineTest.value!.isPipelineRunning = true;
       await runPipeline(instructions);
@@ -325,11 +326,17 @@ const runProgram = async () => {
   }
 }
 
-function resetInstructions() {
-  pipelineTest.value!.isPipelineRunning = false;
-  pipelineTest.value!.isPipelineError = false;
+async function resetInstructions() {
+  if(initialInstructions.value.length === 0) return;
   pipelineTest.value!.setInstructions([]);
-  pipelineTest.value!.setInstructions(initialInstructions.value);
+  return new Promise<void>(resolve => {
+    setTimeout(() => {
+      pipelineTest.value!.isPipelineRunning = false;
+      pipelineTest.value!.isPipelineError = false;
+      pipelineTest.value!.setInstructions(initialInstructions.value);
+      resolve()
+    }, 100)
+  })
 }
 </script>
 
