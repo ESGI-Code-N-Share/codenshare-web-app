@@ -406,7 +406,7 @@ function resetInstructions() {
         <!-- Pipelines Test   -->
         <div v-if="!resetTestExpanded" v-show="testExpanded"
              class="bg-gray-900 p-3 mt-3 border-round h-full overflow-scroll">
-          <ProgramPipelineTest ref="pipelineTest" v-model:can-execute="canExecute"/>
+          <ProgramPipelineTest ref="pipelineTest" v-model:can-execute="canExecute" :program="program"/>
         </div>
       </div>
 

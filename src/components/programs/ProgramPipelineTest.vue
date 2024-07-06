@@ -12,10 +12,11 @@ import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 import OutputFile from "@/components/files/OutputFile.vue";
 
 
-// interface ProgramPipelineTestProps {
-//
-// }
+interface ProgramPipelineTestProps {
+  program: Program
+}
 
+const props = defineProps<ProgramPipelineTestProps>()
 const canExecute = defineModel('canExecute', {type: Boolean, required: false, default: false})
 const emit = defineEmits(['onUpdate'])
 
@@ -52,8 +53,10 @@ const fetchUserPrograms = async () => {
     if (!currentUser) return;
     const userPrograms = await CodeNShareProgramApi.getByUser(currentUser.userId);
     const promises = userPrograms.map((program) => CodeNShareProgramApi.get(program.programId));
-    const p = await Promise.all(promises);//todo remove
-    programs.value = [p.slice(2), p.slice(0, 2)]
+    const allPrograms = await Promise.all(promises);
+    const currentProgram = allPrograms.find(p => p.programId === props.program.programId);
+    if (!currentProgram) return;
+    programs.value = [allPrograms.filter(p => p.programId !== props.program.programId), [currentProgram]];
   } catch (e) {
     console.error(e);
     toastNotifications.showError("Failed to fetch programs");
