@@ -167,7 +167,7 @@ const downloadFiles = (outputs: IOutput[]) => {
                       class="mt-4 pi p-2 border-round-3xl"
                   ></i>
                 </div>
-                <div class="col">
+                <div class="col flex flex-wrap justify-content-between">
                   <div
                       v-for="input in instruction.inputs.filter(g => g.relatedTo === null)"
                       :class="{'w-full': instruction.inputs.filter(g => g.relatedTo === null).length === 1}"
@@ -234,7 +234,7 @@ const downloadFiles = (outputs: IOutput[]) => {
                       class="mt-4 pi p-2 border-round-3xl"
                   ></i>
                 </div>
-                <div class="col">
+                <div class="col flex flex-wrap justify-content-between">
                   <div
                       v-for="output in instruction.outputs"
                       :class="{'w-full': instruction.outputs.length === 1}"
