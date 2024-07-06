@@ -99,7 +99,6 @@ const visibilities = ref<{ label: string, value: string }[]>([
 const languages = ref<{ label: string, value: ProgramLanguages }[]>([
   {label: 'Javascript', value: 'javascript'},
   {label: 'Java', value: 'java'},
-  {label: 'C', value: 'c'},
 ]);
 const versions = ref<{ label: string, value: string }[]>([
   {label: 'Java 11', value: '11'},
