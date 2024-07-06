@@ -68,6 +68,8 @@ const onNextStep = (e: {
 }[], next: (event: Event) => void) => {
   instructions.value = e;
   initialInstructions.value = JSON.parse(JSON.stringify(e));
+  isPipelineRunning.value = false;
+  isPipelineError.value = false;
   canExecute.value = true;
   next(e as unknown as Event)
 }
@@ -297,9 +299,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.error-ports {
-  border: 2px solid red;
-}
 
 .p-stepper {
   flex-basis: 50rem;
