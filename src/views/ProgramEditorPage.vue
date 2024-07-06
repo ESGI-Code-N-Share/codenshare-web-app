@@ -179,12 +179,6 @@ const runPipeline = async (instructions: {
     // prepare program's input
     for(const input of instruction.inputs) {
 
-
-      console.log("current input to upload " + input.id)
-      console.log("current input to upload " + input.relatedTo)
-      console.log("current input to upload " + input.filename)
-
-
       if (input.file) {
         await storageService.upload(input.file, instruction.program.programId)
       } else {
@@ -251,19 +245,23 @@ const run = async (program: Program) => {
   try {
     const task = await CodeNShareProgramApi.run(program.programId);
 
-    await SocketListener.getResult(task, (data: string) => {
-      output.value = data
-      loading.value = false;
-    }, (e: string) => {
-      console.error(e);
-      loading.value = false;
-      toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
-    });
+    return new Promise<void>(async (resolve, reject) => {
+      await SocketListener.getResult(task, (data: string) => {
+        output.value = data
+        loading.value = false;
+        resolve()
+      }, (e: string) => {
+        console.error(e);
+        loading.value = false;
+        toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
+        reject()
+      });
+    })
+
   } catch (e) {
     console.error(e);
     toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
   }
-
 }
 
 const runProgram = async () => {
