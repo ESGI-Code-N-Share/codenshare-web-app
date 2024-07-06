@@ -60,7 +60,6 @@ const programItemOptions = ref([
     }
   },
 ]);
-const consoleExpanded = ref(false);
 const testExpanded = ref(false);
 const pipelineExpanded = ref(false);
 const pipelineTest = ref<InstanceType<typeof ProgramPipelineTest>>();
@@ -344,6 +343,7 @@ function resetInstructions() {
       </div>
       <div class="flex gap-2">
         <SplitButton
+            v-if="!testExpanded"
             :label="$t('program.buttons.save')"
             :model="programItemOptions"
             :pt="{button: {label: {style: 'color: #49DE80;'}}}"
@@ -370,20 +370,12 @@ function resetInstructions() {
              class="flex justify-content-between align-items-center gap-2">
           <div class="flex">
             <Button
-                :class="{ 'bg-gray-800 text-base text-white': consoleExpanded }"
-                :label="$t('program.buttons.console')"
-                class="hover:bg-gray-800 text-sm mr-2"
-                severity="secondary"
-                text
-                @click="consoleExpanded = !consoleExpanded; testExpanded = false; resetTestExpanded = false"
-            />
-            <Button
                 :class="{ 'bg-gray-800 text-base text-white': testExpanded }"
                 :label="$t('program.buttons.test')"
                 class="hover:bg-gray-800 text-sm mr-2"
                 severity="secondary"
                 text
-                @click="testExpanded = !testExpanded; resetTestExpanded = false; consoleExpanded = false;"
+                @click="testExpanded = !testExpanded; resetTestExpanded = false;"
             />
           </div>
           <div>
@@ -401,10 +393,6 @@ function resetInstructions() {
               </svg>
             </Button>
           </div>
-        </div>
-        <!-- Console   -->
-        <div v-if="consoleExpanded" class="bg-gray-900 p-3 mt-3 border-round">
-          <pre><code>{{ output }}</code></pre>
         </div>
         <!-- Pipelines Test   -->
         <div v-if="!resetTestExpanded" v-show="testExpanded"
