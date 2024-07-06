@@ -32,6 +32,14 @@ const instructions = ref<{
   isProgramError?: boolean,
   console?: string
 }[]>([]);
+const initialInstructions = ref<{
+  program: Program,
+  inputs: IInput[],
+  outputs: IOutput[],
+  isProgramDone: boolean,
+  isProgramError?: boolean,
+  console?: string
+}[]>([]);
 const isPipelineRunning = ref(false);
 const isPipelineError = ref(false);
 
@@ -59,6 +67,7 @@ const onNextStep = (e: {
   isProgramDone: boolean
 }[], next: (event: Event) => void) => {
   instructions.value = e;
+  initialInstructions.value = JSON.parse(JSON.stringify(e));
   canExecute.value = true;
   next(e as unknown as Event)
 }
@@ -93,6 +102,11 @@ const isOutputsUploaded = (instruction: { outputs: IOutput[] }) => {
 
 const resetInstructions = () => {
   instructions.value = []
+  isPipelineError.value = false;
+  isPipelineRunning.value = false;
+  setTimeout(() => {
+    instructions.value = JSON.parse(JSON.stringify(initialInstructions.value));
+  }, 10)
 }
 
 const downloadFiles = (outputs: IOutput[]) => {
