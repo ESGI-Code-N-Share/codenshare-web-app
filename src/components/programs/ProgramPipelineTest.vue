@@ -174,7 +174,10 @@ const downloadFiles = (outputs: IOutput[]) => {
                       class="flex flex-column gap-2"
                       style="width: 47.5%"
                   >
-                    <div class="text-lg">{{ input.filename }}</div>
+                    <div class="text-lg">
+                      <span>{{ input.filename }}</span>
+                      <span class="text-sm"> ({{ input.filetype }})</span>
+                    </div>
                     <InputFile
                         :accept="input.filetype"
                         :rename-file="input.filename"
@@ -239,7 +242,10 @@ const downloadFiles = (outputs: IOutput[]) => {
                       style="width: 47.5%;"
                   >
                     <div class="flex justify-content-between">
-                      <div class="text-lg">{{ output.filename }}</div>
+                      <div class="text-lg">
+                        <span>{{ output.filename }}</span>
+                        <span class="text-sm"> ({{ output.filetype }})</span>
+                      </div>
                       <Button
                           v-if="output.url"
                           class="text-xs text-color-secondary underline"

@@ -22,7 +22,7 @@ export class StorageService {
         if(!filename) {
             destination = `${folder}/input/${file.name}`;
         } else {
-            destination = `${folder}/input/${filename}.png`; // todo: change extension
+            destination = `${folder}/input/${filename}`; // todo: change extension
         }
 
         const uploadParams = {

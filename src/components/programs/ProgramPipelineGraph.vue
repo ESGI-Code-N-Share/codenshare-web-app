@@ -20,11 +20,10 @@ const toastNotifications = new ToastService(useToast());
 const pipelineEl = ref<HTMLDivElement>()
 
 const filetypes = [
-  {label: 'Image', value: 'image'},
-  {label: 'Video', value: 'video'},
-  {label: 'Audio', value: 'audio'},
-  {label: 'Text', value: 'text'},
-  {label: 'Other', value: 'other'},
+  {label: 'PNG', value: 'image/png'},
+  {label: 'JPEG', value: 'image/jpeg'},
+  {label: 'JPG', value: 'image/jpg'},
+  {label: 'TXT', value: 'text/txt'},
 ]
 const filetypeModel = ref<typeof filetypes[0]>({label: '', value: ''})
 

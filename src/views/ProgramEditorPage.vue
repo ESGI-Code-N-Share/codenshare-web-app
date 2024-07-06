@@ -233,7 +233,8 @@ const runPipeline = async (instructions: {
 
           console.log("found the file for " + input.filename)
           try {
-            await storageService.upload(file, instruction.program.programId, input.filename)
+            const [_, format] = input.filetype.split('/')
+            await storageService.upload(file, instruction.program.programId, `${input.filename}.${format}`)
             input.file = file
             instruction.inputs[parseInt(i)].uploaded = true;
             pipelineTest.value!.setInstructions(instructions);
@@ -262,7 +263,8 @@ const runPipeline = async (instructions: {
     // get output
     for (const output of instruction.outputs) {
       if (output && instruction.program) {
-        output.url = storageService.getFile(instruction.program.programId, output.filename + ".png");
+        const [_, format] = output.filetype.split('/')
+        output.url = storageService.getFile(instruction.program.programId, `${output.filename}.${format}`);
         pipelineTest.value!.setInstructions(instructions);
       }
     }

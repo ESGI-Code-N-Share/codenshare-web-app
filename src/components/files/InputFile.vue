@@ -6,7 +6,7 @@ import {useToast} from "primevue/usetoast";
 
 const toastNotification = new ToastService(useToast());
 
-type Accept = 'image/*' | 'video/*' | 'audio/*';
+type Accept = 'image/png' | 'image/jpeg' | 'image/jpg' | 'text/txt' | string
 
 interface InputFileProps {
   renameFile?: string;
