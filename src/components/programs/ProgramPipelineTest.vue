@@ -2,7 +2,7 @@
 import {Program} from "@/models";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
-import {onMounted, ref} from "vue";
+import {onMounted, onUnmounted, ref, watch} from "vue";
 import {CodeNShareProgramApi} from "@/api/codenshare";
 import {useUserStore} from "@/stores/user.store";
 import ProgramPipelinesGraph from "@/components/programs/ProgramPipelinesGraph.vue";
@@ -114,6 +114,35 @@ const downloadFiles = (outputs: IOutput[]) => {
   //downloadFiles(urls)
   console.log(urls)
 }
+
+
+const interval = ref()
+watch(isPipelineRunning, (value) => {
+  if (value) {
+    setTimeout(() => {
+      const stepsPipelines = document.querySelectorAll('.step-pipeline');
+      let current = 0;
+      stepsPipelines[current].scrollIntoView({behavior: 'smooth'});
+      interval.value = setInterval(() => {
+        if (stepsPipelines[current].classList.contains('pi-check')) {
+          current++;
+          if (current === stepsPipelines.length || stepsPipelines[current].classList.contains('pi-exclamation-circle') || stepsPipelines[current].classList.contains('pi-times')) {
+            clearInterval(interval.value);
+          } else {
+            stepsPipelines[current].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center'});
+          }
+        }
+      }, 250)
+    }, 250)
+  } else {
+    clearInterval(interval.value)
+  }
+})
+
+onUnmounted(() => {
+  clearInterval(interval.value)
+})
+
 </script>
 
 <template>
@@ -164,7 +193,7 @@ const downloadFiles = (outputs: IOutput[]) => {
                 <div :style="{'width': isPipelineRunning ? '' : 0}" class="col-1 text-center align-self-center">
                   <i
                       :class="!isPipelineRunning ? 'hidden' : isInputsUploaded(instruction) ? 'pi-check text-sm bg-green-700' : instruction.isProgramError ? 'pi-exclamation-circle bg-red-700' : isPipelineError ? 'pi pi-times bg-red-700' : 'pi-spin pi-spinner bg-blue-700'"
-                      class="mt-4 pi p-2 border-round-3xl"
+                      class="mt-4 pi p-2 border-round-3xl step-pipeline"
                   ></i>
                 </div>
                 <div class="col flex flex-wrap justify-content-between">
@@ -201,7 +230,7 @@ const downloadFiles = (outputs: IOutput[]) => {
                 <div :style="{'width': isPipelineRunning ? '' : 0}" class="col-1 text-center align-self-center">
                   <i
                       :class="!isPipelineRunning ? 'hidden' : instruction.isProgramDone ? 'pi-check text-sm bg-green-700' : instruction.isProgramError ? 'pi-exclamation-circle bg-red-700' : isPipelineError ? 'pi pi-times bg-red-700' : 'pi-spin pi-spinner bg-blue-700'"
-                      class="pi p-2 border-round-3xl"
+                      class="pi p-2 border-round-3xl step-pipeline"
                   ></i>
                 </div>
                 <div class="col">
@@ -231,7 +260,7 @@ const downloadFiles = (outputs: IOutput[]) => {
                 <div :style="{'width': isPipelineRunning ? '' : 0}" class="col-1 text-center align-self-center">
                   <i
                       :class="!isPipelineRunning ? 'hidden' : isOutputsUploaded(instruction) ? 'pi-check text-sm bg-green-700' : isPipelineError ? 'pi pi-times bg-red-700' : 'pi-spin pi-spinner bg-blue-700'"
-                      class="mt-4 pi p-2 border-round-3xl"
+                      class="mt-4 pi p-2 border-round-3xl step-pipeline"
                   ></i>
                 </div>
                 <div class="col flex flex-wrap justify-content-between">
