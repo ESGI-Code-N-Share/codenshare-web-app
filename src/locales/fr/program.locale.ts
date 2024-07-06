@@ -82,6 +82,7 @@ export const program = {
         console: "Console",
         add_in_port: 'Port entrée',
         add_out_port: 'Port sortie',
+        download_image: "Télécharger l'image",
     },
     errors: {
         not_enough_ports: "Pas assez de port. Attendu: {inputs} entrée(s) et {outputs} sortie(s).",

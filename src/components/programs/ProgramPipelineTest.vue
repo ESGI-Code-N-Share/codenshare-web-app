@@ -11,7 +11,6 @@ import InputFile from "@/components/files/InputFile.vue";
 import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 import OutputFile from "@/components/files/OutputFile.vue";
 
-
 interface ProgramPipelineTestProps {
   program: Program
 }
@@ -23,6 +22,7 @@ const emit = defineEmits(['onUpdate'])
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
+const loading = ref(false);
 
 const programs = ref<Program[][]>([[], []]);
 const instructions = ref<{
@@ -114,10 +114,27 @@ const resetInstructions = () => {
   }, 10)
 }
 
-const downloadFiles = (outputs: IOutput[]) => {
-  const urls = outputs.map(o => o.url);
-  //downloadFiles(urls)
-  console.log(urls)
+const downloadFile = (output: IOutput) => {
+  loading.value = true;
+  const url = output.url;
+  const imageName = output.filename;
+  const [_, extension] = output.filetype.split('/');
+  if (!url) return;
+
+  fetch(url)
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `${imageName}.${extension}`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(() => toastNotifications.showError("Failed to download file"))
+      .finally(() => loading.value = false);
 }
 
 
@@ -282,10 +299,11 @@ onUnmounted(() => {
                       </div>
                       <Button
                           v-if="output.url"
+                          :label="$t('program.buttons.download_image')"
                           class="text-xs text-color-secondary underline"
-                          label="Télécharger les images"
+                          :loading="loading"
                           text
-                          @click="downloadFiles(instruction.outputs)"
+                          @click="downloadFile(output)"
                       />
                     </div>
                     <OutputFile v-model:url="output.url" class="w-full" @on-error="output.url = null"/>
