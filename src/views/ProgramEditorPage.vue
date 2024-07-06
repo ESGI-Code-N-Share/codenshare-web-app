@@ -102,9 +102,9 @@ const languages = ref<{ label: string, value: ProgramLanguages }[]>([
   {label: 'C', value: 'c'},
 ]);
 const versions = ref<{ label: string, value: string }[]>([
-  {label: 'Java 8', value: '8'},
   {label: 'Java 11', value: '11'},
-  {label: 'Java 15', value: '15'},
+  {label: 'Java 17', value: '17'},
+  {label: 'Java 21', value: '21'},
 ]);
 
 
@@ -266,7 +266,9 @@ const runPipeline = async (instructions: {
       } catch (e) {
         console.error(e);
         instructions.at(index as unknown as number)!.isProgramError = true;
+        instructions.at(index as unknown as number)!.console = e as string;
         pipelineTest.value!.isPipelineError = true;
+        break;
       }
 
     }

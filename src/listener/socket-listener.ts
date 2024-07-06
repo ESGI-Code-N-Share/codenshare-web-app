@@ -12,7 +12,8 @@ export class SocketListener {
         });
 
         socket.on(taskId, (data) => {
-            callback(data);
+            error(data);
+            // callback(data);
             socket.close();
             return data
         });
