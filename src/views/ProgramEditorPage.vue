@@ -191,10 +191,16 @@ const runPipeline = async (instructions: {
     console.log("current instruction to execute " + instruction.program.name)
 
     // prepare program's input
-    for (const [index, input] of Object.entries<IInput>(instruction.inputs)) {
+    for (const [i, input] of Object.entries<IInput>(instruction.inputs)) {
 
       if (input.file) {
-        await storageService.upload(input.file, instruction.program.programId)
+        try {
+          await storageService.upload(input.file, instruction.program.programId)
+          instruction.inputs[parseInt(i)].uploaded = true;
+          pipelineTest.value!.setInstructions(instructions);
+        } catch (e) {
+          console.error(e);
+        }
       } else {
         // if it's related, find it and upload it
         const idRelatedTo = input.relatedTo
@@ -226,10 +232,14 @@ const runPipeline = async (instructions: {
           }
 
           console.log("found the file for " + input.filename)
-          await storageService.upload(file, instruction.program.programId, input.filename)
-          input.file = file
-          instruction.inputs[parseInt(index)].uploaded = true;
-          pipelineTest.value!.setInstructions(instructions);
+          try {
+            await storageService.upload(file, instruction.program.programId, input.filename)
+            input.file = file
+            instruction.inputs[parseInt(i)].uploaded = true;
+            pipelineTest.value!.setInstructions(instructions);
+          } catch (e) {
+            console.error(e);
+          }
         }
       }
     }
@@ -252,7 +262,7 @@ const runPipeline = async (instructions: {
     // get output
     for (const output of instruction.outputs) {
       if (output && instruction.program) {
-        output.url = await storageService.getFile(instruction.program.programId, output.filename + ".png");
+        output.url = storageService.getFile(instruction.program.programId, output.filename + ".png");
         pipelineTest.value!.setInstructions(instructions);
       }
     }

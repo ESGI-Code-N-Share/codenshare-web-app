@@ -31,15 +31,10 @@ export class StorageService {
             Body: file
         };
 
-        try {
-            const data = await this.s3Client.send(new PutObjectCommand(uploadParams));
-            console.log("File uploaded successfully.", data);
-        } catch (err) {
-            console.error("Error uploading file:", err);
-        }
+        return this.s3Client.send(new PutObjectCommand(uploadParams));
     }
 
-    async getFile(folder: string, filename: string) {
+    getFile(folder: string, filename: string) {
         return this.awsHost + folder + '/output/' + filename;
     }
 

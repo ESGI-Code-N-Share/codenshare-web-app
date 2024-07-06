@@ -91,6 +91,10 @@ const isOutputsUploaded = (instruction: { outputs: IOutput[] }) => {
   return instruction.outputs.every(i => i.url !== null)
 }
 
+const resetInstructions = () => {
+  instructions.value = []
+}
+
 const downloadFiles = (outputs: IOutput[]) => {
   const urls = outputs.map(o => o.url);
   //downloadFiles(urls)
@@ -132,8 +136,9 @@ const downloadFiles = (outputs: IOutput[]) => {
     <StepperPanel :header="$t('program.tests.step3.title')" :pt="{content: 'h-full'}">
       <template #content="{prevCallback}">
         <div class="flex flex-column gap-3 w-full h-full">
-          <div class="pb-0 -mt-2">
+          <div class="flex justify-content-between pb-0 -mt-2">
             <Button icon="pi pi-arrow-left" text @click="prevCallback"/>
+            <Button icon="pi pi-refresh" label="Réinitialiser" severity="danger" text @click="resetInstructions()"/>
           </div>
 
           <!-- Step 3 content   -->
@@ -229,7 +234,7 @@ const downloadFiles = (outputs: IOutput[]) => {
                           @click="downloadFiles(instruction.outputs)"
                       />
                     </div>
-                    <OutputFile v-model:url="output.url" class="w-full"/>
+                    <OutputFile v-model:url="output.url" class="w-full" @on-error="output.url = null"/>
                   </div>
                 </div>
               </div>
