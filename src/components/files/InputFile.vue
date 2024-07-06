@@ -104,7 +104,7 @@ const handleClick = () => {
 
 <template>
   <div
-      :class="{ 'bg-gray-700': isHovering, 'p-2': !!modelValue, 'p-4': !modelValue }"
+      :class="{ 'bg-gray-700': isHovering, 'p-2 bg-gray-900': !!modelValue, 'p-4': !modelValue }"
       class="drop-zone border-dashed border-gray-500 border-round text-center text-color-secondary cursor-pointer h-auto"
       style="background-color: var(--gray-800);"
       @click="handleClick()"

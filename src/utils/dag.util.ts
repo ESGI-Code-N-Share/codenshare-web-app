@@ -7,6 +7,7 @@ export interface IO {
 export interface IInput extends IO {
     relatedTo: string | null;
     file: File | null;
+    uploaded?: boolean;
 }
 
 export interface IOutput extends IO {

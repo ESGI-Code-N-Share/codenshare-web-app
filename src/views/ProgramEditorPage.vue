@@ -70,6 +70,14 @@ const globalInstructions = ref<{
   inputs: { filename: string, filetype: string, type: 'input' | 'output', file: File | null }[],
   outputs: { filename: string, filetype: string, type: 'input' | 'output', file: File | null }[],
 }[]>([])
+const initialInstructions = ref<{
+  program: Program,
+  inputs: IInput[],
+  outputs: IOutput[],
+  isProgramDone: boolean,
+  isProgramError?: boolean,
+  console?: string
+}[]>([]);
 
 const program = ref<Program>();
 const language = ref();
@@ -150,34 +158,40 @@ const onRunProgram = async () => {
     program: Program,
     inputs: IInput[],
     outputs: IOutput[],
+    isProgramError: boolean
     isProgramDone: boolean
   }[];
-      if(instructions && instructions.length > 0) {
-        try {
-          console.log(instructions)
-          await runPipeline(instructions);
-        } catch (e) {
-          pipelineTest.value!.isPipelineRunning = false;
-          toastNotifications.showError("Une erreur s'est produite lors l'execution du programme'");
-        }
-      } else {
-        await runProgram()
-      }
+  initialInstructions.value = JSON.parse(JSON.stringify(instructions));
+
+  if (instructions && instructions.length > 0) {
+    try {
+      resetInstructions();
+      console.log(instructions)
+      pipelineTest.value!.isPipelineRunning = true;
+      await runPipeline(instructions);
+    } catch (e) {
+      pipelineTest.value!.isPipelineRunning = false;
+      toastNotifications.showError("Une erreur s'est produite lors l'execution du programme'");
+    }
+  } else {
+    await runProgram()
+  }
 }
 
 const runPipeline = async (instructions: {
   program: Program,
   inputs: IInput[],
   outputs: IOutput[],
+  console?: string,
   isProgramDone: boolean
+  isProgramError: boolean
 }[]) => {
-  pipelineTest.value!.isPipelineRunning = true;
   // for each instruction
   for (const [index, instruction] of Object.entries(instructions)) {
     console.log("current instruction to execute " + instruction.program.name)
 
     // prepare program's input
-    for(const input of instruction.inputs) {
+    for (const [index, input] of Object.entries<IInput>(instruction.inputs)) {
 
       if (input.file) {
         await storageService.upload(input.file, instruction.program.programId)
@@ -190,20 +204,19 @@ const runPipeline = async (instructions: {
 
         if (!targetIO) {
           throw new Error("Missing input for program : " + instruction.program.programId)
-        }
-        else {
+        } else {
           let file: File;
 
-          if(isInput(targetIO)) {
-            if(targetIO.file) {
+          if (isInput(targetIO)) {
+            if (targetIO.file) {
               file = targetIO.file;
             } else {
               throw new Error("File not found");
             }
 
 
-          } else if(isOutput(targetIO)) {
-            if(targetIO.url) {
+          } else if (isOutput(targetIO)) {
+            if (targetIO.url) {
               file = await storageService.getFileFromS3Url(targetIO.url);
             } else {
               throw new Error("Url not found");
@@ -215,15 +228,25 @@ const runPipeline = async (instructions: {
           console.log("found the file for " + input.filename)
           await storageService.upload(file, instruction.program.programId, input.filename)
           input.file = file
+          instruction.inputs[parseInt(index)].uploaded = true;
+          pipelineTest.value!.setInstructions(instructions);
         }
       }
     }
 
     // run program
     if (instruction.program) {
-      await run(instruction.program);
-      instructions.at(index as unknown as number)!.isProgramDone = true;
-      pipelineTest.value!.setInstructions(instructions);
+      try {
+        const console = await run(instruction.program);
+        instructions.at(index as unknown as number)!.isProgramDone = true;
+        instructions.at(index as unknown as number)!.console = console;
+        pipelineTest.value!.setInstructions(instructions);
+      } catch (e) {
+        console.error(e);
+        instructions.at(index as unknown as number)!.isProgramError = true;
+        pipelineTest.value!.isPipelineError = true;
+      }
+
     }
 
     // get output
@@ -237,31 +260,23 @@ const runPipeline = async (instructions: {
   }
 
   pipelineTest.value!.setInstructions(instructions);
-
 }
 
 
 const run = async (program: Program) => {
-  try {
-    const task = await CodeNShareProgramApi.run(program.programId);
-
-    return new Promise<void>(async (resolve, reject) => {
-      await SocketListener.getResult(task, (data: string) => {
-        output.value = data
-        loading.value = false;
-        resolve()
-      }, (e: string) => {
-        console.error(e);
-        loading.value = false;
-        toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
-        reject()
-      });
-    })
-
-  } catch (e) {
-    console.error(e);
-    toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
-  }
+  const task = await CodeNShareProgramApi.run(program.programId);
+  return new Promise<string>(async (resolve, reject) => {
+    await SocketListener.getResult(task, (data: string) => {
+      output.value = data
+      loading.value = false;
+      resolve(data)
+    }, (e: string) => {
+      console.error(e);
+      loading.value = false;
+      toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
+      reject()
+    });
+  })
 }
 
 const runProgram = async () => {
@@ -285,6 +300,12 @@ const runProgram = async () => {
       toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
     }
   }
+}
+
+function resetInstructions() {
+  pipelineTest.value!.isPipelineRunning = false;
+  pipelineTest.value!.isPipelineError = false;
+  pipelineTest.value!.setInstructions(initialInstructions.value);
 }
 </script>
 
@@ -381,7 +402,7 @@ const runProgram = async () => {
       <div class="flex flex-column gap-3">
         <div>{{ $t('global.drop_a_file.label') }}</div>
         <InputFile v-model:file-url="program.imageURL" accept="image/*"
-                   @onFileSelected="program.imageURL = $event.fileUrl" />
+                   @onFileSelected="program.imageURL = $event.fileUrl"/>
 
         <InputText v-model="program.name" :placeholder="$t('program.forms.name.placeholder')"/>
         <Textarea v-model="program.description" :placeholder="$t('program.forms.description.placeholder')"

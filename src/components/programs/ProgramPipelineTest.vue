@@ -7,9 +7,9 @@ import {CodeNShareProgramApi} from "@/api/codenshare";
 import {useUserStore} from "@/stores/user.store";
 import ProgramPipelinesGraph from "@/components/programs/ProgramPipelinesGraph.vue";
 import {IInput, IOutput} from "@/utils/dag.util";
+import InputFile from "@/components/files/InputFile.vue";
 import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 import OutputFile from "@/components/files/OutputFile.vue";
-import InputFile from "@/components/files/InputFile.vue";
 
 
 // interface ProgramPipelineTestProps {
@@ -24,8 +24,16 @@ const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
 
 const programs = ref<Program[][]>([[], []]);
-const instructions = ref<{ program: Program, inputs: IInput[], outputs: IOutput[], isProgramDone: boolean }[]>([]);
+const instructions = ref<{
+  program: Program,
+  inputs: IInput[],
+  outputs: IOutput[],
+  isProgramDone: boolean,
+  isProgramError?: boolean,
+  console?: string
+}[]>([]);
 const isPipelineRunning = ref(false);
+const isPipelineError = ref(false);
 
 onMounted(async () => {
   await fetchUserPrograms()
@@ -72,8 +80,22 @@ defineExpose({
   getInstructions,
   setInstructions,
   isPipelineRunning,
+  isPipelineError,
 })
 
+const isInputsUploaded = (instruction: { inputs: IInput[] }) => {
+  return instruction.inputs.every(i => i.uploaded)
+}
+
+const isOutputsUploaded = (instruction: { outputs: IOutput[] }) => {
+  return instruction.outputs.every(i => i.url !== null)
+}
+
+const downloadFiles = (outputs: IOutput[]) => {
+  const urls = outputs.map(o => o.url);
+  //downloadFiles(urls)
+  console.log(urls)
+}
 </script>
 
 <template>
@@ -109,104 +131,112 @@ defineExpose({
     <!-- Step 3   -->
     <StepperPanel :header="$t('program.tests.step3.title')" :pt="{content: 'h-full'}">
       <template #content="{prevCallback}">
-        <div class="flex justify-content-between">
-          <Button icon="pi pi-arrow-left" @click="prevCallback"/>
-        </div>
+        <div class="flex flex-column gap-3 w-full h-full">
+          <div class="pb-0 -mt-2">
+            <Button icon="pi pi-arrow-left" text @click="prevCallback"/>
+          </div>
 
-        <!-- Step 3 content   -->
-        <div class="flex flex-column gap-3 overflow-y-scroll py-4 h-full">
-          <div v-for="(instruction, i) in instructions" class="flex flex-column gap-3 h-full">
-            <div class="flex align-items-center gap-4 w-full h-full">
-              <div v-if="instruction.inputs.filter(g => g.relatedTo === null).length > 0" class="flex flex-column">
-                <i
-                    :class="[
-                        instruction.inputs.every(ins => !!ins.file) ? 'bg-green-700' : isPipelineRunning ? 'bg-blue-700' : 'bg-gray-700',
-                        isPipelineRunning ? 'pi-spin pi-spinner' : 'pi-check'
-                    ]"
-                    class="pi text-xs p-2 border-round-3xl"
-                />
-              </div>
-              <div class="flex justify-content-between flex-wrap gap-2 w-full">
-                <div
-                    v-for="(input, y) in instruction.inputs.filter(g => g.relatedTo === null)"
-                    :class="{'w-full': instruction.inputs.filter(g => g.relatedTo === null).length === 1}"
-                    class="flex flex-column gap-2"
-                    style="width: 47.5%"
-                >
-                  <div class="text-lg">{{ input.filename }}</div>
-                  <InputFile
-                      :accept="input.filetype"
-                      :rename-file="input.filename"
-                      @on-file-selected="input.file=$event.file"
-                  />
+          <!-- Step 3 content   -->
+          <div class="flex flex-column gap-4 w-full h-full overflow-y-scroll pr-4">
+            <div v-for="instruction in instructions" class="flex flex-column">
+
+              <!-- Inputs -->
+              <div v-if="instruction.inputs.filter(g => g.relatedTo === null).length > 0" class="grid m-0">
+                <div :style="{'width': isPipelineRunning ? '' : 0}" class="col-1 text-center align-self-center">
+                  <i
+                      :class="!isPipelineRunning ? 'hidden' : isInputsUploaded(instruction) ? 'pi-check text-sm bg-green-700' : instruction.isProgramError ? 'pi-exclamation-circle bg-red-700' : isPipelineError ? 'pi pi-times bg-red-700' : 'pi-spin pi-spinner bg-blue-700'"
+                      class="mt-4 pi p-2 border-round-3xl"
+                  ></i>
+                </div>
+                <div class="col">
+                  <div
+                      v-for="input in instruction.inputs.filter(g => g.relatedTo === null)"
+                      :class="{'w-full': instruction.inputs.filter(g => g.relatedTo === null).length === 1}"
+                      class="flex flex-column gap-2"
+                      style="width: 47.5%"
+                  >
+                    <div class="text-lg">{{ input.filename }}</div>
+                    <InputFile
+                        :accept="input.filetype"
+                        :rename-file="input.filename"
+                        max-height-preview="8"
+                        @on-file-selected="input.file=$event.file"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="flex gap-4">
-              <div class="align-self-center">
-                <i class="p-3"/>
+              <!-- Chevron down -->
+              <div class="grid m-0">
+                <div :style="{'width': isPipelineRunning ? '' : 0}" class="col-1 text-center align-self-center"></div>
+                <div class="col text-center">
+                  <i class="pi pi-chevron-down text-2xl gradient-text-primary"/>
+                </div>
               </div>
-              <div class="text-center w-full">
-                <i class="pi pi-chevron-down text-2xl gradient-text-primary"/>
-              </div>
-            </div>
 
-            <div class="flex gap-4">
-              <div class="align-self-center">
-                <i
-                    :class="[
-                        instruction.isProgramDone ? 'bg-green-700' : isPipelineRunning ? 'bg-blue-700' : 'bg-gray-700',
-                        isPipelineRunning ? 'pi-spin pi-spinner' : 'pi-check'
-                    ]"
-                    class="pi pi-check text-xs p-2 border-round-3xl"
-                />
+              <!-- Program -->
+              <div class="grid m-0">
+                <div :style="{'width': isPipelineRunning ? '' : 0}" class="col-1 text-center align-self-center">
+                  <i
+                      :class="!isPipelineRunning ? 'hidden' : instruction.isProgramDone ? 'pi-check text-sm bg-green-700' : instruction.isProgramError ? 'pi-exclamation-circle bg-red-700' : isPipelineError ? 'pi pi-times bg-red-700' : 'pi-spin pi-spinner bg-blue-700'"
+                      class="pi p-2 border-round-3xl"
+                  ></i>
+                </div>
+                <div class="col">
+                  <div class="flex flex-column border-round-xl overflow-hidden w-full"
+                       style="background-color: rgb(18, 18, 18)">
+                    <ProgramListItem :program="instruction.program"/>
+                    <Divider class="m-0"/>
+                    <div v-if="instruction.console" class="text-left w-full p-3 text-sm max-h-5rem overflow-y-scroll">
+                      {{ instruction.console || 'No console output' }}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="flex flex-column gap-2 w-full">
-                <ProgramListItem
-                    :class="{'error-ports': false}"
-                    :program="instruction.program"
-                />
-                <!-- Console   -->
-                <!--                <div v-if="false" class="bg-gray-900 p-3 mt-3 border-round">-->
-                <!--                  <pre><code>{{ 'output' }}</code></pre>-->
-                <!--                </div>-->
-              </div>
-            </div>
 
-            <div class="flex gap-4">
-              <div class="align-self-center">
-                <i class="p-3"/>
-              </div>
-              <div class="text-center w-full">
-                <i class="pi pi-equals text-2xl gradient-text-primary"/>
-              </div>
-            </div>
 
-            <div class="flex gap-4">
-              <div class="align-self-center">
-                <i
-                    :class="[
-                        instruction.outputs.every(ins => !!ins.url) ? 'bg-green-700' : isPipelineRunning ? 'bg-blue-700' : 'bg-gray-700',
-                        isPipelineRunning ? 'pi-spin pi-spinner' : 'pi-check'
-                    ]"
-                    class="pi pi-check text-xs p-2 border-round-3xl"
-                />
+              <!-- Equal -->
+              <div class="grid m-0">
+                <div :style="{'width': isPipelineRunning ? '' : 0}" class="col-1 text-center align-self-center"></div>
+                <div class="col text-center">
+                  <i class="pi pi-equals text-2xl gradient-text-primary"/>
+                </div>
               </div>
-              <div class="flex justify-content-between flex-wrap gap-2 w-full">
-                <div
-                    v-for="output in instruction.outputs"
-                    :class="{'w-full': instruction.outputs.length === 1}"
-                    class="flex flex-column gap-2"
-                    style="width: 47.5%;"
-                >
-                  <div class="text-lg">{{ output.filename }}</div>
-                  <OutputFile v-model:url="output.url" class="w-full"/>
+
+
+              <!-- Outputs -->
+              <div class="grid m-0">
+                <div :style="{'width': isPipelineRunning ? '' : 0}" class="col-1 text-center align-self-center">
+                  <i
+                      :class="!isPipelineRunning ? 'hidden' : isOutputsUploaded(instruction) ? 'pi-check text-sm bg-green-700' : isPipelineError ? 'pi pi-times bg-red-700' : 'pi-spin pi-spinner bg-blue-700'"
+                      class="mt-4 pi p-2 border-round-3xl"
+                  ></i>
+                </div>
+                <div class="col">
+                  <div
+                      v-for="output in instruction.outputs"
+                      :class="{'w-full': instruction.outputs.length === 1}"
+                      class="flex flex-column gap-2"
+                      style="width: 47.5%;"
+                  >
+                    <div class="flex justify-content-between">
+                      <div class="text-lg">{{ output.filename }}</div>
+                      <Button
+                          v-if="output.url"
+                          class="text-xs text-color-secondary underline"
+                          label="Télécharger les images"
+                          text
+                          @click="downloadFiles(instruction.outputs)"
+                      />
+                    </div>
+                    <OutputFile v-model:url="output.url" class="w-full"/>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
       </template>
     </StepperPanel>
   </Stepper>
