@@ -45,6 +45,7 @@ export class CodeNShareProgramApi {
             pictureURL: program.imageURL,
             visibility: program.visibility,
             language: program.language,
+            version: program.version || '',
             code: program.code,
         }
         console.log("body: ", body);

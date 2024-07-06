@@ -23,6 +23,7 @@ const toastNotifications = new ToastService(useToast());
 const storageService = new StorageService();
 
 const loading = ref(false);
+const loadingUpdateProgram = ref(false);
 const programItemOptions = ref([
   {
     label: 'Pipeline',
@@ -80,6 +81,7 @@ const initialInstructions = ref<{
 }[]>([]);
 
 const program = ref<Program>();
+const visibility = ref();
 const language = ref();
 const version = ref();
 const output = ref('');
@@ -89,6 +91,11 @@ const openCodeHistory = ref(false);
 const openPipelineGraph = ref(false)
 const resetTestExpanded = ref(false)
 
+const visibilities = ref<{ label: string, value: string }[]>([
+  {label: 'Public', value: 'public'},
+  {label: 'Protégé', value: 'protected'},
+  {label: 'Privé', value: 'private'},
+]);
 const languages = ref<{ label: string, value: ProgramLanguages }[]>([
   {label: 'Javascript', value: 'javascript'},
   {label: 'Java', value: 'java'},
@@ -117,6 +124,7 @@ const fetchProgram = async (programId: ProgramId) => {
       return await router.push({name: 'programs'});
     }
 
+    visibility.value = visibilities.value.find(v => v.value === program.value?.visibility);
     language.value = languages.value.find(l => l.value === program.value?.language);
     version.value = versions.value.find(v => v.value === program.value?.version);
 
@@ -144,11 +152,14 @@ const fetchProgram = async (programId: ProgramId) => {
 const onSaveProgram = async () => {
   if (program.value) {
     try {
+      loadingUpdateProgram.value = true;
       await CodeNShareProgramApi.update(program.value);
       toastNotifications.showSuccess("Modifications enregistrées");
     } catch (e) {
       console.error(e);
       toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
+    } finally {
+      loadingUpdateProgram.value = false;
     }
   }
 }
@@ -423,15 +434,23 @@ function resetInstructions() {
                   rows="5"/>
 
         <Dropdown
+            v-model="visibility"
+            :options="visibilities"
+            :placeholder="$t('program.forms.visibility.placeholder')"
+            data-key="value"
+            option-label="label"
+            @change="program.visibility = $event.value.value"
+        />
+        <Dropdown
             v-model="language"
             :options="languages"
             :placeholder="$t('program.forms.language.placeholder')"
             data-key="value"
             option-label="label"
-            @change="program.language = $event.value.value"
+            @change="program.language = $event.value.value; program.version = $event.value.value === 'java' ? '8' : ''"
         />
         <Dropdown
-            v-if="program.language === 'java' && program.version !== undefined"
+            v-if="program.language === 'java'"
             v-model="version"
             :options="versions"
             :placeholder="$t('program.forms.version.placeholder')"
@@ -439,8 +458,13 @@ function resetInstructions() {
             @change="program.version = $event.value.value"
         />
 
-        <Button :label="$t('program.buttons.save')" icon="pi pi-save" icon-pos="right" severity="success"
-                @click="onSaveProgram()"/>
+        <Button
+            :label="$t('program.buttons.save')"
+            :loading="loadingUpdateProgram"
+            icon="pi pi-save"
+            icon-pos="right"
+            severity="success"
+            @click="onSaveProgram()"/>
       </div>
     </SideBar>
 
