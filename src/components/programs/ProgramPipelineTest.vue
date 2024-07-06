@@ -251,7 +251,7 @@ const downloadFiles = (outputs: IOutput[]) => {
   flex-basis: 50rem;
 }
 
-::v-deep .p-stepper-panels {
+:deep(.p-stepper-panels) {
   height: 95%;
   padding-left: 0.15em;
   padding-right: 0.15em;
