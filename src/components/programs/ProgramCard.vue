@@ -82,7 +82,7 @@ onMounted(() => {
           alt="meeting"
           class="border-round-xl cursor-pointer"
           :src="program.imageURL"
-          style="object-fit: cover; width: 100%; height: auto; max-height: 125px"
+          style="object-fit: cover; width: 100%; height: 100%; max-height: 125px"
           @click="$router.push({name: 'program', params: {program: program.programId}})"
       />
       <div class="flex flex-column pl-2 pb-2 overflow-hidden">
