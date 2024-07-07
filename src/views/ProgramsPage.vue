@@ -133,8 +133,8 @@ const deleteProgram = async (program: ProgramsRequest) => {
     </div>
 
     <!-- Filter by language and sort   -->
-    <div class="flex justify-content-between align-items-center">
-      <div class="flex gap-2">
+    <div class="flex justify-content-between align-items-start">
+      <div class="flex flex-wrap gap-2">
         <Chip
             v-for="language in languages"
             :key="language"
