@@ -77,7 +77,8 @@ onMounted(() => {
 
 <template>
   <div class="p-2 sm:p-2 border-round-2xl" style="min-height: 260px; max-height: 300px">
-    <div class="flex flex-column surface-card border-round-xl p-2 h-full">
+    <div :class="{'program-mine': program.originalAuthorId === currentUser?.userId}"
+         class="flex flex-column surface-card border-round-xl p-2 h-full">
       <img
           alt="meeting"
           class="border-round-xl cursor-pointer"
@@ -108,5 +109,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
+.program-mine {
+  box-shadow: 0 0 2px 0 rgba(74, 222, 128, 0.5);
+}
 </style>

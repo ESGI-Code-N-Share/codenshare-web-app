@@ -6,6 +6,9 @@ import {profile} from "./profile.locale";
 
 const global = {
     loading: "Chargement...",
+    reset: "Réinitialiser",
+    sort: 'Trier',
+    filter: 'Filtrer',
     forms: {
         language: {
             label: "Langue",

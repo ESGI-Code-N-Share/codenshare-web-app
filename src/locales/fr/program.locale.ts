@@ -10,6 +10,10 @@ export const program = {
         download: "Télécharger le fichier",
     },
     forms: {
+        search: {
+            label: "Rechercher",
+            placeholder: "Rechercher un programme",
+        },
         name: {
             label: "Nom",
             placeholder: "Nom du programme",
@@ -83,6 +87,11 @@ export const program = {
         add_in_port: 'Port entrée',
         add_out_port: 'Port sortie',
         download_image: "Télécharger l'image",
+    },
+    languages: {
+        java: 'Java',
+        javascript: 'Javascript',
+        unset: 'Non défini',
     },
     errors: {
         not_enough_ports: "Pas assez de port. Attendu: {inputs} entrée(s) et {outputs} sortie(s).",
