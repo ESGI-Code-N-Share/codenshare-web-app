@@ -2,6 +2,7 @@
 
 interface ImportMetaEnv {
     readonly VITE_API_URL: string;
+    readonly VITE_MEDIA_URL: string;
 
     // server socket env
     readonly VITE_SERVER_SOCKET: string;

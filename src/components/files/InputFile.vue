@@ -3,6 +3,7 @@
 import {ref} from "vue";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import {MediaApi} from "@/api/media";
 
 const toastNotification = new ToastService(useToast());
 
@@ -61,11 +62,16 @@ const processFile = async (file: File) => {
     return;
   }
 
+  let apiUrl = '';
+  try {
+    const res = await MediaApi.uploadFile(file);
+    apiUrl = res.imageURL;
+  } catch (e) {
+    console.error(e);
+  }
+
   if (file.type.startsWith('image/')) {
     const blob = await fileToBlob(file);
-
-    // todo call api to upload file
-    const formData = new FormData();
 
     fileUrl.value = URL.createObjectURL(blob);
     modelValue.value = fileUrl.value;
@@ -73,14 +79,10 @@ const processFile = async (file: File) => {
     if (props.renameFile) {
       const format = file.name.split('.').pop()
       const newFile = new File([blob], `${props.renameFile}.${format}`, {type: file.type});
-      console.log("newFile.name: ", newFile.name);
-      formData.append('file', blob, file.name);
-      emit('onFileSelected', {file: newFile, formData: formData});
+      emit('onFileSelected', {file: newFile, fileUrl: apiUrl});
       return;
     }
-    emit('onFileSelected', {file: file});
-  } else {
-    // todo call api to upload file
+    emit('onFileSelected', {file: file, fileUrl: apiUrl});
   }
 };
 

@@ -69,10 +69,7 @@ const createPostOptions = ref<any[]>([
             await CodeNSharePostApi.create(title.value, content.value, image.value);
             emit('onPublished');
             toastNotifications.showSuccess('Publication créée');
-            title.value = '';
-            content.value = '';
-            addImage.value = false;
-            addProgram.value = false;
+            reset();
           } catch (e) {
             console.error(e);
             toastNotifications.showError("Une erreur s'est produite lors de la création de la publication");
@@ -90,20 +87,24 @@ const createPostOptions = ref<any[]>([
         class: 'border-round text-color-primary',
         style: 'color: #f87171',
         command() {
-          addProgram.value = false;
-          addImage.value = false;
-          title.value = '';
-          content.value = '';
-
-          if (createPostOptions.value[0].items) {
-            createPostOptions.value[0].items.forEach(item => item.disabled = false);
-          }
+          reset()
         }
       }
     ]
   }
 
 ]);
+
+function reset() {
+  addProgram.value = false;
+  addImage.value = false;
+  title.value = '';
+  content.value = '';
+
+  if (createPostOptions.value[0].items) {
+    createPostOptions.value[0].items.forEach(item => item.disabled = false);
+  }
+}
 
 
 const openCreatePost = (event: Event) => {
@@ -126,7 +127,7 @@ const openCreatePost = (event: Event) => {
       <InputText v-model="title" :placeholder="$t('post.forms.title.placeholder')" class="w-full" variant="filled"/>
       <Textarea v-model="content" :placeholder="$t('post.forms.content.placeholder')" class="w-full" rows="3"
                 variant="filled"/>
-      <InputFile v-if="addImage" v-model:file-url="image" accept="image/*" class="" max-height-preview="5"/>
+      <InputFile v-if="addImage" accept="image/*" max-height-preview="5" @on-file-selected="image = $event.fileUrl"/>
     </div>
   </div>
 </template>
