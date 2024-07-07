@@ -335,7 +335,14 @@ const runProgram = async () => {
 
 async function resetInstructions() {
   if (initialInstructions.value.length === 0) return;
-  pipelineTest.value!.setInstructions([]);
+  pipelineTest.value!.setInstructions(initialInstructions.value.map(i => {
+    return {
+      inputs: i.inputs,
+      program: i.program,
+      outputs: [],
+      isProgramDone: false,
+    }
+  }));
   return new Promise<void>(resolve => {
     setTimeout(() => {
       pipelineTest.value!.isPipelineRunning = false;
