@@ -23,6 +23,8 @@ const userStore = useUserStore();
 const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
 const loading = ref(false);
+const milliseconds = ref();
+const millisecondsIntervalId = ref();
 
 const programs = ref<Program[][]>([[], []]);
 const instructions = ref<{
@@ -138,9 +140,21 @@ const downloadFile = (output: IOutput) => {
 }
 
 
+const startTimer = () => {
+  milliseconds.value = 0;
+  const start = Date.now();
+  millisecondsIntervalId.value = setInterval(() => {
+    milliseconds.value = Date.now() - start;
+  }, 1);
+}
+const stopTimer = () => {
+  clearInterval(millisecondsIntervalId.value);
+}
+
 const interval = ref()
 watch(isPipelineRunning, (value) => {
   if (value) {
+    startTimer();
     setTimeout(() => {
       const stepsPipelines = document.querySelectorAll('.step-pipeline');
       let current = 0;
@@ -149,6 +163,7 @@ watch(isPipelineRunning, (value) => {
         if (stepsPipelines[current].classList.contains('pi-check')) {
           current++;
           if (current === stepsPipelines.length || stepsPipelines[current].classList.contains('pi-exclamation-circle') || stepsPipelines[current].classList.contains('pi-times')) {
+            stopTimer()
             clearInterval(interval.value);
           } else {
             stepsPipelines[current].scrollIntoView({behavior: 'smooth', block: 'center', inline: 'center'});
@@ -157,11 +172,13 @@ watch(isPipelineRunning, (value) => {
       }, 250)
     }, 250)
   } else {
+    stopTimer()
     clearInterval(interval.value)
   }
 })
 
 onUnmounted(() => {
+  stopTimer()
   clearInterval(interval.value)
 })
 
@@ -201,8 +218,26 @@ onUnmounted(() => {
     <StepperPanel :header="$t('program.tests.step3.title')" :pt="{content: 'h-full'}">
       <template #content="{prevCallback}">
         <div class="flex flex-column gap-3 w-full h-full">
-          <div class="flex justify-content-between pb-0 -mt-2">
+          <div class="flex justify-content-between pb-0 -mt-2 relative">
             <Button icon="pi pi-arrow-left" text @click="prevCallback"/>
+
+            <InlineMessage v-if="isPipelineError" class="message-inline text-xs" severity="error"
+                           style="justify-self: center">
+              {{ $t('program.tests.step3.error_pipeline') }}
+            </InlineMessage>
+            <InlineMessage v-else-if="isPipelineRunning" class="message-inline text-xs" icon="pi pi-spinner pi-spin"
+                           severity="info">
+              {{
+                $t('program.tests.step3.running', {
+                  duration: milliseconds > 3500 ? (milliseconds / 1000).toFixed(2) : milliseconds,
+                  unit: milliseconds > 3500 ? 's' : 'ms'
+                })
+              }}
+            </InlineMessage>
+            <InlineMessage v-else class="message-inline text-xs" icon="pi pi-info-circle" severity="secondary">
+              {{ $t('program.tests.step3.waiting') }}
+            </InlineMessage>
+
             <Button icon="pi pi-refresh" label="Réinitialiser" severity="danger" text @click="resetInstructions()"/>
           </div>
 
@@ -320,6 +355,13 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+
+.message-inline {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 
 .p-stepper {
   flex-basis: 50rem;

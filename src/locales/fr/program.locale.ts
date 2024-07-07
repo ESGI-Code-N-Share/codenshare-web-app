@@ -68,6 +68,9 @@ export const program = {
         },
         step3: {
             title: "Test",
+            running: 'Durée: {duration}{unit}',
+            error_pipeline: "Une erreur est survenue.",
+            waiting: 'En attente de lancement...',
         },
     },
     buttons: {
