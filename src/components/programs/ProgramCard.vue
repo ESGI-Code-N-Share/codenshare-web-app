@@ -47,7 +47,6 @@ onMounted(() => {
     importCommand: async () => {
       try {
         await CodeNShareProgramApi.import(props.program.programId);
-        await router.push({name: 'playground', query: {program: props.program.programId}});
         toastNotifications.showSuccess('Programme importé');
         emit('onMenuClick')
       } catch (e) {

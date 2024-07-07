@@ -36,7 +36,6 @@ const search = ref('');
 const languages = ref<string[]>(['java', 'javascript', 'unset']);
 
 const programFiltered = computed(() => {
-  console.log(orderBy.value, programOwner.value)
   const filterByOwner = (p: ProgramsRequest) => programOwner.value === 'all' || p.originalAuthorId === currentUser?.userId;
   const sortByCreatedAt = (a: ProgramsRequest, b: ProgramsRequest) => orderBy.value === 'desc' ? dayjs(b.createdAt).diff(a.createdAt) : dayjs(a.createdAt).diff(b.createdAt)
   const filterBySearch = (p: ProgramsRequest) => search.value === '' || p.name.toLowerCase().includes(search.value.toLowerCase());
