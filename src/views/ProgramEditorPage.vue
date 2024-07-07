@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {VAceEditor} from 'vue3-ace-editor';
 import 'ace-builds/src-noconflict/mode-javascript';
@@ -61,9 +61,15 @@ const programItemOptions = ref([
   },
 ]);
 const testExpanded = ref(false);
+const consoleExpanded = ref(false);
 const pipelineExpanded = ref(false);
 const pipelineTest = ref<InstanceType<typeof ProgramPipelineTest>>();
 const canExecute = ref(false);
+
+const showConsole = computed(() => {
+  if (!program.value || testExpanded.value) return false;
+  return program.value.instructions.inputs.length === 0;
+})
 
 const globalInstructions = ref<{
   programId: string,
@@ -327,7 +333,7 @@ const runProgram = async () => {
 }
 
 async function resetInstructions() {
-  if(initialInstructions.value.length === 0) return;
+  if (initialInstructions.value.length === 0) return;
   pipelineTest.value!.setInstructions([]);
   return new Promise<void>(resolve => {
     setTimeout(() => {
@@ -377,6 +383,16 @@ async function resetInstructions() {
              class="flex justify-content-between align-items-center gap-2">
           <div class="flex">
             <Button
+                v-if="showConsole"
+                :class="{ 'bg-gray-800 text-base text-white': consoleExpanded }"
+                :label="$t('program.buttons.console')"
+                class="hover:bg-gray-800 text-sm mr-2"
+                severity="secondary"
+                text
+                @click="consoleExpanded = !consoleExpanded; testExpanded = false; resetTestExpanded = false"
+            />
+            <Button
+                v-if="!showConsole"
                 :class="{ 'bg-gray-800 text-base text-white': testExpanded }"
                 :label="$t('program.buttons.test')"
                 class="hover:bg-gray-800 text-sm mr-2"
@@ -401,6 +417,16 @@ async function resetInstructions() {
             </Button>
           </div>
         </div>
+        <!-- Console       -->
+        <div v-if="consoleExpanded" class="bg-gray-900 p-3 mt-3 border-round h-full overflow-scroll">
+          <div v-if="loading" class="flex justify-content-center align-items-center h-full">
+            <ProgressSpinner/>
+          </div>
+          <div v-else>
+            <pre class="text-sm text-white"><code>{{ output }}</code></pre>
+          </div>
+        </div>
+
         <!-- Pipelines Test   -->
         <div v-if="!resetTestExpanded" v-show="testExpanded"
              class="bg-gray-900 p-3 mt-3 border-round h-full overflow-scroll">
@@ -408,91 +434,89 @@ async function resetInstructions() {
         </div>
       </div>
 
+      <!-- Sidebar Program   -->
+      <SideBar
+          v-if="program"
+          v-model:visible="sidebarProgramEditor"
+          :header="$t('program.configure')"
+          :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
+          blockScroll
+          class="border-0 "
+          modal
+          position="right"
+          style="min-width: 350px;"
+      >
+        <div class="flex flex-column gap-3">
+          <div>{{ $t('global.drop_a_file.label') }}</div>
+          <InputFile v-model:file-url="program.imageURL" accept="image/*"
+                     @onFileSelected="program.imageURL = $event.fileUrl"/>
+
+          <InputText v-model="program.name" :placeholder="$t('program.forms.name.placeholder')"/>
+          <Textarea v-model="program.description" :placeholder="$t('program.forms.description.placeholder')"
+                    class="h-5rem w-full text-sm"
+                    cols="30"
+                    rows="5"/>
+
+          <Dropdown
+              v-model="visibility"
+              :options="visibilities"
+              :placeholder="$t('program.forms.visibility.placeholder')"
+              data-key="value"
+              option-label="label"
+              @change="program.visibility = $event.value.value"
+          />
+          <Dropdown
+              v-model="language"
+              :options="languages"
+              :placeholder="$t('program.forms.language.placeholder')"
+              data-key="value"
+              option-label="label"
+              @change="program.language = $event.value.value; program.version = $event.value.value === 'java' ? '8' : ''"
+          />
+          <Dropdown
+              v-if="program.language === 'java'"
+              v-model="version"
+              :options="versions"
+              :placeholder="$t('program.forms.version.placeholder')"
+              option-label="label"
+              @change="program.version = $event.value.value"
+          />
+
+          <Button
+              :label="$t('program.buttons.save')"
+              :loading="loadingUpdateProgram"
+              icon="pi pi-save"
+              icon-pos="right"
+              severity="success"
+              @click="onSaveProgram()"/>
+        </div>
+      </SideBar>
+
+      <!-- Modal Pipeline Graph   -->
+      <Dialog v-model:visible="openPipelineGraph" :header="$t('program.pipeline')" modal>
+        <ProgramPipelineGraph
+            v-if="program"
+            :program="program"
+            @on-update="fetchProgram(program.programId); resetTestExpanded = true; testExpanded = false"
+        />
+      </Dialog>
+
+      <!-- Modal Code History   -->
+      <Dialog
+          v-model:visible="openCodeHistory"
+          :header="$t('program.code_history')"
+          :pt="{content: 'h-full'}"
+          :style="{ width: '80%', height: '80%' }"
+          modal
+      >
+        <ProgramCodeHistory
+            v-if="program"
+            :program="program"
+            @on-import="program.code = $event.code; openCodeHistory = false"
+        />
+      </Dialog>
     </div>
-
-    <!-- Sidebar Program   -->
-    <SideBar
-        v-if="program"
-        v-model:visible="sidebarProgramEditor"
-        :header="$t('program.configure')"
-        :pt="{header: 'border-bottom-1 border-gray-700', content: 'pt-4'}"
-        blockScroll
-        class="border-0 "
-        modal
-        position="right"
-        style="min-width: 350px;"
-    >
-      <div class="flex flex-column gap-3">
-        <div>{{ $t('global.drop_a_file.label') }}</div>
-        <InputFile v-model:file-url="program.imageURL" accept="image/*"
-                   @onFileSelected="program.imageURL = $event.fileUrl"/>
-
-        <InputText v-model="program.name" :placeholder="$t('program.forms.name.placeholder')"/>
-        <Textarea v-model="program.description" :placeholder="$t('program.forms.description.placeholder')"
-                  class="h-5rem w-full text-sm"
-                  cols="30"
-                  rows="5"/>
-
-        <Dropdown
-            v-model="visibility"
-            :options="visibilities"
-            :placeholder="$t('program.forms.visibility.placeholder')"
-            data-key="value"
-            option-label="label"
-            @change="program.visibility = $event.value.value"
-        />
-        <Dropdown
-            v-model="language"
-            :options="languages"
-            :placeholder="$t('program.forms.language.placeholder')"
-            data-key="value"
-            option-label="label"
-            @change="program.language = $event.value.value; program.version = $event.value.value === 'java' ? '8' : ''"
-        />
-        <Dropdown
-            v-if="program.language === 'java'"
-            v-model="version"
-            :options="versions"
-            :placeholder="$t('program.forms.version.placeholder')"
-            option-label="label"
-            @change="program.version = $event.value.value"
-        />
-
-        <Button
-            :label="$t('program.buttons.save')"
-            :loading="loadingUpdateProgram"
-            icon="pi pi-save"
-            icon-pos="right"
-            severity="success"
-            @click="onSaveProgram()"/>
-      </div>
-    </SideBar>
-
-    <!-- Modal Pipeline Graph   -->
-    <Dialog v-model:visible="openPipelineGraph" :header="$t('program.pipeline')" modal>
-      <ProgramPipelineGraph
-          v-if="program"
-          :program="program"
-          @on-update="fetchProgram(program.programId); resetTestExpanded = true; testExpanded = false"
-      />
-    </Dialog>
-
-    <!-- Modal Code History   -->
-    <Dialog
-        v-model:visible="openCodeHistory"
-        :header="$t('program.code_history')"
-        :pt="{content: 'h-full'}"
-        :style="{ width: '80%', height: '80%' }"
-        modal
-    >
-      <ProgramCodeHistory
-          v-if="program"
-          :program="program"
-          @on-import="program.code = $event.code; openCodeHistory = false"
-      />
-    </Dialog>
   </div>
-
 </template>
 
 <style scoped>
