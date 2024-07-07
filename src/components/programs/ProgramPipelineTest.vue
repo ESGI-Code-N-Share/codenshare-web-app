@@ -65,18 +65,12 @@ const fetchUserPrograms = async () => {
   }
 }
 
-const onNextStep = (e: {
-  program: Program;
-  inputs: IInput[];
-  outputs: IOutput[],
-  isProgramDone: boolean
-}[], next: (event: Event) => void) => {
+const onNextStep = (e: { program: Program; inputs: IInput[]; outputs: IOutput[], isProgramDone: boolean }[]) => {
   instructions.value = e;
   initialInstructions.value = JSON.parse(JSON.stringify(e));
   isPipelineRunning.value = false;
   isPipelineError.value = false;
   canExecute.value = true;
-  next(e as unknown as Event)
 }
 
 function getInstructions() {
@@ -189,7 +183,19 @@ onUnmounted(() => {
     <!-- Step 1   -->
     <StepperPanel :header="$t('program.tests.step1.title')" :pt="{content: 'h-full'}">
       <template #content="{nextCallback}">
-        <div class="flex flex-column gap-2 h-full">
+        <div class="flex flex-column gap-4 h-full">
+          <div class="flex justify-content-end pb-0 -mt-2 relative">
+            <InlineMessage class="message-inline text-xs" severity="info">
+              {{ $t('program.tests.step1.instruction') }}
+            </InlineMessage>
+
+            <Button
+                v-if="programs[1].length > 0 && programs[1].length <= 3"
+                icon="pi pi-arrow-right"
+                severity="secondary"
+                @click="nextCallback"
+            />
+          </div>
           <PickList v-model="programs" class="h-full" dataKey="programId">
             <template #sourceheader> {{ $t('program.tests.step1.available') }}</template>
             <template #targetheader> {{ $t('program.tests.step1.selected') }}</template>
@@ -197,21 +203,28 @@ onUnmounted(() => {
               {{ slotProps.item.name }}
             </template>
           </PickList>
-          <div class="flex justify-content-end">
-            <Button v-if="programs[1].length > 0 && programs[1].length <= 3" label="Next" @click="nextCallback"/>
-          </div>
         </div>
       </template>
     </StepperPanel>
     <!-- Step 2   -->
     <StepperPanel :header="$t('program.tests.step2.title')" :pt="{content: 'h-full'}">
       <template #content="{active, nextCallback, prevCallback}">
-        <ProgramPipelinesGraph
-            v-if="active"
-            v-model:programs="programs[1]"
-            @on-instructions="onNextStep($event, nextCallback)"
-            @on-back="prevCallback"
-        />
+        <div class="flex flex-column gap-2 h-full">
+          <div class="flex justify-content-between pb-0 -mt-2 relative">
+            <Button icon="pi pi-arrow-left" severity="secondary" @click="prevCallback"/>
+
+            <InlineMessage class="message-inline text-xs" severity="info">
+              {{ $t('program.tests.step2.instruction') }}
+            </InlineMessage>
+
+            <Button v-if="canExecute" icon="pi pi-arrow-right" severity="secondary" @click="nextCallback"/>
+          </div>
+          <ProgramPipelinesGraph
+              v-if="active"
+              v-model:programs="programs[1]"
+              @on-instructions="onNextStep($event)"
+          />
+        </div>
       </template>
     </StepperPanel>
     <!-- Step 3   -->
@@ -219,7 +232,7 @@ onUnmounted(() => {
       <template #content="{prevCallback}">
         <div class="flex flex-column gap-3 w-full h-full">
           <div class="flex justify-content-between pb-0 -mt-2 relative">
-            <Button icon="pi pi-arrow-left" text @click="prevCallback"/>
+            <Button icon="pi pi-arrow-left" text @click="canExecute = false; prevCallback($event)"/>
 
             <InlineMessage v-if="isPipelineError" class="message-inline text-xs" severity="error"
                            style="justify-self: center">
@@ -368,7 +381,7 @@ onUnmounted(() => {
 }
 
 :deep(.p-stepper-panels) {
-  height: 95%;
+  height: 92.5%;
   padding-left: 0.15em;
   padding-right: 0.15em;
 }

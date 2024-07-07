@@ -186,7 +186,7 @@ const onRunProgram = async () => {
       pipelineTest.value!.isPipelineRunning = true;
       await runPipeline(instructions);
     } catch (e) {
-      pipelineTest.value!.isPipelineRunning = false;
+      pipelineTest.value!.isPipelineError = true;
       toastNotifications.showError("Une erreur s'est produite lors l'execution du programme'");
     }
   } else {
@@ -216,6 +216,7 @@ const runPipeline = async (instructions: {
           pipelineTest.value!.setInstructions(instructions);
         } catch (e) {
           console.error(e);
+          throw new Error("Error while uploading file")
         }
       } else {
         // if it's related, find it and upload it

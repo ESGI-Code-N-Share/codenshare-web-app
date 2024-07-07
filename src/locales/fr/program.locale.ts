@@ -62,9 +62,11 @@ export const program = {
             title: "Programmes",
             available: "Disponibles",
             selected: "Sélectionnés",
+            instruction: "Combinez jusqu'à 3 programmes."
         },
         step2: {
             title: "Pipelines",
+            instruction: "Reliez les programmes entre eux."
         },
         step3: {
             title: "Test",
