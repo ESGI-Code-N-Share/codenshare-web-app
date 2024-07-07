@@ -13,7 +13,7 @@ defineProps<ConversationMessageProps>()
 </script>
 
 <template>
-  <div class="flex flex-column gap-2">
+  <div :class="side === 'left' ? 'align-items-start' : 'align-items-end'" class="flex flex-column gap-2">
     <div :style="{'margin-right': side === 'right' ? '50px' : '0', 'margin-left': side === 'left' ? '50px' : '0'}">
       <Image v-if="message.image" :src="message.image" alt="Image" preview width="250" @error="$emit('onError')"/>
     </div>
