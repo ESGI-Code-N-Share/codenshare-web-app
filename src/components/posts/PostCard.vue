@@ -9,9 +9,10 @@ import {Post} from "@/models";
 import {useUserStore} from "@/stores/user.store";
 import dayjs from 'dayjs/esm/index.js'
 import {getEditPostOptions} from "@/utils/post.util";
-import {CodeNSharePostApi} from "@/api/codenshare";
+import {CodeNSharePostApi, CodeNShareProgramApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 
 
 interface PostCardProps {
@@ -27,7 +28,9 @@ const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
 
 const imageNotFound = ref(false);
+const programNotFound = ref(false);
 const menuEditPost = ref();
+const program = ref();
 
 const editPostOptions = ref();
 
@@ -38,6 +41,12 @@ const isPostLiked = computed(() => {
 
 onMounted(() => {
   if (!currentUser) return;
+
+  if (props.post.programId) {
+    CodeNShareProgramApi.get(props.post.programId)
+        .then(p => program.value = p)
+        .catch(() => programNotFound.value = true);
+  }
 
   const deleteCommand = async () => {
     try {
@@ -123,6 +132,8 @@ const likePost = async () => {
             @error="imageNotFound = true"
         />
       </div>
+      <ProgramListItem v-if="program" :program="program"/>
+      <div v-else-if="programNotFound" class="text-color-secondary">{{ $t('post.program_not_found') }}</div>
     </div>
   </div>
 </template>

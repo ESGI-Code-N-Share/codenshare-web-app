@@ -4,7 +4,7 @@ import {ref} from "vue";
 import InputFile from "@/components/files/InputFile.vue";
 import InfoCard from "@/components/cards/InfoCard.vue";
 import {useUserStore} from "@/stores/user.store";
-import {CodeNSharePostApi} from "@/api/codenshare";
+import {CodeNSharePostApi, CodeNShareProgramApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import {useI18n} from "vue-i18n";
@@ -25,6 +25,10 @@ const addProgram = ref(false);
 const title = ref('');
 const content = ref('');
 const image = ref('');
+const program = ref('');
+
+const programModel = ref();
+const programsOptions = ref<{ name: string, value: string }[]>([])
 
 const createPostOptions = ref<any[]>([
   {
@@ -41,8 +45,10 @@ const createPostOptions = ref<any[]>([
         label: t('post.buttons.add_program'),
         icon: 'pi pi-book',
         command() {
-          addProgram.value = true;
-          this.disabled = true;
+          fetchUserPrograms()
+              .then(() => addProgram.value = true)
+              .then(() => this.disabled = true)
+              .catch(e => console.error(e));
         },
       },
       {
@@ -65,8 +71,8 @@ const createPostOptions = ref<any[]>([
           }
           try {
             loading.value.create = true;
-            console.log(title.value, content.value, image.value);
-            await CodeNSharePostApi.create(title.value, content.value, image.value);
+            console.log(title.value, content.value, image.value, program.value);
+            await CodeNSharePostApi.create(title.value, content.value, image.value, program.value);
             emit('onPublished');
             toastNotifications.showSuccess('Publication créée');
             reset();
@@ -94,6 +100,16 @@ const createPostOptions = ref<any[]>([
   }
 
 ]);
+
+const fetchUserPrograms = async () => {
+  try {
+    const programs = await CodeNShareProgramApi.getByUser(currentUser!.userId);
+    programsOptions.value = programs.map(p => ({name: p.name, value: p.programId}));
+  } catch (e) {
+    console.error(e);
+    toastNotifications.showError("Une erreur s'est produite lors de la récupération des programmes");
+  }
+}
 
 function reset() {
   addProgram.value = false;
@@ -128,6 +144,15 @@ const openCreatePost = (event: Event) => {
       <Textarea v-model="content" :placeholder="$t('post.forms.content.placeholder')" class="w-full" rows="3"
                 variant="filled"/>
       <InputFile v-if="addImage" accept="image/*" max-height-preview="5" @on-file-selected="image = $event.fileUrl"/>
+      <Dropdown
+          v-if="addProgram"
+          v-model="programModel"
+          :options="programsOptions"
+          :placeholder="$t('post.forms.program.placeholder')"
+          option-label="name"
+          option-value="value"
+          @change="program = $event.value"
+      />
     </div>
   </div>
 </template>
