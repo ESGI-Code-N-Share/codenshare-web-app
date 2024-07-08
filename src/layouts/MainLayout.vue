@@ -105,7 +105,7 @@ const openSearch = () => {
           :show-header="false"
           class="absolute p-2 mx-3"
           modal
-          style="min-width: 20% !important; top: 10%; z-index: 9999;"
+          style="min-width: 60% !important; min-height: 40% !important; top: 10%; z-index: 9999;"
       >
         <div class="flex flex-column gap-3 p-2">
           <div class="w-full flex gap-3">
