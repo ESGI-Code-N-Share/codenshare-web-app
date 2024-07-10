@@ -15,7 +15,6 @@ const posts = ref<Post[]>([]);
 const loading = ref({fetch: false})
 
 onMounted(async () => {
-  console.log(import.meta.env);
   await fetchPosts();
 });
 

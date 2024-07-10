@@ -69,7 +69,7 @@ const onSearch = async () => {
 const openSearch = () => {
   openSearchModal.value = true;
   setTimeout(() => {
-    console.log(searchInput.value.$el.focus())
+    searchInput.value.$el.focus()
   }, 100);
 }
 

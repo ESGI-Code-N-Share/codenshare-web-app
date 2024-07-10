@@ -155,7 +155,6 @@ const app = createApp(App)
     .component('SelectButton', SelectButton)
     .component('Chip', Chip)
     .component('Message', Message)
-    .component('InlineMessage', InlineMessage)
 
 
 app.mount("#app");
