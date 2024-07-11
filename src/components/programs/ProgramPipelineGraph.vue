@@ -329,7 +329,7 @@ const addPort = (type: 'in' | 'out') => {
       `${text}-${ports + 1}`,
       {x: 100 + ports * 200, y: type === 'in' ? 50 : 300},
       `${text}_${ports + 1}`,
-      {name: `${text}_${ports + 1}`, type: 'image'} //default to image
+      {name: `${text}_${ports + 1}`, type: 'image/png'} //default to image
   )
   const image = imageRectangle.toJointJsElement();
   graph.value.addCell(image)
@@ -424,8 +424,11 @@ const mapToJsObject = async () => {
     }
   })
 
-  if (inputs.length < 1 || outputs.length < 1) {
-    toastNotifications.showError("Le programme doit avoir le même nombre d'entrées et de sorties");
+  if (inputs.length === 0 && outputs.length > 0) {
+    toastNotifications.showError("Un programme doit avoir au moins un port d'entrée");
+    return;
+  } else if (inputs.length > 0 && outputs.length === 0) {
+    toastNotifications.showError("Un programme doit avoir au moins un port de sortie");
     return;
   }
 
