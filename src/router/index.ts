@@ -30,6 +30,17 @@ export const onBeforeEach: NavigationGuard = async (to, _, next) => {
         return next({name: "login"});
     }
 
+    // check if user still exists
+    try {
+        if (userStore.isAuthenticated) {
+            await userStore.fetchUser(userStore.currentUser!.userId);
+        }
+    } catch (e) {
+        console.log('User does not exist, redirecting to login')
+        await userStore.logout(true);
+        return next({name: "login"});
+    }
+
     console.log('Allowing access to page')
     next();
 }
