@@ -5,7 +5,7 @@ import hljs from 'highlight.js';
 import 'highlight.js/styles/atelier-dune-dark.css';
 import 'highlight.js/lib/languages/javascript';
 import InfoCard from "@/components/cards/InfoCard.vue";
-import {Post} from "@/models";
+import {Post, Program} from "@/models";
 import {useUserStore} from "@/stores/user.store";
 import dayjs from 'dayjs/esm/index.js'
 import {getEditPostOptions} from "@/utils/post.util";
@@ -30,7 +30,7 @@ const toastNotifications = new ToastService(useToast());
 const imageNotFound = ref(false);
 const programNotFound = ref(false);
 const menuEditPost = ref();
-const program = ref();
+const program = ref<Program>();
 
 const editPostOptions = ref();
 
@@ -39,7 +39,7 @@ const isPostLiked = computed(() => {
   return props.post.likes.some(like => like.userId === currentUser.userId);
 });
 
-onMounted(() => {
+onMounted(async () => {
   if (!currentUser) return;
 
   if (props.post.programId) {
@@ -58,7 +58,21 @@ onMounted(() => {
     }
   };
 
-  editPostOptions.value = getEditPostOptions(props.post, currentUser, {deleteCommand});
+  const importProgramCommand = async () => {
+    try {
+      if (!props.post.programId) return;
+      await CodeNShareProgramApi.import(props.post.programId);
+      toastNotifications.showSuccess('Programme importé');
+    } catch (e) {
+      console.error(e);
+      toastNotifications.showError('Erreur lors de l\'importation du programme');
+    }
+  }
+
+  editPostOptions.value = await getEditPostOptions(props.post, currentUser, {
+    deleteCommand,
+    importProgramCommand
+  });
   hljs.highlightAll();
 });
 
@@ -127,7 +141,7 @@ const likePost = async () => {
             v-if="!imageNotFound"
             :src="post.image"
             alt="post-image"
-            class="w-full h-full max-h-15rem border-round bg-gray-800 opacity-50 vertical-align-top"
+            class="w-full h-full max-h-15rem border-round bg-gray-800 vertical-align-top"
             style="object-fit: contain"
             @error="imageNotFound = true"
         />

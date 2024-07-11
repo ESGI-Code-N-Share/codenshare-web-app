@@ -29,25 +29,31 @@ export const postShare = (command: (event: MenuItemCommandEvent) => void): MenuI
     };
 };
 
-export const getEditPostOptions = (post: Post, user: User, commands: {
+export async function getEditPostOptions(post: Post, user: User, commands: {
     [key: string]: (event: MenuItemCommandEvent) => void
-}): MenuItem[] => {
+}): Promise<MenuItem[]> {
     const {deleteCommand, importProgramCommand, shareCommand} = commands;
 
+    const options = []
     if (user.role === 'admin') {
-        return [
+        options.push(
+            postShare(shareCommand),
             postDelete(deleteCommand),
-            postImportProgram(importProgramCommand),
-            postShare(shareCommand)
-        ];
-    } else if (user.role === 'user' && user.userId === post.author.userId) {
-        return [
+        )
+    } else if (user.userId === post.author.userId) {
+        options.push(
             postShare(shareCommand),
             postDelete(deleteCommand)
-        ];
+        )
+    } else {
+        options.push(
+            postShare(shareCommand)
+        )
     }
-    return [
-        postImportProgram(importProgramCommand),
-        postShare(shareCommand)
-    ];
-};
+    if (post.programId) {
+        options.push(
+            postImportProgram(importProgramCommand)
+        )
+    }
+    return options;
+}
