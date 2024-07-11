@@ -39,7 +39,7 @@ onMounted(() => {
       </div>
     </SplitterPanel>
     <SplitterPanel class="h-full">
-      <div v-if="codeHistories.length === 0">Vous n'avez pas encore de code</div>
+      <div v-if="codeHistories.length === 0" class="p-2">{{ $t('program.no_code_history') }}</div>
       <div v-else-if="selectedCodeHistory" :class="{'relative': layout === 'horizontal'}" class="h-full p-2">
         <Button
             :class="{'absolute top-0 right-0 mr-2 mt-2 z-5 w-auto': layout === 'horizontal'}"

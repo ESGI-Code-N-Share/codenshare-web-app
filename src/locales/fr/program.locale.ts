@@ -4,6 +4,7 @@ export const program = {
     pipeline: "Configuration des pipelines",
     test: "Test",
     code_history: "Historique du code",
+    no_code_history: "Aucun historique du code",
     output_files: {
         title: "Fichiers de sortie",
         empty: "Aucun fichier de sortie",
