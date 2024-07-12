@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 
 import {computed, onMounted, ref} from "vue";
-import hljs from 'highlight.js';
 import 'highlight.js/styles/atelier-dune-dark.css';
 import 'highlight.js/lib/languages/javascript';
 import InfoCard from "@/components/cards/InfoCard.vue";
@@ -13,7 +12,10 @@ import {CodeNSharePostApi, CodeNShareProgramApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import ProgramListItem from "@/components/programs/ProgramListItem.vue";
-
+import {VAceEditor} from "vue3-ace-editor";
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/theme-monokai';
+import hljs from 'highlight.js';
 
 interface PostCardProps {
   post: Post
@@ -29,6 +31,7 @@ const toastNotifications = new ToastService(useToast());
 
 const imageNotFound = ref(false);
 const programNotFound = ref(false);
+const openProgramModal = ref(false);
 const menuEditPost = ref();
 const program = ref<Program>();
 
@@ -38,6 +41,11 @@ const isPostLiked = computed(() => {
   if (!currentUser) return false;
   return props.post.likes.some(like => like.userId === currentUser.userId);
 });
+
+const openProgramModal2 = () => {
+  openProgramModal.value = true;
+  hljs.highlightAll();
+}
 
 onMounted(async () => {
   if (!currentUser) return;
@@ -73,7 +81,6 @@ onMounted(async () => {
     deleteCommand,
     importProgramCommand
   });
-  hljs.highlightAll();
 });
 
 
@@ -136,6 +143,10 @@ const likePost = async () => {
     <div class="flex flex-column gap-2 px-1">
       <div class="text-base sm:text-lg m-0">{{ post.title }}</div>
       <div class="text-sm sm:text-base text-color-secondary pb-2">{{ post.content }}</div>
+      <!-- Program     -->
+      <ProgramListItem v-if="program" :program="program" class="cursor-pointer" @click="openProgramModal2()"/>
+      <div v-else-if="programNotFound" class="text-color-secondary">{{ $t('post.program_not_found') }}</div>
+      <!-- Image     -->
       <div v-if="post.image && !imageNotFound" class="w-full h-full border-1 border-gray-500 border-round-xl">
         <img
             v-if="!imageNotFound"
@@ -146,9 +157,20 @@ const likePost = async () => {
             @error="imageNotFound = true"
         />
       </div>
-      <ProgramListItem v-if="program" :program="program"/>
-      <div v-else-if="programNotFound" class="text-color-secondary">{{ $t('post.program_not_found') }}</div>
     </div>
+
+    <Dialog v-if="program" v-model:visible="openProgramModal" :header="program?.name" modal
+            style="width: 80vw; height: 80vh;">
+      <div class="h-full">
+        <VAceEditor
+            v-model:value="program.code"
+            lang="javascript"
+            readonly
+            style="height: 43em; min-height: 100%;"
+            theme="monokai"
+        />
+      </div>
+    </Dialog>
   </div>
 </template>
 
