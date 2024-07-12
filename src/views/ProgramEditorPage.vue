@@ -321,6 +321,7 @@ const runProgram = async () => {
         output.value = data
         loading.value = false;
       }, (e: string) => {
+        output.value = e
         console.error(e);
         loading.value = false;
         toastNotifications.showError("Une erreur s'est produite lors de l'exécution du programme");
