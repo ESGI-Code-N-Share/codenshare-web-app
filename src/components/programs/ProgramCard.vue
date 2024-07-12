@@ -75,7 +75,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-2 sm:p-2 border-round-2xl" style="min-height: 260px; max-height: 300px">
+  <div class="p-2 sm:p-2 border-round-2xl" style="min-height: 260px; max-height: 310px">
     <div :class="{'program-mine': program.originalAuthorId === currentUser?.userId}"
          class="flex flex-column surface-card border-round-xl p-2 h-full">
       <img

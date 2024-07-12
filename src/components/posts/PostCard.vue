@@ -149,7 +149,8 @@ const likePost = async () => {
       <ProgramListItem v-if="program" :program="program" class="cursor-pointer" @click="openProgramModal2()"/>
       <div v-else-if="programNotFound" class="text-color-secondary">{{ $t('post.program_not_found') }}</div>
       <!-- Image     -->
-      <div v-if="post.image && !imageNotFound" class="w-full h-full border-1 border-gray-500 border-round-xl">
+      <div v-if="post.image && !imageNotFound"
+           class="overflow-hidden w-full h-full border-1 border-gray-500 border-round-xl">
         <img
             v-if="!imageNotFound"
             :src="post.image"

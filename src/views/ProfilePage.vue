@@ -293,7 +293,11 @@ const onToggleFriend = async (friend: Friend) => {
           <TabPanel :header="$t('program.programs')">
             <ListView :items="user.programs || []">
               <template #default="{item: program}: {item: Program}">
-                <ProgramCard :program="program" class="w-full md:border-noround" style="border-radius: 0 !important;"/>
+                <ProgramCard
+                    :program="program"
+                    class="w-full md:border-noround"
+                    style="background: #09090B !important; border-radius: 0 !important;"
+                />
               </template>
             </ListView>
           </TabPanel>
