@@ -11,6 +11,8 @@ import {useUserStore} from "@/stores/user.store";
 import dayjs from "dayjs/esm/index.js";
 import ProgramListItem from "@/components/programs/ProgramListItem.vue";
 
+dayjs.locale(localStorage.getItem('language') || 'fr');
+
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
 const router = useRouter();

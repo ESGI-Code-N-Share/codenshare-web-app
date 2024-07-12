@@ -17,6 +17,8 @@ import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
 import hljs from 'highlight.js';
 
+dayjs.locale(localStorage.getItem('language') || 'fr');
+
 interface PostCardProps {
   post: Post
 }

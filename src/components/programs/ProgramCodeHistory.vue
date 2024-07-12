@@ -4,6 +4,8 @@ import {onMounted, ref} from "vue";
 import dayjs from "dayjs/esm/index.js";
 import {VAceEditor} from "vue3-ace-editor";
 
+dayjs.locale(localStorage.getItem('language') || 'fr');
+
 interface ProgramCodeHistoryProps {
   program: Program;
 }

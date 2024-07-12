@@ -15,6 +15,8 @@ import {useRouter} from "vue-router";
 import {useI18n} from "vue-i18n";
 import InputFile from "@/components/files/InputFile.vue";
 
+dayjs.locale(localStorage.getItem('language') || 'fr');
+
 const router = useRouter();
 const {t} = useI18n();
 

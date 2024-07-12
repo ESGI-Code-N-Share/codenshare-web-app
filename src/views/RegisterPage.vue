@@ -4,11 +4,13 @@ import {ref} from "vue";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import AuthPage from "@/components/auth/AuthPage.vue";
-import dayjs from "dayjs/esm";
+import dayjs from "dayjs/esm/index.js";
 import {CodeNShareAuthApi} from "@/api/codenshare";
 import {useRouter} from "vue-router";
 import {userCreateSchema} from "@/validations/user-form.validation";
 import * as yup from "yup";
+
+dayjs.locale(localStorage.getItem('language') || 'fr');
 
 const router = useRouter();
 const toastNotifications = new ToastService(useToast())

@@ -16,6 +16,8 @@ import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import {useI18n} from "vue-i18n";
 
+dayjs.locale(localStorage.getItem('language') || 'fr');
+
 const route = useRoute();
 const router = useRouter();
 const toastNotifications = new ToastService(useToast());
