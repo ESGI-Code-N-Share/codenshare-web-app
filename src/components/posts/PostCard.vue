@@ -97,6 +97,7 @@ const likePost = async () => {
     if (isPostLiked.value) {
       await CodeNSharePostApi.unlike(props.post.postId);
       props.post.likes = props.post.likes.filter(like => like.userId !== currentUser.userId);
+      toastNotifications.showSuccess('Publication non aimée');
     } else {
       await CodeNSharePostApi.like(props.post.postId);
       props.post.likes.push({
@@ -105,6 +106,7 @@ const likePost = async () => {
         postId: props.post.postId,
         likedAt: new Date(),
       })
+      toastNotifications.showSuccess('Publication aimée');
     }
   } catch (e) {
     console.error(e);
