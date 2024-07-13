@@ -35,7 +35,7 @@ const programOwners = [
 
 const orderBy = ref<'desc' | 'asc'>('desc');
 const search = ref('');
-const languages = ref<string[]>(['java', 'javascript', 'unset']);
+const languages = ref<string[]>(['java', 'javascript', 'python', 'rust', 'ruby', 'unset']);
 
 const programFiltered = computed(() => {
   const filterByOwner = (p: ProgramsRequest) => programOwner.value === 'all' || p.originalAuthorId === currentUser?.userId;

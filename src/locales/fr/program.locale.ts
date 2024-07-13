@@ -97,6 +97,9 @@ export const program = {
     languages: {
         java: 'Java',
         javascript: 'Javascript',
+        rust: 'Rust',
+        ruby: 'Ruby',
+        python: 'Python',
         unset: 'Non défini',
     },
     errors: {

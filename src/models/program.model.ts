@@ -2,7 +2,7 @@ import {CodeHistory, UserId} from "@/models";
 
 
 export type ProgramId = string
-export type ProgramLanguages = 'java' | 'javascript'
+export type ProgramLanguages = 'java' | 'javascript' | 'python' | 'rust'| 'ruby'
 export type ProgramVisibility = 'public' | 'private' | 'protected'
 export type ProgramInstructionsInput = { name: string, type: string }
 export type ProgramInstructionsOutput = { name: string, type: string }
