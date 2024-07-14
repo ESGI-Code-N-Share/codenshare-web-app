@@ -146,11 +146,11 @@ const deleteProgram = async (program: ProgramsRequest) => {
             @remove="languages = languages.filter(l => l !== language)"
         />
         <Chip
-            :class="languages.length >= 3 ? 'opacity-50' : 'cursor-pointer text-primary'"
+            :class="languages.length >= 6 ? 'opacity-50' : 'cursor-pointer text-primary'"
             :label="$t('global.reset')"
             class=""
             style="background: #09090B;"
-            @click="languages.length >= 3 ? '' : languages = ['java', 'javascript', 'unset']"
+            @click="languages.length >= 6 ? '' : languages = ['java', 'javascript', 'python', 'rust', 'ruby', 'unset']"
         />
       </div>
       <Chip
