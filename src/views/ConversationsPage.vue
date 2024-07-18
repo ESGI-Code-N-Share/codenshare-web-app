@@ -13,6 +13,7 @@ import {useToast} from "primevue/usetoast";
 import {ToastService} from "@/services/toast.service";
 import {useRouter} from "vue-router";
 import {useI18n} from "vue-i18n";
+import { io } from 'socket.io-client';
 
 const router = useRouter();
 const {t} = useI18n();
@@ -71,17 +72,30 @@ const currentConversation = ref<Conversation>();
 const conversations = ref<Conversation[]>([]);
 const messages = ref<Message[]>()
 
+const socket = io(import.meta.env.VITE_API_URL); // TODO ADD THE PROD URL
+
 onMounted(async () => {
   await fetchConversations();
   if (conversations.value.length > 0) {
     currentConversation.value = conversations.value[0];
-    messages.value = conversations.value[0].messages
+    messages.value = conversations.value[0].messages;
   }
   intervalId.value = setInterval(() => fetchConversations(true), 7500);
-})
+
+  // listen to new events 'new_message' from the server
+  socket.on('new_message', (message: Message) => {
+    if (message.conversationId === currentConversation.value?.conversationId) {
+      messages.value = [...(messages.value || []), message];
+      scrollToLast();
+    }
+  });
+});
+
 onUnmounted(() => {
   clearInterval(intervalId.value);
-})
+  // remove the 'new_message' event listener
+  socket.off('new_message');
+});
 
 const scrollToLast = () => {
   setTimeout(() => {
@@ -101,9 +115,6 @@ const sendMessage = async () => {
         currentConversation.value.conversationId,
         currentUser.userId
     );
-    messages.value = typeof messages.value === 'undefined'
-        ? [message]
-        : [...messages.value, message];
     messageContent.value = '';
     scrollToLast();
   } catch (e) {
