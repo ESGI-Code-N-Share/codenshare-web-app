@@ -4,12 +4,17 @@ export const program = {
     pipeline: "Configuration des pipelines",
     test: "Test",
     code_history: "Historique du code",
+    no_code_history: "Aucun historique du code",
     output_files: {
         title: "Fichiers de sortie",
         empty: "Aucun fichier de sortie",
         download: "Télécharger le fichier",
     },
     forms: {
+        search: {
+            label: "Rechercher",
+            placeholder: "Rechercher un programme",
+        },
         name: {
             label: "Nom",
             placeholder: "Nom du programme",
@@ -58,12 +63,17 @@ export const program = {
             title: "Programmes",
             available: "Disponibles",
             selected: "Sélectionnés",
+            instruction: "Combinez jusqu'à 3 programmes."
         },
         step2: {
             title: "Pipelines",
+            instruction: "Reliez les programmes entre eux."
         },
         step3: {
             title: "Test",
+            running: 'Durée: {duration}{unit}',
+            error_pipeline: "Une erreur est survenue.",
+            waiting: 'En attente de lancement...',
         },
     },
     buttons: {
@@ -82,6 +92,15 @@ export const program = {
         console: "Console",
         add_in_port: 'Port entrée',
         add_out_port: 'Port sortie',
+        download_image: "Télécharger l'image",
+    },
+    languages: {
+        java: 'Java',
+        javascript: 'Javascript',
+        rust: 'Rust',
+        ruby: 'Ruby',
+        python: 'Python',
+        unset: 'Non défini',
     },
     errors: {
         not_enough_ports: "Pas assez de port. Attendu: {inputs} entrée(s) et {outputs} sortie(s).",

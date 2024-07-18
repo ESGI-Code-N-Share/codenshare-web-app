@@ -13,6 +13,9 @@ import {useToast} from "primevue/usetoast";
 import {ToastService} from "@/services/toast.service";
 import {useRouter} from "vue-router";
 import {useI18n} from "vue-i18n";
+import InputFile from "@/components/files/InputFile.vue";
+
+dayjs.locale(localStorage.getItem('language') || 'fr');
 import { io } from 'socket.io-client';
 
 const router = useRouter();
@@ -39,6 +42,8 @@ const friendsOptions = ref<{ name: string, userId: UserId }[]>([]);
 
 const intervalId = ref<NodeJS.Timeout>();
 const isNewMessage = ref<ConversationId>();
+const image = ref('')
+const addImage = ref(false)
 
 const optionsConversation = [
   {
@@ -113,9 +118,11 @@ const sendMessage = async () => {
     const message = await CodeNShareMessageApi.send(
         messageContent.value,
         currentConversation.value.conversationId,
-        currentUser.userId
+        currentUser.userId,
+        image.value || ''
     );
     messageContent.value = '';
+    addImage.value = false;
     scrollToLast();
   } catch (e) {
     console.error(e);
@@ -311,20 +318,28 @@ const goToUserProfile = (index: number) => {
           />
         </template>
       </VirtualScroller>
-      <div class="flex gap-3 w-full p-1 sm:p-2 pl-2 sm:pl-3 pt-2 sm:pt-3 border-top-1 border-gray-500">
-        <IconField class="flex w-full cursor-pointer" iconPosition="right">
-          <InputIcon v-if="!loading.send" v-tooltip.left="$t('conversation.tooltips.send')" class="pi pi-send"
-                     @click="sendMessage()"></InputIcon>
-          <InputIcon v-else class="pi pi-spin pi-spinner"></InputIcon>
-          <Textarea
-              v-model="messageContent"
-              :placeholder="$t('conversation.forms.sendMessages.placeholder')"
-              :rows="1"
-              class="w-full text-xs sm:text-sm"
+      <div class="flex flex-column gap-3 w-full p-1 sm:p-2 pl-2 sm:pl-3 pt-2 sm:pt-3 border-top-1 border-gray-500">
+        <InputFile v-if="addImage" accept="image/*" @on-file-selected="image = $event.fileUrl"/>
+        <div class="flex gap-3">
+          <IconField class="flex w-full cursor-pointer" iconPosition="right">
+            <InputIcon v-if="!loading.send" v-tooltip.left="$t('conversation.tooltips.send')" class="pi pi-send"
+                       @click="sendMessage()"></InputIcon>
+            <InputIcon v-else class="pi pi-spin pi-spinner"></InputIcon>
+            <Textarea
+                v-model="messageContent"
+                :placeholder="$t('conversation.forms.sendMessages.placeholder')"
+                :rows="1"
+                class="w-full text-xs sm:text-sm"
+            />
+          </IconField>
+          <Button
+              v-tooltip.left="$t('conversation.tooltips.addFile')"
+              icon="pi pi-paperclip"
+              icon-pos="right"
+              severity="secondary"
+              @click="addImage = !addImage"
           />
-        </IconField>
-        <Button v-tooltip.left="$t('conversation.tooltips.addFile')" icon="pi pi-paperclip" icon-pos="right"
-                severity="secondary"/>
+        </div>
       </div>
     </div>
 

@@ -45,13 +45,6 @@ const menus = ref([
     params: {}
   },
   {
-    icon: 'pi pi-question-circle',
-    label: 'help',
-    routeName: 'help',
-    children: [],
-    params: {}
-  },
-  {
     icon: 'pi pi-cog',
     label: 'settings',
     routeName: 'settings',

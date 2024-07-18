@@ -47,7 +47,6 @@ onMounted(() => {
     importCommand: async () => {
       try {
         await CodeNShareProgramApi.import(props.program.programId);
-        await router.push({name: 'playground', query: {program: props.program.programId}});
         toastNotifications.showSuccess('Programme importé');
         emit('onMenuClick')
       } catch (e) {
@@ -76,13 +75,14 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="p-2 sm:p-2 border-round-2xl" style="min-height: 260px; max-height: 300px">
-    <div class="flex flex-column surface-card border-round-xl p-2 h-full">
+  <div class="p-2 sm:p-2 border-round-2xl" style="min-height: 260px; max-height: 310px">
+    <div :class="{'program-mine': program.originalAuthorId === currentUser?.userId}"
+         class="flex flex-column surface-card border-round-xl p-2 h-full">
       <img
           alt="meeting"
           class="border-round-xl cursor-pointer"
           :src="program.imageURL"
-          style="object-fit: cover; width: 100%; height: auto; max-height: 125px"
+          style="object-fit: cover; width: 100%; height: 100%; max-height: 125px"
           @click="$router.push({name: 'program', params: {program: program.programId}})"
       />
       <div class="flex flex-column pl-2 pb-2 overflow-hidden">
@@ -108,5 +108,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-
+.program-mine {
+  box-shadow: 0 0 2px 0 rgba(74, 222, 128, 0.5);
+}
 </style>

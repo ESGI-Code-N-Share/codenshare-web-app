@@ -4,6 +4,8 @@ import {onMounted, ref} from "vue";
 import dayjs from "dayjs/esm/index.js";
 import {VAceEditor} from "vue3-ace-editor";
 
+dayjs.locale(localStorage.getItem('language') || 'fr');
+
 interface ProgramCodeHistoryProps {
   program: Program;
 }
@@ -39,7 +41,7 @@ onMounted(() => {
       </div>
     </SplitterPanel>
     <SplitterPanel class="h-full">
-      <div v-if="codeHistories.length === 0">Vous n'avez pas encore de code</div>
+      <div v-if="codeHistories.length === 0" class="p-2">{{ $t('program.no_code_history') }}</div>
       <div v-else-if="selectedCodeHistory" :class="{'relative': layout === 'horizontal'}" class="h-full p-2">
         <Button
             :class="{'absolute top-0 right-0 mr-2 mt-2 z-5 w-auto': layout === 'horizontal'}"

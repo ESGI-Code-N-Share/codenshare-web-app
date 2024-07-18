@@ -9,12 +9,13 @@ export class CodeNShareMessageApi {
         return request<Message[]>({method: 'GET', url: `/users/${userId}/conversations/${conversationId}/messages`})
     }
 
-    static async send(content: string, conversationId: ConversationId, userId: UserId): Promise<Message> {
+    static async send(content: string, conversationId: ConversationId, userId: UserId, image: string): Promise<Message> {
         return request<Message>({
             method: 'POST',
             url: `/users/${userId}/conversations/${conversationId}/messages`,
             body: {
-                content
+                content,
+                image
             }
         })
     }

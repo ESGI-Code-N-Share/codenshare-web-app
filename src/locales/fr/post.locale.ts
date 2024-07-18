@@ -10,6 +10,14 @@ export const post = {
             label: "Contenu",
             placeholder: "Entrez le contenu de votre publication"
         },
+        image: {
+            label: "Image",
+            placeholder: "Entrez l'URL de l'image"
+        },
+        program: {
+            label: "Programme",
+            placeholder: "Entrez l'identifiant du programme"
+        }
     },
     buttons: {
         delete: "Supprimer",
@@ -21,4 +29,5 @@ export const post = {
         import_program: "Importer le programme",
     },
     end_of_post: "Vous avez atteint la fin de la publication",
+    program_not_found: "Programme non trouvé",
 }

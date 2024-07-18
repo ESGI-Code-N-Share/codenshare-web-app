@@ -38,6 +38,7 @@ export class CodeNShareProgramApi {
     }
 
     static async update(program: Program): Promise<void> {
+        console.log(program.version)
         const body = {
             authorId: program.authorId,
             name: program.name,
@@ -45,6 +46,7 @@ export class CodeNShareProgramApi {
             pictureURL: program.imageURL,
             visibility: program.visibility,
             language: program.language,
+            version: program.version ? program.version : "latest",
             code: program.code,
         }
         console.log("body: ", body);
@@ -69,7 +71,6 @@ export class CodeNShareProgramApi {
     static async run(programId: ProgramId): Promise<string> {
         const body = {
             userId: localStorage.getItem('userId'),
-            programId: programId
         }
         return request<string>({method: 'POST', url: `/programs/${programId}/run`, body: body});
     }

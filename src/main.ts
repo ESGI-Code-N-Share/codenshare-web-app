@@ -58,6 +58,9 @@ import Stepper from "primevue/stepper";
 import StepperPanel from "primevue/stepperpanel";
 import PickList from "primevue/picklist";
 import InputNumber from "primevue/inputnumber";
+import SelectButton from "primevue/selectbutton";
+import Chip from "primevue/chip";
+import Message from "primevue/message";
 
 const currentLanguage = localStorage.getItem('language') || 'fr';
 
@@ -149,6 +152,9 @@ const app = createApp(App)
     .component('StepperPanel', StepperPanel)
     .component('PickList', PickList)
     .component('InputNumber', InputNumber)
+    .component('SelectButton', SelectButton)
+    .component('Chip', Chip)
+    .component('Message', Message)
 
 
 app.mount("#app");

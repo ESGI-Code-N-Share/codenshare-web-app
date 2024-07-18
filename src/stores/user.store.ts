@@ -29,9 +29,11 @@ export const useUserStore = defineStore('user', {
             await CodeNShareAuthApi.register(firstname, lastname, birthdate, email, password);
             this.isAuthenticated = true;
         },
-        async logout() {
+        async logout(force = false) {
             localStorage.removeItem('token')
-            await CodeNShareAuthApi.logout(this.currentUser!.userId);
+            if (!force) {
+                await CodeNShareAuthApi.logout(this.currentUser!.userId);
+            }
             this.currentUser = null;
             this.isAuthenticated = false;
             localStorage.removeItem('userId')

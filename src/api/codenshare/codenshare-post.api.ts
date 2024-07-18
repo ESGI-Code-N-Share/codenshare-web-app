@@ -12,8 +12,14 @@ export class CodeNSharePostApi {
         return request<Post[]>({method: 'GET', url: `/posts?userId=${userId}`});
     }
 
-    static async create(title: string, content: string, image?: string): Promise<Post> {
-        const body = {title, content, image, authorId: localStorage.getItem('userId')}
+    static async create(title: string, content: string, image?: string, programId?: string): Promise<Post> {
+        const body = {
+            title,
+            content,
+            image,
+            programId,
+            authorId: localStorage.getItem('userId')
+        }
         return request({method: 'POST', url: '/posts', body: body})
     }
 

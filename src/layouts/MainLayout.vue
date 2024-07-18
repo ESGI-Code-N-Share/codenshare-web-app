@@ -14,6 +14,8 @@ import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 import {useI18n} from "vue-i18n";
 
+dayjs.locale(localStorage.getItem('language') || 'fr');
+
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
@@ -69,7 +71,7 @@ const onSearch = async () => {
 const openSearch = () => {
   openSearchModal.value = true;
   setTimeout(() => {
-    console.log(searchInput.value.$el.focus())
+    searchInput.value.$el.focus()
   }, 100);
 }
 
@@ -105,7 +107,7 @@ const openSearch = () => {
           :show-header="false"
           class="absolute p-2 mx-3"
           modal
-          style="min-width: 20% !important; top: 10%; z-index: 9999;"
+          style="min-width: 60% !important; min-height: 40% !important; top: 10%; z-index: 9999;"
       >
         <div class="flex flex-column gap-3 p-2">
           <div class="w-full flex gap-3">

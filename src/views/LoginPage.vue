@@ -20,6 +20,8 @@ const email = ref('');
 const password = ref('');
 const stayLogin = ref(false);
 
+const envMode = import.meta.env.MODE;
+
 const formErrors = ref({
   email: '',
   password: '',
@@ -61,12 +63,14 @@ async function onSubmitLoginForm() {
 // todo remove this function in production
 async function onSubmitAdminLoginForm() {
   try {
+    loading.value = true;
     const userStore = useUserStore();
     await userStore.login('admin@cns.fr', 'adminfiters', true);
     toastNotifications.showSuccess('Connexion réussie');
     await router.push({name: 'home'});
   } catch (e) {
     console.error(e);
+    loading.value = false;
   }
 }
 
@@ -126,26 +130,28 @@ async function onSubmitAdminLoginForm() {
               @click="onSubmitLoginForm()"
           />
           <Button
+              v-if="['development', 'stage'].includes(envMode)"
               :loading="loading"
-              class="gradient-bg-primary justify-content-center mt-1"
+              class="justify-content-center mt-1"
               icon-pos="right"
+              severity="success"
               label="Se connecter avec l'admin"
               @click="onSubmitAdminLoginForm()"
           />
         </form>
 
-        <Divider>
-          <span class="text-600">Ou</span>
-        </Divider>
+        <!--        <Divider>-->
+        <!--          <span class="text-600">Ou</span>-->
+        <!--        </Divider>-->
 
-        <div>
-          <div class="flex">
-            <Button class="w-full bg-white" icon="pi pi-google" label="Se connecter avec Google"/>
-          </div>
-          <div class="flex mt-2">
-            <Button class="w-full bg-black-alpha-50 text-white" icon="pi pi-google" label="Se connecter avec Github"/>
-          </div>
-        </div>
+        <!--        <div>-->
+        <!--          <div class="flex">-->
+        <!--            <Button class="w-full bg-white" icon="pi pi-google" label="Se connecter avec Google"/>-->
+        <!--          </div>-->
+        <!--          <div class="flex mt-2">-->
+        <!--            <Button class="w-full bg-black-alpha-50 text-white" icon="pi pi-google" label="Se connecter avec Github"/>-->
+        <!--          </div>-->
+        <!--        </div>-->
       </div>
     </div>
     <ResetPasswordRequestDialog v-model:isOpen="openResetPasswordDialog"/>

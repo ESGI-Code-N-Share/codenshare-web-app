@@ -6,12 +6,12 @@ import {dia, shapes} from "@joint/core";
 import {useToast} from "primevue/usetoast";
 import {ToastService} from "@/services/toast.service";
 import {ImageRectangle, ProgramRectangle} from "@/utils/graph.util";
-import {DAG, IO, SimpleNode} from "@/utils/dag.util";
+import {DAG, IInput, IOutput, SimpleNode} from "@/utils/dag.util";
 
 
 const programs = defineModel('programs', {type: Array as () => Program[], default: []})
 const props = defineProps()
-const emit = defineEmits(['onInstructions'])
+const emit = defineEmits(['onInstructions', 'onBack'])
 
 const toastNotifications = new ToastService(useToast());
 
@@ -57,6 +57,9 @@ function setLinkEventHandlers() {
     const sourcePort = link.get('source').port;
     const targetPort = link.get('target').port;
 
+    const metadataSource = graph.value?.getCell(sourceId)?.prop('metadata')
+    const metadataPort = graph.value?.getCell(targetId)?.prop('metadata')
+
     if (sourceId && targetId && sourcePort && targetPort) {
       const newLink = new shapes.standard.Link({
         source: {id: sourceId, port: sourcePort},
@@ -65,9 +68,35 @@ function setLinkEventHandlers() {
           line: {
             stroke: 'white',
             strokeWidth: 1,
+            text: '0.10',
           }
         },
       });
+      newLink.labels([
+        {
+          attrs: {
+            text: {
+              text: metadataSource?.type || '',
+              fill: 'black'
+            }
+          },
+          position: {
+            distance: 0.25
+          }
+        },
+        {
+          attrs: {
+            text: {
+              text: metadataPort?.type || '',
+              fill: 'black'
+            }
+          },
+          position: {
+            distance: 0.75
+          }
+        }
+      ]);
+
       graph.value!.addCell(newLink);
     }
   });
@@ -102,7 +131,7 @@ function initElements() {
     const programRectangle = new ProgramRectangle(
         program.programId,
         {x: 150 + offsetX, y: programYOffset + offsetY},
-        program.name || '',
+        `${parseInt(index) + 1}) ${program.name}` || '',
         program.instructions.inputs.length,
         program.instructions.outputs.length
     );
@@ -112,7 +141,7 @@ function initElements() {
     const inputs = program.instructions.inputs.map((input, index) => {
       const x = 100 + index * 200 + offsetX;
       const y = 50 + offsetY;
-      const randomId = Math.random().toString(36).substring(7);
+      const randomId = Date.now() + '-' + (index + 1);
       const imageRectangle = new ImageRectangle(`input-${randomId}`, {x, y}, input.name || '', {
         name: input.name,
         type: input.type
@@ -125,7 +154,7 @@ function initElements() {
     const outputs = program.instructions.outputs.map((output, index) => {
       const x = 100 + index * 200 + offsetX;
       const y = 200 + offsetY;
-      const randomId = Math.random().toString(36).substring(7);
+      const randomId = Date.now() + '-' + (index + 1) * 100;
       const imageRectangle = new ImageRectangle(`output-${randomId}`, {x, y}, output.name || '', {
         name: output.name,
         type: output.type
@@ -191,14 +220,31 @@ function initPaper() {
       return true;
     },
     // Default link options
-    defaultLink: new shapes.standard.Link({
-      attrs: {
-        line: {
-          stroke: 'white',
-          strokeWidth: 1,
-        }
-      },
-    }),
+    defaultLink(cellView, magnet) {
+      const metadataSource = cellView.model.prop('metadata')
+      const link = new shapes.standard.Link({
+        attrs: {
+          line: {
+            stroke: 'white',
+            strokeWidth: 1,
+          }
+        },
+      });
+      link.labels([
+        {
+          attrs: {
+            text: {
+              text: metadataSource?.type || '',
+              fill: 'black'
+            }
+          },
+          position: {
+            distance: 0.25
+          }
+        },
+      ]);
+      return link;
+    },
     // validate link connection
     validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
       if (!cellViewS || !cellViewT || !magnetS || !magnetT || cellViewS === cellViewT) {
@@ -218,6 +264,11 @@ function initPaper() {
       if (portTarget.includes('in') && graph.value!.getConnectedLinks(cellViewT.model, {inbound: true}).length > 0) {
         return false
       }
+      // if the metadata.type is different from the target metadata.type, return false
+      if (cellViewS.model.attributes?.attrs?.metadata?.type !== cellViewT.model.attributes?.attrs?.metadata?.type) {
+        return false;
+      }
+      // else OK
       return true;
     },
   })
@@ -241,7 +292,7 @@ const mapToJsObject = async () => {
 
     // inputs
     const programLinkInputs = graph.value!.getConnectedLinks(programCell, {inbound: true})
-    const inputs: IO[] = programLinkInputs.map(programLink => {
+    const inputs: IInput[] = programLinkInputs.map(programLink => {
       const source = programLink.get('source').id
       const sourceCell = graph.value!.getCell(source)
       const metadata = sourceCell?.prop('metadata')
@@ -251,45 +302,38 @@ const mapToJsObject = async () => {
         throw new Error("Entrée de programme invalide")
       }
 
-      // first program has on "in" port
-      if (parseInt(index) === 0) {
-        return {
-          filename: metadata.name || '',
-          filetype: metadata.type || '',
-          type: 'input',
-          file: null,
-        }
-      }
-
-      //else
       const _inputs = graph.value?.getConnectedLinks(sourceCell, {inbound: true})
-      if (_inputs && _inputs.length > 0) {
-        const _sourceCell = _inputs[0].get('source').id
-        const _source = graph.value!.getCell(_sourceCell)
-        const metadata = _source?.prop('metadata')
-
-        if (!metadata?.type || !metadata?.name) {
-          toastNotifications.showError(`Program ${program.name} has invalid input`)
-          throw new Error("Invalid program input")
-        }
-
+      // first program has on "in" port
+      if (parseInt(index) === 0 || !_inputs || _inputs.length === 0) {
         return {
+          id: source,
           filename: metadata.name || '',
           filetype: metadata.type || '',
-          // if its connected to an output program => type: output
-          // else type: input
-          type: _sourceCell.includes('output') ? 'output' : 'input',
           file: null,
+          relatedTo: null,
         }
       }
+      const _sourceCell = _inputs[0].get('source').id
+      const _source = graph.value!.getCell(_sourceCell)
+      const _metadata = _source?.prop('metadata')
 
-      toastNotifications.showError("Invalid program pipeline")
-      throw new Error("Invalid program pipeline")
+      if (!_metadata?.type || !_metadata?.name) {
+        toastNotifications.showError(`Program ${program.name} has invalid input`)
+        throw new Error("Invalid program input")
+      }
+
+      return {
+        id: source,
+        relatedTo: _sourceCell,
+        filename: metadata.name || '',
+        filetype: metadata.type || '',
+        file: null,
+      }
     })
 
     // outputs
     const programLinkOutputs = graph.value!.getConnectedLinks(programCell, {outbound: true})
-    const outputs: IO[] = programLinkOutputs.map(programLink => {
+    const outputs: IOutput[] = programLinkOutputs.map(programLink => {
       const target = programLink.get('target').id
       const targetCell = graph.value!.getCell(target)
       const metadata = targetCell?.prop('metadata')
@@ -300,31 +344,39 @@ const mapToJsObject = async () => {
       }
 
       return {
+        id: target,
         filename: metadata.name || '',
         filetype: metadata.type || '',
-        type: 'output',
-        file: null,
+        url: null,
       }
     })
 
     instructions.addNode(new SimpleNode(program.programId, inputs, outputs))
   }
 
+  //check if programs are connected
+
   try {
     instructions.topologicalSort()
     instructions.visualize()
 
     const object = instructions.toJsObject()
-    const formattedInstructions = object.map(instruction => {
-      return {
-        program: programs.value.find(program => program.programId === instruction.id),
-        inputs: instruction.inputs,
-        outputs: instruction.outputs,
-      }
-    })
-    emit('onInstructions', formattedInstructions)
+    try {
+      const formattedInstructions = object.map(instruction => {
+        return {
+          program: programs.value.find(program => program.programId === instruction.id),
+          inputs: instruction.inputs,
+          outputs: instruction.outputs,
+        }
+      })
+      console.log(formattedInstructions)
+      emit('onInstructions', formattedInstructions)
+    } catch (e) {
+      console.error(e);
+      toastNotifications.showError("Failed to save program");
+    }
   } catch (e) {
-    console.error(e);
+    toastNotifications.showError("Les programmes ne sont pas connectés")
   }
 }
 
@@ -349,7 +401,7 @@ const saveElement = () => {
 <template>
   <div class="parent-container">
     <div class="flex gap-2 justify-content-end align-items-baseline absolute top-0 right-0 p-2 z-5">
-      <Button icon="pi pi-arrow-right" severity="success" @click="saveElement()"/>
+      <Button icon="pi pi-save" severity="success" @click="saveElement()"/>
     </div>
     <div ref="pipelineEl" class="paper-container"></div>
   </div>

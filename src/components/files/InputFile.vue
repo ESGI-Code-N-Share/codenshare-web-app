@@ -3,12 +3,14 @@
 import {ref} from "vue";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import {MediaApi} from "@/api/media";
 
 const toastNotification = new ToastService(useToast());
 
-type Accept = 'image/*' | 'video/*' | 'audio/*';
+type Accept = 'image/png' | 'image/jpeg' | 'image/jpg' | 'text/txt' | string
 
 interface InputFileProps {
+  renameFile?: string;
   accept: Accept;
   maxHeightPreview?: string;
 }
@@ -60,21 +62,27 @@ const processFile = async (file: File) => {
     return;
   }
 
+  let apiUrl = '';
+  try {
+    const res = await MediaApi.uploadFile(file);
+    apiUrl = res.imageURL;
+  } catch (e) {
+    console.error(e);
+  }
+
   if (file.type.startsWith('image/')) {
     const blob = await fileToBlob(file);
 
-    // todo call api to upload file
-    const formData = new FormData();
-    formData.append('file', blob, file.name);
-
-    // temp
-    const fileName = 'image';
-
     fileUrl.value = URL.createObjectURL(blob);
     modelValue.value = fileUrl.value;
-    emit('onFileSelected', {fileName, fileUrl: fileUrl.value});
-  } else {
-    // todo call api to upload file
+
+    if (props.renameFile) {
+      const format = file.name.split('.').pop()
+      const newFile = new File([blob], `${props.renameFile}.${format}`, {type: file.type});
+      emit('onFileSelected', {file: newFile, fileUrl: apiUrl});
+      return;
+    }
+    emit('onFileSelected', {file: file, fileUrl: apiUrl});
   }
 };
 
@@ -98,7 +106,7 @@ const handleClick = () => {
 
 <template>
   <div
-      :class="{ 'bg-gray-700': isHovering, 'p-2': !!modelValue, 'p-4': !modelValue }"
+      :class="{ 'bg-gray-700': isHovering, 'p-2 bg-gray-900': !!modelValue, 'p-4': !modelValue }"
       class="drop-zone border-dashed border-gray-500 border-round text-center text-color-secondary cursor-pointer h-auto"
       style="background-color: var(--gray-800);"
       @click="handleClick()"

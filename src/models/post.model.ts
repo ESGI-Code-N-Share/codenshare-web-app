@@ -1,4 +1,4 @@
-import {User} from "@/models/index";
+import {ProgramId, User} from "@/models/index";
 
 
 export type PostId = string
@@ -16,6 +16,7 @@ export interface Post {
     title: string
     content: string
     image?: string
+    programId?: ProgramId
     author: User
     likes: Like[]
     postedAt: Date

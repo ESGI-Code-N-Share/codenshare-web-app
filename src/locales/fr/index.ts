@@ -6,6 +6,9 @@ import {profile} from "./profile.locale";
 
 const global = {
     loading: "Chargement...",
+    reset: "Réinitialiser",
+    sort: 'Trier',
+    filter: 'Filtrer',
     forms: {
         language: {
             label: "Langue",
@@ -30,7 +33,7 @@ const global = {
         search: "Recherche",
         home: "Accueil",
         profile: "Mon profil",
-        programs: "Mes Programmes",
+        programs: "Programmes",
         messages: "Messages",
         help: "Aide",
         settings: "Paramètres",

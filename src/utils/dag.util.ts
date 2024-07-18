@@ -1,12 +1,29 @@
 export interface IO {
+    id: string;
     filename: string;
     filetype: string;
-    type: 'input' | 'output';
+}
+
+export interface IInput extends IO {
+    relatedTo: string | null;
     file: File | null;
+    uploaded?: boolean;
+}
+
+export interface IOutput extends IO {
+    url: string | null;
+}
+
+export function isInput(io: IO): io is IInput {
+    return 'relatedTo' in io && 'file' in io;
+}
+
+export function isOutput(io: IO): io is IOutput {
+    return 'url' in io;
 }
 
 export class SimpleNode {
-    constructor(public id: string, public inputs: IO[], public outputs: IO[]) {
+    constructor(public id: string, public inputs: IInput[], public outputs: IOutput[]) {
     }
 }
 
@@ -83,27 +100,50 @@ export class DAG {
         });
     }
 
-    toJsObject(): { id: string, inputs: IO[], outputs: IO[] }[] {
-        const nodes: { id: string, inputs: IO[], outputs: IO[] }[] = [];
+    toJsObject(): { id: string, inputs: IInput[], outputs: IOutput[] }[] {
+        this.validateConnections();
+
+        const nodes: { id: string, inputs: IInput[], outputs: IOutput[] }[] = [];
 
         this.nodes.forEach((node, id) => {
             nodes.push({
                 id: id,
                 inputs: node.inputs.map(io => ({
+                    id: io.id,
+                    relatedTo: io.relatedTo,
                     filename: io.filename,
                     filetype: io.filetype,
-                    type: io.type,
                     file: null
                 })),
                 outputs: node.outputs.map(io => ({
+                    id: io.id,
                     filename: io.filename,
                     filetype: io.filetype,
-                    type: io.type,
-                    file: null
+                    url: null
                 }))
             });
         });
 
         return nodes;
+    }
+
+    private validateConnections(): void {
+        let index = 0
+        this.nodes.forEach((node, id) => {
+            if (index > 0) {
+                let connectedToOne = false;
+                for (const input of node.inputs) {
+                    if (input.relatedTo) {
+                        connectedToOne = true;
+                        break;
+                    }
+                }
+
+                if (!connectedToOne) {
+                    throw new Error(`Node ${id} is not connected to any other node.`);
+                }
+            }
+            index++;
+        });
     }
 }

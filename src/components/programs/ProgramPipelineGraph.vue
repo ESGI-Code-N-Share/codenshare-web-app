@@ -20,11 +20,10 @@ const toastNotifications = new ToastService(useToast());
 const pipelineEl = ref<HTMLDivElement>()
 
 const filetypes = [
-  {label: 'Image', value: 'image'},
-  {label: 'Video', value: 'video'},
-  {label: 'Audio', value: 'audio'},
-  {label: 'Text', value: 'text'},
-  {label: 'Other', value: 'other'},
+  {label: 'PNG', value: 'image/png'},
+  {label: 'JPEG', value: 'image/jpeg'},
+  {label: 'JPG', value: 'image/jpg'},
+  {label: 'TXT', value: 'text/txt'},
 ]
 const filetypeModel = ref<typeof filetypes[0]>({label: '', value: ''})
 
@@ -171,6 +170,7 @@ function initElements() {
 
   // link program to inputs and outputs
   for (const [index, input] of Object.entries(inputs)) {
+    const metadataSource = input.prop('metadata')
     const link = new shapes.standard.Link({
       source: {id: input.id, port: 'out0'},
       target: {id: program.id, port: `in${index}`},
@@ -181,10 +181,24 @@ function initElements() {
         }
       },
     });
+    link.labels([
+      {
+        attrs: {
+          text: {
+            text: metadataSource?.type || '',
+            fill: 'black'
+          }
+        },
+        position: {
+          distance: 0.5
+        }
+      },
+    ]);
     graph.value.addCells([link]);
   }
 
   for (const [index, output] of Object.entries(outputs)) {
+    const metadataSource = output.prop('metadata')
     const link = new shapes.standard.Link({
       source: {id: program.id, port: `out${index}`},
       target: {id: output.id, port: 'in0'},
@@ -195,6 +209,19 @@ function initElements() {
         }
       },
     });
+    link.labels([
+      {
+        attrs: {
+          text: {
+            text: metadataSource?.type || '',
+            fill: 'black'
+          }
+        },
+        position: {
+          distance: 0.5
+        }
+      },
+    ]);
     graph.value.addCells([link]);
   }
 }
@@ -282,8 +309,8 @@ const saveElement = () => {
   if (cell.attributes?.attrs?.label?.text) {
     cell.attributes.attrs.label.text = text
     cell.attributes.attrs.label.fontSize = text.length > 10 ? 10 : 14
+    cell.attributes.attrs.metadata = metadata
   }
-  cell.prop('metadata', metadata)
   cellView.update(cell)
   selectedElement.value = undefined
   paper.value?.update()
@@ -302,7 +329,7 @@ const addPort = (type: 'in' | 'out') => {
       `${text}-${ports + 1}`,
       {x: 100 + ports * 200, y: type === 'in' ? 50 : 300},
       `${text}_${ports + 1}`,
-      {name: `${text}_${ports + 1}`, type: 'image'} //default to image
+      {name: `${text}_${ports + 1}`, type: 'image/png'} //default to image
   )
   const image = imageRectangle.toJointJsElement();
   graph.value.addCell(image)
@@ -337,6 +364,7 @@ const addPort = (type: 'in' | 'out') => {
     graph.value.addCells([link]);
   }
 }
+
 
 const removeElement = () => {
   if (!graph.value || !selectedElement.value) return
@@ -396,8 +424,11 @@ const mapToJsObject = async () => {
     }
   })
 
-  if (inputs.length < 1 || outputs.length < 1) {
-    toastNotifications.showError("Le programme doit avoir le même nombre d'entrées et de sorties");
+  if (inputs.length === 0 && outputs.length > 0) {
+    toastNotifications.showError("Un programme doit avoir au moins un port d'entrée");
+    return;
+  } else if (inputs.length > 0 && outputs.length === 0) {
+    toastNotifications.showError("Un programme doit avoir au moins un port de sortie");
     return;
   }
 

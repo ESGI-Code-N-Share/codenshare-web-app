@@ -66,7 +66,7 @@ abstract class Shape implements IShape {
 
 class Rectangle extends Shape {
     width = 100;
-    readonly height = 40;
+    readonly height = 45;
     readonly fontSize = 14;
     readonly color: string;
     inputs = 1;

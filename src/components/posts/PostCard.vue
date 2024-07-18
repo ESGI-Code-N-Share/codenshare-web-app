@@ -1,18 +1,23 @@
 <script lang="ts" setup>
 
 import {computed, onMounted, ref} from "vue";
-import hljs from 'highlight.js';
 import 'highlight.js/styles/atelier-dune-dark.css';
 import 'highlight.js/lib/languages/javascript';
 import InfoCard from "@/components/cards/InfoCard.vue";
-import {Post} from "@/models";
+import {Post, Program} from "@/models";
 import {useUserStore} from "@/stores/user.store";
 import dayjs from 'dayjs/esm/index.js'
 import {getEditPostOptions} from "@/utils/post.util";
-import {CodeNSharePostApi} from "@/api/codenshare";
+import {CodeNSharePostApi, CodeNShareProgramApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import ProgramListItem from "@/components/programs/ProgramListItem.vue";
+import {VAceEditor} from "vue3-ace-editor";
+import 'ace-builds/src-noconflict/mode-javascript';
+import 'ace-builds/src-noconflict/theme-monokai';
+import hljs from 'highlight.js';
 
+dayjs.locale(localStorage.getItem('language') || 'fr');
 
 interface PostCardProps {
   post: Post
@@ -27,7 +32,10 @@ const currentUser = userStore.currentUser;
 const toastNotifications = new ToastService(useToast());
 
 const imageNotFound = ref(false);
+const programNotFound = ref(false);
+const openProgramModal = ref(false);
 const menuEditPost = ref();
+const program = ref<Program>();
 
 const editPostOptions = ref();
 
@@ -36,8 +44,19 @@ const isPostLiked = computed(() => {
   return props.post.likes.some(like => like.userId === currentUser.userId);
 });
 
-onMounted(() => {
+const openProgramModal2 = () => {
+  openProgramModal.value = true;
+  hljs.highlightAll();
+}
+
+onMounted(async () => {
   if (!currentUser) return;
+
+  if (props.post.programId) {
+    CodeNShareProgramApi.get(props.post.programId)
+        .then(p => program.value = p)
+        .catch(() => programNotFound.value = true);
+  }
 
   const deleteCommand = async () => {
     try {
@@ -49,8 +68,21 @@ onMounted(() => {
     }
   };
 
-  editPostOptions.value = getEditPostOptions(props.post, currentUser, {deleteCommand});
-  hljs.highlightAll();
+  const importProgramCommand = async () => {
+    try {
+      if (!props.post.programId) return;
+      await CodeNShareProgramApi.import(props.post.programId);
+      toastNotifications.showSuccess('Programme importé');
+    } catch (e) {
+      console.error(e);
+      toastNotifications.showError('Erreur lors de l\'importation du programme');
+    }
+  }
+
+  editPostOptions.value = await getEditPostOptions(props.post, currentUser, {
+    deleteCommand,
+    importProgramCommand
+  });
 });
 
 
@@ -65,6 +97,7 @@ const likePost = async () => {
     if (isPostLiked.value) {
       await CodeNSharePostApi.unlike(props.post.postId);
       props.post.likes = props.post.likes.filter(like => like.userId !== currentUser.userId);
+      toastNotifications.showSuccess('Publication non aimée');
     } else {
       await CodeNSharePostApi.like(props.post.postId);
       props.post.likes.push({
@@ -73,6 +106,7 @@ const likePost = async () => {
         postId: props.post.postId,
         likedAt: new Date(),
       })
+      toastNotifications.showSuccess('Publication aimée');
     }
   } catch (e) {
     console.error(e);
@@ -113,17 +147,35 @@ const likePost = async () => {
     <div class="flex flex-column gap-2 px-1">
       <div class="text-base sm:text-lg m-0">{{ post.title }}</div>
       <div class="text-sm sm:text-base text-color-secondary pb-2">{{ post.content }}</div>
-      <div v-if="post.image && !imageNotFound" class="w-full h-full border-1 border-gray-500 border-round-xl">
+      <!-- Program     -->
+      <ProgramListItem v-if="program" :program="program" class="cursor-pointer" @click="openProgramModal2()"/>
+      <div v-else-if="programNotFound" class="text-color-secondary">{{ $t('post.program_not_found') }}</div>
+      <!-- Image     -->
+      <div v-if="post.image && !imageNotFound"
+           class="overflow-hidden w-full h-full border-1 border-gray-500 border-round-xl">
         <img
             v-if="!imageNotFound"
             :src="post.image"
             alt="post-image"
-            class="w-full h-full max-h-15rem border-round bg-gray-800 opacity-50 vertical-align-top"
+            class="w-full h-full max-h-15rem border-round bg-gray-800 vertical-align-top"
             style="object-fit: contain"
             @error="imageNotFound = true"
         />
       </div>
     </div>
+
+    <Dialog v-if="program" v-model:visible="openProgramModal" :header="program?.name" modal
+            style="width: 80vw; height: 80vh;">
+      <div class="h-full">
+        <VAceEditor
+            v-model:value="program.code"
+            lang="javascript"
+            readonly
+            style="height: 43em; min-height: 100%;"
+            theme="monokai"
+        />
+      </div>
+    </Dialog>
   </div>
 </template>
 
