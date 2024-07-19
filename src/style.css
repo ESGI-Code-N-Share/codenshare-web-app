@@ -1,4 +1,7 @@
-/* Réinitialisation du CSS */
+@import '@vue-flow/core/dist/style.css';
+@import '@vue-flow/controls/dist/style.css';
+@import '@vue-flow/core/dist/theme-default.css'; /* Réinitialisation du CSS */
+
 * {
     box-sizing: border-box;
 }
@@ -29,4 +32,19 @@ body {
 
 .gradient-bg-primary {
     background: linear-gradient(to right, #eab308 15%, #FB923C 100%);
+}
+
+.vue-flow__controls {
+    border: 1px solid #FFFFFB
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button {
+    border: none;
+    border-right: 1px solid #eee
+}
+
+.basic-flow .vue-flow__controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center
 }

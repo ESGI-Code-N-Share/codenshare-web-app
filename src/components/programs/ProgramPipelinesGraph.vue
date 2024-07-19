@@ -1,13 +1,13 @@
 <script lang="ts" setup>
-
+import {ref} from 'vue';
+import {Edge, MarkerType, Node, useVueFlow, VueFlow} from '@vue-flow/core'
+import {Background} from '@vue-flow/background'
+import {ControlButton, Controls} from '@vue-flow/controls'
+import IconApp from "@/components/icons/IconApp.vue";
 import {Program} from "@/models";
-import {nextTick, onMounted, ref} from "vue";
-import {dia, shapes} from "@joint/core";
+import {IInput, IOutput} from "@/utils/dag.util";
+import {ToastService} from "@/services/toast.service.ts";
 import {useToast} from "primevue/usetoast";
-import {ToastService} from "@/services/toast.service";
-import {ImageRectangle, ProgramRectangle} from "@/utils/graph.util";
-import {DAG, IInput, IOutput, SimpleNode} from "@/utils/dag.util";
-
 
 const programs = defineModel('programs', {type: Array as () => Program[], default: []})
 const props = defineProps()
@@ -15,411 +15,383 @@ const emit = defineEmits(['onInstructions', 'onBack'])
 
 const toastNotifications = new ToastService(useToast());
 
-const pipelineEl = ref<HTMLDivElement>()
+const {
+  onInit,
+  onConnect,
+  fitViewOnInitDone,
+  fitView,
+  onEdgesChange,
+  addNodes,
+  getNodes,
+  updateNode,
+  addEdges,
+  toObject
+} = useVueFlow()
 
-const graph = ref<dia.Graph>()
-const paper = ref<dia.Paper>()
+const nodes = ref<Node[]>([])
 
-onMounted(async () => {
-  try {
-    initGraph()
-  } catch (e) {
-    console.error(e);
-    toastNotifications.showError("Failed to fetch programs");
-  }
+const edges = ref<Edge[]>([])
+
+/**
+ * This is a Vue Flow event-hook which can be listened to from anywhere you call the composable, instead of only on the main component
+ * Any event that is available as `@event-name` on the VueFlow component is also available as `onEventName` on the composable and vice versa
+ *
+ * onInit is called when the VueFlow viewport is initialized
+ */
+onInit(() => {
+  fitViewOnInitDone.value = true
+  initElements()
+  fitView({padding: 100})
 })
 
 
-function setLinkEventHandlers() {
-  if (!graph.value || !paper.value) return
-
-  let tempLink: dia.Link | null = null;
-  paper.value.on('link:pointerdown', function (linkView) {
-    //if the link is image to program then it's indestructible
-    if (linkView.model.id) {
-      if (String(linkView.model.id).includes('indestructible')) {
-        return
-      }
-    }
-    tempLink = linkView.model;
-  });
-
-  paper.value.on('cell:pointermove', function (_, __, x, y) {
-    if (tempLink) {
-      tempLink.set('target', {x: x, y: y});
-    }
-  });
-
-  paper.value.on('link:connect', function (linkView) {
-    const link = linkView.model;
-    const sourceId = link.get('source').id;
-    const targetId = link.get('target').id;
-    const sourcePort = link.get('source').port;
-    const targetPort = link.get('target').port;
-
-    const metadataSource = graph.value?.getCell(sourceId)?.prop('metadata')
-    const metadataPort = graph.value?.getCell(targetId)?.prop('metadata')
-
-    if (sourceId && targetId && sourcePort && targetPort) {
-      const newLink = new shapes.standard.Link({
-        source: {id: sourceId, port: sourcePort},
-        target: {id: targetId, port: targetPort},
-        attrs: {
-          line: {
-            stroke: 'white',
-            strokeWidth: 1,
-            text: '0.10',
-          }
-        },
-      });
-      newLink.labels([
-        {
-          attrs: {
-            text: {
-              text: metadataSource?.type || '',
-              fill: 'black'
-            }
-          },
-          position: {
-            distance: 0.25
-          }
-        },
-        {
-          attrs: {
-            text: {
-              text: metadataPort?.type || '',
-              fill: 'black'
-            }
-          },
-          position: {
-            distance: 0.75
-          }
-        }
-      ]);
-
-      graph.value!.addCell(newLink);
-    }
-  });
-
-  paper.value.on('link:mouseleave', function (linkView) {
-    if (tempLink) {
-      tempLink.remove();
-    }
-  });
-
-}
+onEdgesChange((param) => {
+  getNodes.value
+      .filter((node) => node.type === 'input' || node.type === 'output')
+      .forEach((node) => updateNode(node.id, {type: 'default'}))
+})
 
 function initElements() {
-  if (!graph.value || !paper.value) return;
+  let counter = 0;
+  let xOffset = 0; // Horizontal offset to space out different programs
 
-  // Constants for grid layout
-  const horizontalSpacing = 400;
-  const verticalSpacing = 250;
-  const programYOffset = 125;
+  //bleu ciel, bleu rouge et bleu vert
+  const colors = ['#1dafec', '#d59622', '#13c61c'];
+  programs.value.forEach((program, index) => {
+    const inputYOffset = -100;  // Vertical offset for inputs
+    const outputYOffset = 200;  // Vertical offset for outputs
+    const nodeWidth = 200;      // Width of each node for horizontal spacing
+    const spaceBetweenPrograms = 300; // Space between programs
 
-  let offsetX = 0;
-  let offsetY = 0;
-
-  for (const [index, program] of Object.entries(programs.value)) {
-    // Calculate grid positions
-    const row = Math.floor(parseInt(index) / 2);
-    const col = parseInt(index) % 2;
-    offsetX = col * horizontalSpacing;
-    offsetY = row * verticalSpacing;
-
-    // Position for program
-    const programRectangle = new ProgramRectangle(
-        program.programId,
-        {x: 150 + offsetX, y: programYOffset + offsetY},
-        `${parseInt(index) + 1}) ${program.name}` || '',
-        program.instructions.inputs.length,
-        program.instructions.outputs.length
-    );
-    const p = programRectangle.toJointJsElement();
-    graph.value.addCell(p);
-
-    const inputs = program.instructions.inputs.map((input, index) => {
-      const x = 100 + index * 200 + offsetX;
-      const y = 50 + offsetY;
-      const randomId = Date.now() + '-' + (index + 1);
-      const imageRectangle = new ImageRectangle(`input-${randomId}`, {x, y}, input.name || '', {
-        name: input.name,
-        type: input.type
-      });
-      const image = imageRectangle.toJointJsElement();
-      image.prop('metadata', {name: input.name || '', type: input.type || ''});
-      return image;
+    // Create inputs
+    const inputs = program.instructions.inputs.map((input, idx) => {
+      counter++;
+      return {
+        id: counter.toString(),
+        type: programs.value.length === 1 ? 'input' : 'default',
+        position: {x: xOffset + (idx * outputYOffset), y: inputYOffset},
+        data: {
+          label: input.name,
+          filename: input.name,
+          filetype: input.type,
+          nodeType: 'input',
+        },
+        deletable: false,
+        style: {
+          backgroundColor: colors[index],
+        }
+      };
     });
 
-    const outputs = program.instructions.outputs.map((output, index) => {
-      const x = 100 + index * 200 + offsetX;
-      const y = 200 + offsetY;
-      const randomId = Date.now() + '-' + (index + 1) * 100;
-      const imageRectangle = new ImageRectangle(`output-${randomId}`, {x, y}, output.name || '', {
-        name: output.name,
-        type: output.type
-      });
-      const image = imageRectangle.toJointJsElement();
-      image.prop('metadata', {name: output.name || '', type: output.type || ''});
-      return image;
+    // Create outputs
+    const outputs = program.instructions.outputs.map((output, idx) => {
+      counter++;
+      return {
+        id: counter.toString(),
+        type: programs.value.length === 1 ? 'output' : 'default',
+        position: {x: xOffset + (idx * outputYOffset), y: (outputYOffset / 2)},
+        data: {
+          label: output.name,
+          filename: output.name,
+          filetype: output.type,
+          nodeType: 'output',
+        },
+        deletable: false,
+        style: {
+          backgroundColor: colors[index],
+        }
+      };
     });
 
-    graph.value.addCells(inputs);
-    graph.value.addCells(outputs);
+    // Create program node
+    addNodes({
+      id: program.programId,
+      type: 'program',
+      position: {x: (outputYOffset / 2) + xOffset, y: 0},
+      data: {
+        label: program.name.slice(0, 20) + (program.name.length > 20 ? '...' : ''),
+      },
+      connectable: false,
+      deletable: false,
+      style: {
+        backgroundColor: colors[index],
+      }
+    });
 
-    // Link program to inputs and outputs (indestructible)
-    for (const [index, input] of Object.entries(inputs)) {
-      const link = new shapes.standard.Link({
-        id: `indestructible-${input.id}-${p.id}-${index}`,
-        source: {id: input.id, port: 'out0'},
-        target: {id: p.id, port: `in${index}`},
-        attrs: {
-          line: {
-            stroke: 'white',
-            strokeWidth: 1,
-          }
-        },
-      });
-      graph.value.addCells([link]);
-    }
+    // Add nodes to graph
+    inputs.forEach(input => addNodes(input));
+    outputs.forEach(output => addNodes(output));
 
-    for (const [index, output] of Object.entries(outputs)) {
-      const link = new shapes.standard.Link({
-        id: `indestructible-${p.id}-${output.id}-${index}`,
-        source: {id: p.id, port: `out${index}`},
-        target: {id: output.id, port: 'in0'},
-        attrs: {
-          line: {
-            stroke: 'white',
-            strokeWidth: 1,
-          }
-        },
-      });
-      graph.value.addCells([link]);
-    }
-  }
+    // Create edges
+    inputs.forEach(input => addEdges({
+      deletable: false,
+      source: input.id,
+      target: program.programId,
+      markerEnd: MarkerType.ArrowClosed,
+      label: input.data.filetype,
+      labelBgBorderRadius: 8,
+      labelBgPadding: [8, 6],
+      labelBgStyle: {
+        fill: colors[index],
+      }
+    }));
+    outputs.forEach(output => addEdges({
+      deletable: false,
+      source: program.programId,
+      target: output.id,
+      markerEnd: MarkerType.ArrowClosed,
+      label: output.data.filetype,
+      labelBgBorderRadius: 8,
+      labelBgPadding: [8, 6],
+      labelBgStyle: {
+        fill: colors[index],
+      }
+    }));
+
+    // Update xOffset for the next program
+    xOffset += nodeWidth + spaceBetweenPrograms;
+  });
 }
 
-function initPaper() {
-  if (!graph.value) return
+/**
+ * onConnect is called when a new connection is created.
+ *
+ * You can add additional properties to your new edge (like a type or label) or block the creation altogether by not calling `addEdges`
+ */
+onConnect((connection) => {
+  const source = getNodes.value.find((node) => node.id === connection.source)
+  const target = getNodes.value.find((node) => node.id === connection.target)
 
-  paper.value = new dia.Paper({
-    el: pipelineEl.value,
-    model: graph.value,
-    width: pipelineEl.value?.offsetWidth,
-    height: '100%',
-    gridSize: 10,
-    background: {
-      color: 'rgba(214,214,214,0.1)',
-    },
-    // Interactive options
-    interactive(cellView, event) {
-      if (cellView.model.isLink()) {
-        return {vertexAdd: false, labelMove: false};
-      }
-      return true;
-    },
-    // Default link options
-    defaultLink(cellView, magnet) {
-      const metadataSource = cellView.model.prop('metadata')
-      const link = new shapes.standard.Link({
-        attrs: {
-          line: {
-            stroke: 'white',
-            strokeWidth: 1,
-          }
-        },
-      });
-      link.labels([
-        {
-          attrs: {
-            text: {
-              text: metadataSource?.type || '',
-              fill: 'black'
-            }
-          },
-          position: {
-            distance: 0.25
-          }
-        },
-      ]);
-      return link;
-    },
-    // validate link connection
-    validateConnection(cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
-      if (!cellViewS || !cellViewT || !magnetS || !magnetT || cellViewS === cellViewT) {
-        return false;
-      }
-      const portSource = magnetS.getAttribute('port');
-      const portTarget = magnetT.getAttribute('port');
-      if (!portSource || !portTarget) {
-        return false;
-      }
-
-      // image "out" can be linked to image "in" only
-      if (portSource.includes('out') && portTarget.includes('out')) {
-        return false
-      }
-      // only one link to "in" port
-      if (portTarget.includes('in') && graph.value!.getConnectedLinks(cellViewT.model, {inbound: true}).length > 0) {
-        return false
-      }
-      // if the metadata.type is different from the target metadata.type, return false
-      if (cellViewS.model.attributes?.attrs?.metadata?.type !== cellViewT.model.attributes?.attrs?.metadata?.type) {
-        return false;
-      }
-      // else OK
-      return true;
-    },
-  })
-}
-
-const mapToJsObject = async () => {
-  if (!graph.value) {
-    toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
+  if (source?.data?.filetype !== target?.data?.filetype) {
+    toastNotifications.showError('Cannot connect nodes with different file types')
     return;
   }
 
-  const instructions = new DAG()
-  const cells = graph.value!.getCells()
-
-  for (const [index, program] of Object.entries(programs.value)) {
-    const programCell = cells.find(cell => cell.id === program.programId)
-    if (!programCell) {
-      toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
-      return;
-    }
-
-    // inputs
-    const programLinkInputs = graph.value!.getConnectedLinks(programCell, {inbound: true})
-    const inputs: IInput[] = programLinkInputs.map(programLink => {
-      const source = programLink.get('source').id
-      const sourceCell = graph.value!.getCell(source)
-      const metadata = sourceCell?.prop('metadata')
-
-      if (!metadata?.type || !metadata?.name) {
-        toastNotifications.showError(`Le programme ${program.name} a une entrée invalide`)
-        throw new Error("Entrée de programme invalide")
-      }
-
-      const _inputs = graph.value?.getConnectedLinks(sourceCell, {inbound: true})
-      // first program has on "in" port
-      if (parseInt(index) === 0 || !_inputs || _inputs.length === 0) {
-        return {
-          id: source,
-          filename: metadata.name || '',
-          filetype: metadata.type || '',
-          file: null,
-          relatedTo: null,
-        }
-      }
-      const _sourceCell = _inputs[0].get('source').id
-      const _source = graph.value!.getCell(_sourceCell)
-      const _metadata = _source?.prop('metadata')
-
-      if (!_metadata?.type || !_metadata?.name) {
-        toastNotifications.showError(`Program ${program.name} has invalid input`)
-        throw new Error("Invalid program input")
-      }
-
-      return {
-        id: source,
-        relatedTo: _sourceCell,
-        filename: metadata.name || '',
-        filetype: metadata.type || '',
-        file: null,
-      }
-    })
-
-    // outputs
-    const programLinkOutputs = graph.value!.getConnectedLinks(programCell, {outbound: true})
-    const outputs: IOutput[] = programLinkOutputs.map(programLink => {
-      const target = programLink.get('target').id
-      const targetCell = graph.value!.getCell(target)
-      const metadata = targetCell?.prop('metadata')
-
-      if (!metadata?.type || !metadata?.name) {
-        toastNotifications.showError(`Program ${program.name} has invalid output`)
-        throw new Error("Invalid program output")
-      }
-
-      return {
-        id: target,
-        filename: metadata.name || '',
-        filetype: metadata.type || '',
-        url: null,
-      }
-    })
-
-    instructions.addNode(new SimpleNode(program.programId, inputs, outputs))
+  //if the source is an output, we can't connect it to another output
+  if (source?.data?.nodeType === 'output' && target?.data?.nodeType === 'output') {
+    toastNotifications.showError('Cannot connect output to output')
+    return;
   }
 
-  //check if programs are connected
+  addEdges(connection)
+})
 
+
+/**
+ * toObject transforms your current graph data to an easily persist-able object
+ */
+function logToObject() {
   try {
-    instructions.topologicalSort()
-    instructions.visualize()
-
-    const object = instructions.toJsObject()
-    try {
-      const formattedInstructions = object.map(instruction => {
-        return {
-          program: programs.value.find(program => program.programId === instruction.id),
-          inputs: instruction.inputs,
-          outputs: instruction.outputs,
-        }
-      })
-      console.log(formattedInstructions)
-      emit('onInstructions', formattedInstructions)
-    } catch (e) {
-      console.error(e);
-      toastNotifications.showError("Failed to save program");
-    }
+    const object = transformVueFlowObject(toObject())
+    const formattedInstructions = object.map(instruction => {
+      return {
+        program: programs.value.find(program => program.programId === instruction.id),
+        inputs: instruction.inputs,
+        outputs: instruction.outputs,
+      }
+    })
+    console.log(formattedInstructions)
+    emit('onInstructions', formattedInstructions)
   } catch (e) {
-    toastNotifications.showError("Les programmes ne sont pas connectés")
+    console.error(e);
+    toastNotifications.showError('An error occurred while transforming the graph to instructions');
   }
 }
 
-const initGraph = () => {
-  graph.value = new dia.Graph()
 
-  nextTick(() => {
-    initPaper();
-    initElements();
-    setLinkEventHandlers();
-    paper.value?.transformToFitContent({padding: 25, maxScale: 1})
-  })
+function transformVueFlowObject(vueFlowObject: any): { id: string, inputs: IInput[], outputs: IOutput[] }[] {
+  const n = vueFlowObject.nodes;
+  const e = vueFlowObject.edges;
+
+  const programs = new Map<string, { inputs: IInput[], outputs: IOutput[] }>();
+
+  // format the data
+  for (const node of n) {
+    if (node.type === 'program') continue;
+
+    const source = e.find((edge: any) => edge.source === node.id);
+    const target = e.find((edge: any) => edge.target === node.id);
+    console.log(`${node.id} -> ${source?.target} | ${node.id} <- ${target?.source}`)
+
+    if (!source?.target && !target.source) {
+      continue;
+    }
+
+    // utils methods
+    const isProgram = (nodeId: string) => n?.find((node: any) => node.id === nodeId)?.type === 'program';
+
+    if (isProgram(target?.source)) {
+      const output = {
+        id: node.id,
+        filetype: node.data.filetype,
+        filename: node?.data?.filename,
+        url: null
+      };
+      if (!programs.has(target.source)) {
+        programs.set(target.source, {inputs: [], outputs: [output]});
+      } else {
+        const program = programs.get(target.source)!;
+        program.outputs.push(output);
+      }
+    }
+
+    // source
+    if (source?.target && isProgram(source.target)) {
+      const input = {
+        id: node.id,
+        filetype: node?.data?.filetype,
+        filename: node?.data?.filename,
+        relatedTo: null,
+        file: null
+      };
+      if (!programs.has(source.target)) {
+        programs.set(source.target, {inputs: [input], outputs: []});
+      } else {
+        const program = programs.get(source.target)!;
+        program.inputs.push(input);
+      }
+    }
+
+    // target
+    if (target?.source && isProgram(source?.target)) {
+      const input = {
+        id: node.id,
+        filetype: node?.data?.filetype,
+        filename: node?.data?.filename,
+        relatedTo: target.source,
+        file: null
+      };
+      if (!programs.has(source.target)) {
+        programs.set(source.target, {inputs: [input], outputs: []});
+      } else {
+        const program = programs.get(source.target)!;
+        const index = program.inputs.findIndex(i => i.id === node.id);
+        if (index === -1) {
+          program.inputs.push(input);
+        } else {
+          program.inputs[index] = input;
+        }
+      }
+    }
+  }
+
+  if (programs.size === 0) {
+    toastNotifications.showError('No program found in the graph');
+    throw new Error("No program found in the graph");
+  }
+
+  const inputWithProgramWhoDontHaveRelatedTo = Array
+      .from(programs.values())
+      .find(program => program.inputs.every(input => input.relatedTo === null));
+
+  if (!inputWithProgramWhoDontHaveRelatedTo) {
+    toastNotifications.showError('No input found without a related output');
+    throw new Error("The graph is not a DAG - it has at least one cycle!");
+  }
+
+  //define the type of the input
+  inputWithProgramWhoDontHaveRelatedTo.inputs.forEach(input => updateNode(input.id, {type: 'input'}))
+
+  // define order
+  const orders = determineExecutionOrder(programs);
+
+  const instructions = orders.map(order => {
+    const program = programs.get(order)!;
+    return {id: order, inputs: program.inputs, outputs: program.outputs};
+  });
+
+  //define the type of the output
+  instructions[orders.length - 1].outputs.forEach(output => updateNode(output.id, {type: 'output'}))
+
+  return instructions;
 }
 
-const saveElement = () => {
-  mapToJsObject()
-}
 
+function determineExecutionOrder(programs: Map<string, { inputs: IInput[], outputs: IOutput[] }>): string[] {
+  const buildGraph = (programs: Map<string, {
+    inputs: IInput[],
+    outputs: IOutput[]
+  }>): [Map<string, Set<string>>, Set<string>] => {
+    const graph = new Map<string, Set<string>>();
+    const allOutputs = new Set<string>();
+
+    programs.forEach((program: any, name) => {
+      if (!graph.has(name)) {
+        graph.set(name, new Set<string>());
+      }
+
+      program.outputs.forEach(output => {
+        allOutputs.add(output.id);
+      });
+    });
+
+    programs.forEach((program: any, name: string) => {
+      program.inputs.forEach(input => {
+        if (input.relatedTo && allOutputs.has(input.relatedTo)) {
+          programs.forEach((otherProgram, otherName) => {
+            if (otherProgram.outputs.some(output => output.id === input.relatedTo)) {
+              let dependencies = graph.get(otherName);
+              dependencies?.add(name);
+              graph.set(otherName, dependencies!);
+            }
+          });
+        }
+      });
+    });
+
+    return [graph, allOutputs];
+  };
+
+  // Helper function to perform topological sorting
+  const topologicalSort = (graph: Map<string, Set<string>>): string[] => {
+    const sorted = [];
+    const visited = new Set<string>();
+    const tempMarked = new Set<string>();
+
+    const visit = (node: string) => {
+      if (tempMarked.has(node)) {
+        throw new Error("The graph is not a DAG - it has at least one cycle!");
+      }
+      if (!visited.has(node)) {
+        tempMarked.add(node);
+        graph.get(node)?.forEach(visit);
+        tempMarked.delete(node);
+        visited.add(node);
+        sorted.push(node);
+      }
+    };
+
+    graph.forEach((_, node) => {
+      if (!visited.has(node)) {
+        visit(node);
+      }
+    });
+
+    return sorted.reverse(); // reverse to get the correct order
+  };
+
+  const [graph, _] = buildGraph(programs);
+  return topologicalSort(graph);
+}
 
 </script>
 
 <template>
-  <div class="parent-container">
-    <div class="flex gap-2 justify-content-end align-items-baseline absolute top-0 right-0 p-2 z-5">
-      <Button icon="pi pi-save" severity="success" @click="saveElement()"/>
-    </div>
-    <div ref="pipelineEl" class="paper-container"></div>
-  </div>
+  <VueFlow
+      :connection-radius="50"
+      :default-viewport="{ zoom: 0.75, x: 300, y: 200 }"
+      :edges="edges"
+      :max-zoom="4"
+      :min-zoom="0.2"
+      :nodes="nodes"
+      class="basic-flow"
+  >
+    <Background :gap="16" pattern-color="#aaa"/>
+
+    <Controls position="top-left">
+      <ControlButton title="Log to Object" @click="logToObject">
+        <IconApp name="save"/>
+      </ControlButton>
+    </Controls>
+  </VueFlow>
 </template>
-
-<style scoped>
-Button {
-  margin: 0.15em auto;
-}
-
-.parent-container {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.paper-container {
-  width: 100%;
-  height: 100%;
-}
-</style>
