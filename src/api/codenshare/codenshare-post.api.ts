@@ -24,7 +24,11 @@ export class CodeNSharePostApi {
     }
 
     static async delete(postId: PostId): Promise<PostId> {
-        return request<PostId>({method: 'DELETE', url: `/posts/${postId}`})
+        return request<PostId>({
+            method: 'DELETE',
+            url: `/posts/${postId}`,
+            body: {userId: localStorage.getItem('userId')}
+        })
     }
 
     static async like(postId: PostId): Promise<PostLikeId> {
