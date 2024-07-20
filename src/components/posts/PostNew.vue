@@ -116,6 +116,8 @@ function reset() {
   addImage.value = false;
   title.value = '';
   content.value = '';
+  image.value = '';
+  program.value = '';
 
   if (createPostOptions.value[0].items) {
     createPostOptions.value[0].items.forEach(item => item.disabled = false);
