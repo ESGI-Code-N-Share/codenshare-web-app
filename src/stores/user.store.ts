@@ -38,9 +38,9 @@ export const useUserStore = defineStore('user', {
             this.isAuthenticated = false;
             localStorage.removeItem('userId')
         },
-        async updateUser({firstname, lastname, avatar}: { firstname: string, lastname: string, avatar: string }) {
+        async updateUser({firstname, lastname, avatar, overview}: { firstname: string, lastname: string, avatar: string, overview: string }) {
             if (this.currentUser?.userId)
-                this.currentUser = await CodeNShareUserApi.update(this.currentUser?.userId, firstname, lastname, avatar);
+                this.currentUser = await CodeNShareUserApi.update(this.currentUser?.userId, firstname, lastname, avatar, overview);
         },
 
         async fetchUser(userId: UserId) {

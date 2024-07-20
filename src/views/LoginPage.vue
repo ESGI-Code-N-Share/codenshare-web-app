@@ -41,8 +41,10 @@ async function onSubmitLoginForm() {
       email: email.value,
       password: password.value,
     }, {abortEarly: false});
+
     const userStore = useUserStore();
     await userStore.login(email.value, password.value, stayLogin.value);
+
     toastNotifications.showSuccess('Connexion réussie');
     await router.push({name: 'home'});
   } catch (e: any | yup.ValidationError) {
@@ -52,6 +54,8 @@ async function onSubmitLoginForm() {
         if (error.includes('email')) formErrors.value.email = error;
         if (error.includes('password')) formErrors.value.password = error;
       });
+    } else if (e.response && e.response.status === 404) {
+      toastNotifications.showError("Le compte n'existe pas.");
     } else {
       toastNotifications.showError(e.message);
     }
@@ -59,6 +63,7 @@ async function onSubmitLoginForm() {
     loading.value = false;
   }
 }
+
 
 // todo remove this function in production
 async function onSubmitAdminLoginForm() {

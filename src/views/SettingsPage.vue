@@ -43,6 +43,7 @@ const onSaveUser = async () => {
       firstname: user.value.firstname,
       lastname: user.value.lastname,
       avatar: user.value.avatar,
+      overview: user.value.overview ?? ''
     });
     toastNotifications.showSuccess(i18n.t('setting.success.save'));
   } catch (e) {
@@ -85,8 +86,8 @@ const onSaveUser = async () => {
             <InputText v-model="user.email" :placeholder="$t('setting.forms.email.placeholder')" readonly/>
           </div>
           <div class="flex flex-column gap-2">
-            <div>{{ $t('setting.forms.email.label') }}</div>
-            <Textarea v-model="user.overview" :placeholder="$t('setting.forms.overview.placeholder')" readonly/>
+            <div>{{ $t('setting.forms.overview.label') }}</div>
+            <Textarea v-model="user.overview" :placeholder="$t('setting.forms.overview.placeholder')" />
           </div>
 
           <Button

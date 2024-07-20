@@ -14,7 +14,7 @@ import {ToastService} from "@/services/toast.service";
 import {useRouter} from "vue-router";
 import {useI18n} from "vue-i18n";
 import InputFile from "@/components/files/InputFile.vue";
-import {io} from 'socket.io-client';
+import {io, Socket} from 'socket.io-client';
 
 dayjs.locale(localStorage.getItem('language') || 'fr');
 
@@ -77,7 +77,20 @@ const currentConversation = ref<Conversation>();
 const conversations = ref<Conversation[]>([]);
 const messages = ref<Message[]>()
 
-const socket = io(import.meta.env.VITE_API_URL); // TODO ADD THE PROD URL
+let socket: Socket | undefined;
+
+const initializeSocket = () => {
+  if (!socket) {
+    socket = io(import.meta.env.VITE_API_URL); // TODO ADD THE PROD URL
+
+    socket.on('new_message', (message: Message) => {
+      if (message.conversationId === currentConversation.value?.conversationId) {
+        messages.value = [...(messages.value || []), message];
+        scrollToLast();
+      }
+    });
+  }
+}
 
 onMounted(async () => {
   await fetchConversations();
@@ -86,20 +99,13 @@ onMounted(async () => {
     messages.value = conversations.value[0].messages;
   }
   intervalId.value = setInterval(() => fetchConversations(true), 7500);
-
-  // listen to new events 'new_message' from the server
-  socket.on('new_message', (message: Message) => {
-    if (message.conversationId === currentConversation.value?.conversationId) {
-      messages.value = [...(messages.value || []), message];
-      scrollToLast();
-    }
-  });
 });
 
 onUnmounted(() => {
   clearInterval(intervalId.value);
   // remove the 'new_message' event listener
-  socket.off('new_message');
+  socket?.off('new_message');
+  socket?.disconnect();
 });
 
 const scrollToLast = () => {
@@ -115,7 +121,10 @@ const sendMessage = async () => {
   try {
     loading.value.send = true;
     if (!currentConversation.value || !currentUser || !messageContent) return;
-    const message = await CodeNShareMessageApi.send(
+    if (!socket) {
+      initializeSocket();
+    }
+    await CodeNShareMessageApi.send(
         messageContent.value,
         currentConversation.value.conversationId,
         currentUser.userId,
