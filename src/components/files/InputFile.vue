@@ -7,12 +7,13 @@ import {MediaApi} from "@/api/media";
 
 const toastNotification = new ToastService(useToast());
 
-type Accept = 'image/png' | 'image/jpeg' | 'image/jpg' | 'text/txt' | string
+type Accept = 'image/png' | 'image/jpeg' | 'image/jpg' | 'text/plain' | string
 
 interface InputFileProps {
   renameFile?: string;
   accept: Accept;
   maxHeightPreview?: string;
+  uploadable?: boolean;
 }
 
 const modelValue = defineModel<string>('fileUrl')
@@ -22,6 +23,7 @@ const emit = defineEmits(['onFileSelected', 'onWrongFileType'])
 const fileUrl = ref('');
 
 const isHovering = ref(false);
+const uploaded = ref(false);
 
 /* methods */
 
@@ -63,13 +65,16 @@ const processFile = async (file: File) => {
   }
 
   let apiUrl = '';
-  try {
-    const res = await MediaApi.uploadFile(file);
-    apiUrl = res.imageURL;
-  } catch (e) {
-    console.error(e);
+  if (props.uploadable) {
+    try {
+      const res = await MediaApi.uploadFile(file);
+      apiUrl = res.imageURL;
+    } catch (e) {
+      console.error(e);
+    }
   }
 
+  // for images
   if (file.type.startsWith('image/')) {
     const blob = await fileToBlob(file);
 
@@ -80,10 +85,23 @@ const processFile = async (file: File) => {
       const format = file.name.split('.').pop()
       const newFile = new File([blob], `${props.renameFile}.${format}`, {type: file.type});
       emit('onFileSelected', {file: newFile, fileUrl: apiUrl});
+      uploaded.value = true;
       return;
     }
+    uploaded.value = true;
     emit('onFileSelected', {file: file, fileUrl: apiUrl});
   }
+
+  // others
+  if (props.renameFile) {
+    const format = file.name.split('.').pop()
+    const newFile = new File([file], `${props.renameFile}.${format}`, {type: file.type});
+    emit('onFileSelected', {file: newFile, fileUrl: apiUrl});
+    uploaded.value = true;
+    return;
+  }
+  uploaded.value = true;
+  emit('onFileSelected', {file: file, fileUrl: apiUrl});
 };
 
 
@@ -106,15 +124,19 @@ const handleClick = () => {
 
 <template>
   <div
-      :class="{ 'bg-gray-700': isHovering, 'p-2 bg-gray-900': !!modelValue, 'p-4': !modelValue }"
-      class="drop-zone border-dashed border-gray-500 border-round text-center text-color-secondary cursor-pointer h-auto"
+      :class="{ 'bg-gray-700': isHovering, 'border-gray-500': !uploaded, 'border-green-700': uploaded, 'p-2 bg-gray-900': !!modelValue, 'p-4': !modelValue }"
+      class="drop-zone border-dashed border-round text-center text-color-secondary cursor-pointer h-auto"
       style="background-color: var(--gray-800);"
       @click="handleClick()"
       @drop="handleDrop($event)"
       @dragover.prevent="isHovering = true"
       @dragleave.prevent="isHovering = false"
   >
-    <img v-if="modelValue" :class="`max-h-${maxHeightPreview || 15}rem`" :src="modelValue" alt="image"
+    <div v-if="uploaded && !modelValue" class="flex flex-column gap-1 p-2">
+      <i class="pi pi-check text-4xl cursor-pointer"/>
+      <small class="text-color-secondary">{{ $t('program.inputs_file.uploaded') }}</small>
+    </div>
+    <img v-else-if="modelValue" :class="`max-h-${maxHeightPreview || 15}rem`" :src="modelValue" alt="image"
          class="w-full h-full"
          style="object-fit: contain"/>
     <div v-else>

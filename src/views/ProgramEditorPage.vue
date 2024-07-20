@@ -462,7 +462,7 @@ async function resetInstructions() {
         <div class="flex flex-column gap-3">
           <div>{{ $t('global.drop_a_file.label') }}</div>
           <InputFile v-model:file-url="program.imageURL" accept="image/*"
-                     @onFileSelected="program.imageURL = $event.fileUrl"/>
+                     uploadable @onFileSelected="program.imageURL = $event.fileUrl"/>
 
           <InputText v-model="program.name" :placeholder="$t('program.forms.name.placeholder')"/>
           <Textarea v-model="program.description" :placeholder="$t('program.forms.description.placeholder')"

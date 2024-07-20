@@ -5,6 +5,9 @@ export const program = {
     test: "Test",
     code_history: "Historique du code",
     no_code_history: "Aucun historique du code",
+    inputs_file: {
+        uploaded: "Fichier uploadé",
+    },
     output_files: {
         title: "Fichiers de sortie",
         empty: "Aucun fichier de sortie",

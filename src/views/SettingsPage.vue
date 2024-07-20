@@ -69,6 +69,7 @@ const onSaveUser = async () => {
                 accept="image/*"
                 max-height-preview="7"
                 @onFileSelected="user.avatar = $event.fileUrl"
+                uploadable
             />
           </div>
           <div class="flex flex-column gap-2">

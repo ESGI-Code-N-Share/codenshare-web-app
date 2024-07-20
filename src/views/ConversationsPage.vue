@@ -14,9 +14,9 @@ import {ToastService} from "@/services/toast.service";
 import {useRouter} from "vue-router";
 import {useI18n} from "vue-i18n";
 import InputFile from "@/components/files/InputFile.vue";
+import {io} from 'socket.io-client';
 
 dayjs.locale(localStorage.getItem('language') || 'fr');
-import { io } from 'socket.io-client';
 
 const router = useRouter();
 const {t} = useI18n();
@@ -319,7 +319,7 @@ const goToUserProfile = (index: number) => {
         </template>
       </VirtualScroller>
       <div class="flex flex-column gap-3 w-full p-1 sm:p-2 pl-2 sm:pl-3 pt-2 sm:pt-3 border-top-1 border-gray-500">
-        <InputFile v-if="addImage" accept="image/*" @on-file-selected="image = $event.fileUrl"/>
+        <InputFile v-if="addImage" accept="image/*" uploadable @on-file-selected="image = $event.fileUrl"/>
         <div class="flex gap-3">
           <IconField class="flex w-full cursor-pointer" iconPosition="right">
             <InputIcon v-if="!loading.send" v-tooltip.left="$t('conversation.tooltips.send')" class="pi pi-send"
