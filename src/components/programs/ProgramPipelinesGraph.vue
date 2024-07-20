@@ -1,12 +1,11 @@
 <script lang="ts" setup>
 import {ref} from 'vue';
-import {Edge, MarkerType, Node, useVueFlow, VueFlow} from '@vue-flow/core'
+import {Edge, MarkerType, Node, Panel, useVueFlow, VueFlow} from '@vue-flow/core'
 import {Background} from '@vue-flow/background'
-import {ControlButton, Controls} from '@vue-flow/controls'
-import IconApp from "@/components/icons/IconApp.vue";
+import {Controls} from '@vue-flow/controls'
 import {Program} from "@/models";
 import {IInput, IOutput} from "@/utils/dag.util";
-import {ToastService} from "@/services/toast.service.ts";
+import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 
 const programs = defineModel('programs', {type: Array as () => Program[], default: []})
@@ -388,10 +387,14 @@ function determineExecutionOrder(programs: Map<string, { inputs: IInput[], outpu
   >
     <Background :gap="16" pattern-color="#aaa"/>
 
-    <Controls position="top-left">
-      <ControlButton title="Log to Object" @click="logToObject">
-        <IconApp name="save"/>
-      </ControlButton>
-    </Controls>
+    <Controls position="top-left"/>
+
+    <Panel position="top-right">
+      <Button class="z-5" icon="pi pi-save" @click="logToObject"/>
+    </Panel>
   </VueFlow>
 </template>
+
+<style scoped>
+
+</style>
