@@ -172,7 +172,7 @@ const onSaveProgram = async () => {
 }
 
 const onRunProgram = async () => {
-  await resetInstructions();
+  await preventRunning();
 
   const instructions = pipelineTest.value?.getInstructions() as {
     program: Program,
@@ -189,6 +189,7 @@ const onRunProgram = async () => {
       pipelineTest.value!.isPipelineRunning = true;
       await runPipeline(instructions);
     } catch (e) {
+      console.error(e)
       pipelineTest.value!.isPipelineError = true;
       toastNotifications.showError("Une erreur s'est produite lors l'execution du programme'");
     }
@@ -340,21 +341,38 @@ const runProgram = async () => {
   }
 }
 
-async function resetInstructions() {
+async function preventRunning() {
+  // if first time running
   if (initialInstructions.value.length === 0) return;
-  pipelineTest.value!.setInstructions(initialInstructions.value.map(i => {
+
+  const instructionsWithoutOutput = initialInstructions.value.map(i => {
     return {
-      inputs: i.inputs,
+      ...i,
+      inputs: i.inputs.map((input) => {
+        return {
+          ...input,
+          uploaded: false,
+        }
+      }),
       program: i.program,
-      outputs: [],
+      outputs: i.outputs.map((output) => {
+        return {
+          ...output,
+          url: null
+        }
+      }),
       isProgramDone: false,
+      isProgramError: false,
+      console: '',
     }
-  }));
+  })
+
+  // if second
   return new Promise<void>(resolve => {
     setTimeout(() => {
       pipelineTest.value!.isPipelineRunning = false;
       pipelineTest.value!.isPipelineError = false;
-      pipelineTest.value!.setInstructions(initialInstructions.value);
+      pipelineTest.value!.setInstructions(instructionsWithoutOutput);
       resolve()
     }, 100)
   })
@@ -445,7 +463,12 @@ async function resetInstructions() {
         <!-- Pipelines Test   -->
         <div v-if="!resetTestExpanded" v-show="testExpanded"
              class="bg-gray-900 p-3 mt-3 border-round h-full overflow-scroll">
-          <ProgramPipelineTest ref="pipelineTest" v-model:can-execute="canExecute" :program="program"/>
+          <ProgramPipelineTest
+              ref="pipelineTest"
+              v-model:can-execute="canExecute"
+              :program="program"
+              @on-reset-instructions="initialInstructions = $event"
+          />
         </div>
       </div>
 

@@ -17,7 +17,7 @@ interface ProgramPipelineTestProps {
 
 const props = defineProps<ProgramPipelineTestProps>()
 const canExecute = defineModel('canExecute', {type: Boolean, required: false, default: false})
-const emit = defineEmits(['onUpdate'])
+const emit = defineEmits(['onUpdate', 'onResetInstructions'])
 
 const userStore = useUserStore();
 const currentUser = userStore.currentUser;
@@ -107,6 +107,7 @@ const resetInstructions = () => {
   isPipelineRunning.value = false;
   setTimeout(() => {
     instructions.value = JSON.parse(JSON.stringify(initialInstructions.value));
+    emit('onResetInstructions', initialInstructions.value)
   }, 10)
 }
 
@@ -239,6 +240,11 @@ onUnmounted(() => {
                            style="justify-self: center">
               {{ $t('program.tests.step3.error_pipeline') }}
             </InlineMessage>
+            <InlineMessage v-else-if="instructions.every(inst => inst.isProgramDone === true)"
+                           class="message-inline text-xs" severity="success"
+                           style="justify-self: center">
+              {{ $t('program.tests.step3.success_finished') }}
+            </InlineMessage>
             <InlineMessage v-else-if="isPipelineRunning" class="message-inline text-xs" icon="pi pi-spinner pi-spin"
                            severity="info">
               {{
@@ -252,7 +258,8 @@ onUnmounted(() => {
               {{ $t('program.tests.step3.waiting') }}
             </InlineMessage>
 
-            <Button icon="pi pi-refresh" label="Réinitialiser" severity="danger" text @click="resetInstructions()"/>
+            <Button :label="$t('global.reset')" icon="pi pi-refresh" severity="danger" text
+                    @click="resetInstructions()"/>
           </div>
 
           <!-- Step 3 content   -->

@@ -77,6 +77,7 @@ export const program = {
             running: 'Durée: {duration}{unit}',
             error_pipeline: "Une erreur est survenue.",
             waiting: 'En attente de lancement...',
+            success_finished: "Terminé.",
         },
     },
     buttons: {
