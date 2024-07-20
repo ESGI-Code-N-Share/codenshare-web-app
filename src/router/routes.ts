@@ -57,11 +57,11 @@ const routes: Array<RouteRecordRaw> = [
             //     path: "user/:id",
             //     name: "user",
             // },
-            // {
-            //     path: "404",
-            //     name: "404",
-            //     component: () => import("@/views/NotFoundPage.vue")
-            // }
+            {
+                path: "404",
+                name: "404",
+                component: () => import("@/views/NotFoundPage.vue")
+            }
         ]
     },
     {
@@ -89,20 +89,20 @@ const routes: Array<RouteRecordRaw> = [
         }
     },
     {
-        path: "/:pathMatch(.*)*",
-        redirect: "/app/404",
-        meta: {
-            public: true
-        }
-    },
-    {
         path: "/email-verified",
         name: "email-verified",
         component: () => import("@/views/EmailVerifiedPage.vue"),
         meta: {
             public: true
         }
-    }
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        redirect: "/app/404",
+        meta: {
+            public: true
+        }
+    },
 ];
 
 export default routes;

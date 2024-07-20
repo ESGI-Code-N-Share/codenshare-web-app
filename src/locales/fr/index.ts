@@ -28,6 +28,9 @@ const global = {
         help: "Aide",
         settings: "Paramètres",
         playground: "Plaground",
+        not_found: "Page non trouvée",
+        not_found_description: "La page que vous cherchez n'existe pas.",
+        go_home: "Retourner à l'accueil",
     },
     menubar: {
         search: "Recherche",
