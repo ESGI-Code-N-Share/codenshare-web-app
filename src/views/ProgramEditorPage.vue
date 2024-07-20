@@ -193,6 +193,7 @@ const onRunProgram = async () => {
       toastNotifications.showError("Une erreur s'est produite lors l'execution du programme'");
     }
   } else {
+    consoleExpanded.value = true;
     await runProgram()
   }
 }
