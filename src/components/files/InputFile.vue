@@ -68,7 +68,7 @@ const processFile = async (file: File) => {
   if (props.uploadable) {
     try {
       const res = await MediaApi.uploadFile(file);
-      apiUrl = res.imageURL;
+      apiUrl = res.imageURL.replace("0.0.0.0", import.meta.env.VITE_MEDIA_URL);
     } catch (e) {
       console.error(e);
     }
