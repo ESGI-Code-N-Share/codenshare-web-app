@@ -255,7 +255,8 @@ const runPipeline = async (instructions: {
           console.log("found the file for " + input.filename)
           try {
             const [_, format] = input.filetype.split('/')
-            await storageService.upload(file, instruction.program.programId, `${input.filename}.${format}`)
+            const formattedFormat = format === 'plain' ? 'txt' : format;
+            await storageService.upload(file, instruction.program.programId, `${input.filename}.${formattedFormat}`)
             input.file = file
             instruction.inputs[parseInt(i)].uploaded = true;
             pipelineTest.value!.setInstructions(instructions);
@@ -287,7 +288,8 @@ const runPipeline = async (instructions: {
     for (const output of instruction.outputs) {
       if (output && instruction.program) {
         const [_, format] = output.filetype.split('/')
-        output.url = storageService.getFile(instruction.program.programId, `${output.filename}.${format}`);
+        const formattedFormat = format === 'plain' ? 'txt' : format;
+        output.url = storageService.getFile(instruction.program.programId, `${output.filename}.${formattedFormat}`);
         pipelineTest.value!.setInstructions(instructions);
       }
     }

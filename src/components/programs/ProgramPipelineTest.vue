@@ -115,6 +115,7 @@ const downloadFile = (output: IOutput) => {
   const url = output.url;
   const imageName = output.filename;
   const [_, extension] = output.filetype.split('/');
+  const formattedExtension = output.filetype === 'text/plain' ? 'txt' : extension;
   if (!url) return;
 
   fetch(url)
@@ -124,7 +125,7 @@ const downloadFile = (output: IOutput) => {
         const a = document.createElement('a');
         a.style.display = 'none';
         a.href = url;
-        a.download = `${imageName}.${extension}`;
+        a.download = `${imageName}.${formattedExtension}`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
@@ -354,7 +355,12 @@ onUnmounted(() => {
                           @click="downloadFile(output)"
                       />
                     </div>
-                    <OutputFile v-model:url="output.url" class="w-full" @on-error="output.url = null"/>
+                    <OutputFile
+                        v-model:url="output.url"
+                        :type="output.filetype"
+                        class="w-full"
+                        @on-download="downloadFile(output)"
+                    />
                   </div>
                 </div>
               </div>

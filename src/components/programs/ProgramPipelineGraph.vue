@@ -23,7 +23,7 @@ const filetypes = [
   {label: 'PNG', value: 'image/png'},
   {label: 'JPEG', value: 'image/jpeg'},
   {label: 'JPG', value: 'image/jpg'},
-  {label: 'TXT', value: 'text/txt'},
+  {label: 'TXT', value: 'text/plain'},
 ]
 const filetypeModel = ref<typeof filetypes[0]>({label: '', value: ''})
 
