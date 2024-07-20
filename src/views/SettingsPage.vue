@@ -84,6 +84,10 @@ const onSaveUser = async () => {
             <div>{{ $t('setting.forms.email.label') }}</div>
             <InputText v-model="user.email" :placeholder="$t('setting.forms.email.placeholder')" readonly/>
           </div>
+          <div class="flex flex-column gap-2">
+            <div>{{ $t('setting.forms.email.label') }}</div>
+            <Textarea v-model="user.overview" :placeholder="$t('setting.forms.overview.placeholder')" readonly/>
+          </div>
 
           <Button
               :label="$t('setting.buttons.save')"

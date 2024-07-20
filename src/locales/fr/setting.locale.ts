@@ -10,6 +10,10 @@ export const setting = {
             label: 'Nom de famille',
             placeholder: 'Entrez votre nom de famille',
         },
+        overview: {
+            label: 'À propos de moi',
+            placeholder: 'Entrez votre description',
+        },
         email: {
             label: 'E-mail',
             placeholder: 'Entrez votre e-mail',
