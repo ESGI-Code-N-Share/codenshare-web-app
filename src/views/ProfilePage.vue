@@ -158,7 +158,7 @@ const fetchProfile = async (userId: UserId) => {
       menuItemsProfile.value.push({
         label: $t('profile.buttons.edit'),
         icon: 'pi pi-pencil',
-        command: () => router.push('/app/profile/settings')
+        command: () => router.push('/app/settings')
       })
     } else {
       menuItemsProfile.value[0].visible = true;
