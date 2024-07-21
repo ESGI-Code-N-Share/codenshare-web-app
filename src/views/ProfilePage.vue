@@ -62,13 +62,6 @@ const menuItemsProfile = ref([
         }
       }
     }
-  },
-  {
-    label: $t('profile.buttons.report'),
-    icon: 'pi pi-exclamation-triangle',
-    command() {
-      console.log('report')
-    }
   }
 ])
 
@@ -143,7 +136,9 @@ const fetchFollowing = async (userId: UserId) => {
 
 const fetchProfile = async (userId: UserId) => {
   try {
-    console.log(await fetchUser(userId))
+    if (menuItemsProfile.value[0]) menuItemsProfile.value[0].visible = false;
+    if (menuItemsProfile.value[1]) menuItemsProfile.value[1].visible = false;
+
     user.value = {
       detail: await fetchUser(userId),
       posts: await fetchPosts(userId),
@@ -151,20 +146,17 @@ const fetchProfile = async (userId: UserId) => {
       followers: await fetchFollowers(userId),
       following: await fetchFollowing(userId),
     }
-    console.log(user.value?.detail?.userId, currentUser?.userId)
     if (user.value?.detail?.userId === currentUser?.userId) {
       menuItemsProfile.value[0].visible = false;
-      menuItemsProfile.value[1].visible = false;
-      menuItemsProfile.value.push({
+      menuItemsProfile.value[1] = {
         label: $t('profile.buttons.edit'),
         icon: 'pi pi-pencil',
-        command: () => router.push('/app/profile/settings')
-      })
+        command: () => router.push('/app/settings')
+      }
     } else {
       menuItemsProfile.value[0].visible = true;
-      menuItemsProfile.value[1].visible = true;
-      if (menuItemsProfile.value[2]) {
-        menuItemsProfile.value[2].visible = true;
+      if (menuItemsProfile.value[1]) {
+        menuItemsProfile.value[1].visible = false;
       }
     }
   } catch (e) {
@@ -197,27 +189,49 @@ function openOptionsProfile(event: MouseEvent) {
   menuOptionsProfile.value.show(event);
 }
 
-const onToggleFriend = async (friend: Friend) => {
+async function onToggleFriendFollowers(friend: Friend) {
   try {
     if (!currentUser) return;
-    const isFollowing = user.value?.following?.find(f => f.addressedTo.userId === friend.requestedBy.userId);
+
+    console.log(
+        "friend.addressedTo.userId", friend.addressedTo.userId,
+        "\nfriend.requestedBy.userId", friend.requestedBy.userId,
+        "\ncurrentUser.userId", currentUser.userId
+    );
+    if (friend.requestedBy.userId === currentUser.userId) {
+      toastNotifications.showError('Vous ne pouvez pas vous suivre vous-même');
+      return;
+    }
+
+    const isFollowing = user.value?.following?.some(f => f.addressedTo.userId === friend.requestedBy.userId);
     if (isFollowing) {
       await CodeNShareFriendApi.unfollow(currentUser.userId, friend.requestedBy.userId);
-      if (user.value) {
-        user.value.following = Array.isArray(user.value.following)
-            ? user.value.following.filter(f => f.addressedTo.userId !== friend.requestedBy.userId)
-            : [];
-      }
       toastNotifications.showSuccess(`Vous ne suivez plus ${friend.requestedBy.firstname}`);
     } else {
       await CodeNShareFriendApi.follow(currentUser.userId, friend.requestedBy.userId);
-      if (user.value) {
-        user.value.following = Array.isArray(user.value.following)
-            ? [...user.value.following, friend]
-            : [friend];
-      }
       toastNotifications.showSuccess(`Vous suivez maintenant ${friend.requestedBy.firstname}`);
     }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function onToggleFriendFollowing(friend: Friend) {
+  try {
+    if (!currentUser) return;
+
+    console.log(
+        "friend.addressedTo.userId", friend.addressedTo.userId,
+        "\nfriend.requestedBy.userId", friend.requestedBy.userId,
+        "\ncurrentUser.userId", currentUser.userId
+    );
+    if (friend.addressedTo.userId === currentUser.userId) {
+      toastNotifications.showError('Vous ne pouvez pas vous suivre vous-même');
+      return;
+    }
+
+    await CodeNShareFriendApi.unfollow(currentUser.userId, friend.addressedTo.userId);
+    toastNotifications.showSuccess(`Vous ne suivez plus ${friend.addressedTo.firstname}`);
   } catch (e) {
     console.error(e);
   }
@@ -314,13 +328,13 @@ const onToggleFriend = async (friend: Friend) => {
                     style="background-color: #121212;"
                     @on-avatar-click="$router.push(`/app/profile/${friend.requestedBy.userId}`)"
                 >
-                  <template #button>
+                  <template v-if="user.detail?.userId === currentUser?.userId" #button>
                     <Button
                         v-if="followerIcon(friend)"
                         :icon="followerIcon(friend)"
                         aria-label="more-options"
                         severity="secondary"
-                        @click="onToggleFriend(friend)"
+                        @click.stop="onToggleFriendFollowers(friend)"
                     />
                   </template>
                 </InfoCard>
@@ -340,12 +354,12 @@ const onToggleFriend = async (friend: Friend) => {
                     style="background-color: #121212;"
                     @on-avatar-click="$router.push(`/app/profile/${friend.addressedTo.userId}`)"
                 >
-                  <template #button>
+                  <template v-if="user.detail?.userId === currentUser?.userId" #button>
                     <Button
                         aria-label="more-options"
                         icon="pi pi-user-minus"
                         severity="secondary"
-                        @click="onToggleFriend(friend)"
+                        @click.stop="onToggleFriendFollowing(friend)"
                     />
                   </template>
                 </InfoCard>

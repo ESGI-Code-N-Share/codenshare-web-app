@@ -90,7 +90,7 @@ function setSelectedElementEventHandlers() {
 
   // handle selecting an element
   paper.value.on('element:pointerclick', function (cellView) {
-    if (cellView.model.attributes.type === 'standard.ImageRectangle') {
+    if (cellView.model.attributes.type === `standard.${ImageRectangle.name}`) {
       if (selectedElement.value?.model?.attributes?.attrs?.body) {
         selectedElement.value.model.attributes.attrs.body.stroke = 'black';
         selectedElement.value.model.attributes.attrs.body.strokeWidth = 1;
@@ -266,13 +266,13 @@ function initPaper() {
         return false;
       }
       //image "out" can be only connected to program "in"
-      if (cellViewS.model.attributes.type === 'standard.ImageRectangle' && cellViewT.model.attributes.type === 'standard.ProgramRectangle') {
+      if (cellViewS.model.attributes.type === `standard.${ImageRectangle.name}` && cellViewT.model.attributes.type === `standard.${ProgramRectangle.name}`) {
         if (portSource.includes('out') && portTarget.includes('in')) {
           return true;
         }
       }
       // image out can be connected to image in
-      if (cellViewS.model.attributes.type === 'standard.ImageRectangle' && cellViewT.model.attributes.type === 'standard.ImageRectangle') {
+      if (cellViewS.model.attributes.type === `standard.${ImageRectangle.name}` && cellViewT.model.attributes.type === `standard.${ImageRectangle.name}`) {
         if (portSource.includes('out') && portTarget.includes('in')) {
           return true;
         }
@@ -320,7 +320,7 @@ const saveElement = () => {
 const addPort = (type: 'in' | 'out') => {
   if (!graph.value || !paper.value) return
 
-  const program = graph.value.getCells().find(cell => cell.attributes.type === 'standard.ProgramRectangle')
+  const program = graph.value.getCells().find(cell => cell.attributes.type === `standard.${ProgramRectangle.name}`)
   if (!program) return
 
   const ports = graph.value.getConnectedLinks(program, {inbound: type === 'in', outbound: type === 'out'}).length
@@ -369,7 +369,7 @@ const addPort = (type: 'in' | 'out') => {
 const removeElement = () => {
   if (!graph.value || !selectedElement.value) return
 
-  const program = graph.value.getCells().find(cell => cell.attributes.type === 'standard.ProgramRectangle')
+  const program = graph.value.getCells().find(cell => cell.attributes.type === `standard.${ProgramRectangle.name}`)
   if (!program) return
 
   //1. get the port of the program it is connected to
@@ -401,7 +401,7 @@ const mapToJsObject = async () => {
   }
 
   const cells = graph.value!.getCells()
-  const program = cells.find(cell => cell.attributes.type === 'standard.ProgramRectangle')
+  const program = cells.find(cell => cell.attributes.type === `standard.${ProgramRectangle.name}`)
   if (!program) {
     toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
     return;
