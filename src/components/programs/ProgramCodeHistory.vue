@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import {CodeHistory, Program} from "@/models";
 import {onMounted, ref} from "vue";
-import dayjs from "dayjs/esm/index.js";
+import dayjs from "dayjs";
+import 'dayjs/locale/fr';
 import {VAceEditor} from "vue3-ace-editor";
+import {CodeNShareProgramApi} from "@/api/codenshare";
 
-dayjs.locale(localStorage.getItem('language') || 'fr');
+dayjs.locale('fr');
 
 interface ProgramCodeHistoryProps {
   program: Program;
@@ -18,8 +20,9 @@ const selectedCodeHistory = ref<CodeHistory>()
 
 const layout = ref<'vertical' | 'horizontal'>('vertical')
 
-onMounted(() => {
-  codeHistories.value = props.program.codeHistories.reverse();
+onMounted(async () => {
+  const program = await CodeNShareProgramApi.get(props.program.programId)
+  codeHistories.value = program.codeHistories.reverse();
   selectedCodeHistory.value = codeHistories.value[0];
 
   layout.value = window.innerWidth > 768 ? 'horizontal' : 'vertical'
