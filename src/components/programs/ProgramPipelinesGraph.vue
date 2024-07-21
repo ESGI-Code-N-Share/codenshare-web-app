@@ -22,9 +22,11 @@ const {
   onEdgesChange,
   addNodes,
   getNodes,
-  updateNode,
+  getEdges,
+  setEdges,
   addEdges,
-  toObject
+  toObject,
+  removeNodes,
 } = useVueFlow()
 
 const nodes = ref<Node[]>([])
@@ -45,9 +47,8 @@ onInit(() => {
 
 
 onEdgesChange((param) => {
-  getNodes.value
-      .filter((node) => node.type === 'input' || node.type === 'output')
-      .forEach((node) => updateNode(node.id, {type: 'default'}))
+  nodes.value = getNodes.value.filter((node) => node.type !== 'input' && node.type !== 'output')
+  edges.value = getEdges.value.filter((edge) => edge.source !== 'input' && edge.target !== 'output')
 })
 
 function initElements() {
@@ -55,19 +56,19 @@ function initElements() {
   let xOffset = 0; // Horizontal offset to space out different programs
 
   //bleu ciel, bleu rouge et bleu vert
-  const colors = ['#1dafec', '#d59622', '#13c61c'];
   programs.value.forEach((program, index) => {
     const inputYOffset = -100;  // Vertical offset for inputs
     const outputYOffset = 200;  // Vertical offset for outputs
     const nodeWidth = 200;      // Width of each node for horizontal spacing
     const spaceBetweenPrograms = 300; // Space between programs
 
+    const colors = ['#1dafec', '#d59622', '#13c61c'];
     // Create inputs
     const inputs = program.instructions.inputs.map((input, idx) => {
       counter++;
       return {
         id: counter.toString(),
-        type: programs.value.length === 1 ? 'input' : 'default',
+        type: 'default',
         position: {x: xOffset + (idx * outputYOffset), y: inputYOffset},
         data: {
           label: input.name,
@@ -77,7 +78,7 @@ function initElements() {
         },
         deletable: false,
         style: {
-          backgroundColor: colors[index],
+          // backgroundColor: colors[index],
         }
       };
     });
@@ -87,7 +88,7 @@ function initElements() {
       counter++;
       return {
         id: counter.toString(),
-        type: programs.value.length === 1 ? 'output' : 'default',
+        type: 'default',
         position: {x: xOffset + (idx * outputYOffset), y: (outputYOffset / 2)},
         data: {
           label: output.name,
@@ -97,7 +98,7 @@ function initElements() {
         },
         deletable: false,
         style: {
-          backgroundColor: colors[index],
+          // backgroundColor: colors[index],
         }
       };
     });
@@ -113,7 +114,7 @@ function initElements() {
       connectable: false,
       deletable: false,
       style: {
-        backgroundColor: colors[index],
+        // backgroundColor: colors[index],
       }
     });
 
@@ -128,11 +129,10 @@ function initElements() {
       target: program.programId,
       markerEnd: MarkerType.ArrowClosed,
       label: input.data.filetype,
-      labelBgBorderRadius: 8,
-      labelBgPadding: [8, 6],
-      labelBgStyle: {
-        fill: colors[index],
-      }
+      labelStyle: {
+        fill: 'white',
+      },
+      labelShowBg: false
     }));
     outputs.forEach(output => addEdges({
       deletable: false,
@@ -140,11 +140,10 @@ function initElements() {
       target: output.id,
       markerEnd: MarkerType.ArrowClosed,
       label: output.data.filetype,
-      labelBgBorderRadius: 8,
-      labelBgPadding: [8, 6],
-      labelBgStyle: {
-        fill: colors[index],
-      }
+      labelStyle: {
+        fill: 'white',
+      },
+      labelShowBg: false,
     }));
 
     // Update xOffset for the next program
@@ -199,8 +198,8 @@ function logToObject() {
 
 
 function transformVueFlowObject(vueFlowObject: any): { id: string, inputs: IInput[], outputs: IOutput[] }[] {
-  const n = vueFlowObject.nodes;
-  const e = vueFlowObject.edges;
+  const n = vueFlowObject.nodes.filter((node: any) => node.type !== 'input' && node.type !== 'output');
+  const e = vueFlowObject.edges.filter((edge: any) => edge.source !== 'input' && edge.target !== 'output');
 
   const programs = new Map<string, { inputs: IInput[], outputs: IOutput[] }>();
 
@@ -288,8 +287,27 @@ function transformVueFlowObject(vueFlowObject: any): { id: string, inputs: IInpu
     throw new Error("The graph is not a DAG - it has at least one cycle!");
   }
 
-  //define the type of the input
-  inputWithProgramWhoDontHaveRelatedTo.inputs.forEach(input => updateNode(input.id, {type: 'input'}))
+  const input1 = getNodes.value.find(node => node.id === inputWithProgramWhoDontHaveRelatedTo.inputs[0].id)!;
+  addNodes([{
+    id: 'input',
+    type: 'input',
+    position: {x: input1.position.x, y: input1.position.y - 100},
+    deletable: false,
+    data: {
+      label: 'Entrée'
+    },
+    style: {
+      backgroundColor: '#14c82f',
+    }
+  }]);
+  // relié ce noeud à chaque input de inputWithProgramWhoDontHaveRelatedTo
+  inputWithProgramWhoDontHaveRelatedTo.inputs.forEach(input => {
+    addEdges({
+      source: 'input',
+      target: input.id,
+      markerEnd: MarkerType.ArrowClosed,
+    });
+  });
 
   // define order
   const orders = determineExecutionOrder(programs);
@@ -299,8 +317,35 @@ function transformVueFlowObject(vueFlowObject: any): { id: string, inputs: IInpu
     return {id: order, inputs: program.inputs, outputs: program.outputs};
   });
 
-  //define the type of the output
-  instructions[orders.length - 1].outputs.forEach(output => updateNode(output.id, {type: 'output'}))
+  const output1 = getNodes.value.find(node => node.id === instructions[orders.length - 1].outputs[0].id)!;
+  addNodes([{
+    id: 'output',
+    type: 'output',
+    position: {x: output1.position.x, y: output1.position.y + 100},
+    deletable: false,
+    data: {
+      label: 'Sortie'
+    },
+    style: {
+      backgroundColor: 'rgb(223,60,35)',
+    }
+  }]);
+  // relié ce noeud à chaque output de instructions[orders.length - 1]
+  instructions[orders.length - 1].outputs.forEach(output => {
+    addEdges({
+      source: output.id,
+      target: 'output',
+      markerEnd: MarkerType.ArrowClosed,
+    });
+  });
+
+  // every edges set to animate
+  setEdges(getEdges.value.map(edge => {
+    return {
+      ...edge,
+      animated: true
+    }
+  }));
 
   return instructions;
 }
