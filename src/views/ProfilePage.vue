@@ -62,13 +62,6 @@ const menuItemsProfile = ref([
         }
       }
     }
-  },
-  {
-    label: $t('profile.buttons.report'),
-    icon: 'pi pi-exclamation-triangle',
-    command() {
-      console.log('report')
-    }
   }
 ])
 
@@ -143,7 +136,9 @@ const fetchFollowing = async (userId: UserId) => {
 
 const fetchProfile = async (userId: UserId) => {
   try {
-    console.log(await fetchUser(userId))
+    if (menuItemsProfile.value[0]) menuItemsProfile.value[0].visible = false;
+    if (menuItemsProfile.value[1]) menuItemsProfile.value[1].visible = false;
+
     user.value = {
       detail: await fetchUser(userId),
       posts: await fetchPosts(userId),
@@ -151,10 +146,8 @@ const fetchProfile = async (userId: UserId) => {
       followers: await fetchFollowers(userId),
       following: await fetchFollowing(userId),
     }
-    console.log(user.value?.detail?.userId, currentUser?.userId)
     if (user.value?.detail?.userId === currentUser?.userId) {
       menuItemsProfile.value[0].visible = false;
-      menuItemsProfile.value[1].visible = false;
       menuItemsProfile.value.push({
         label: $t('profile.buttons.edit'),
         icon: 'pi pi-pencil',
@@ -162,9 +155,8 @@ const fetchProfile = async (userId: UserId) => {
       })
     } else {
       menuItemsProfile.value[0].visible = true;
-      menuItemsProfile.value[1].visible = true;
-      if (menuItemsProfile.value[2]) {
-        menuItemsProfile.value[2].visible = true;
+      if (menuItemsProfile.value[1]) {
+        menuItemsProfile.value[1].visible = false;
       }
     }
   } catch (e) {
