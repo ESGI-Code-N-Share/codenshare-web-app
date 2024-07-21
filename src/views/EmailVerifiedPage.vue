@@ -1,11 +1,15 @@
 <script lang="ts" setup>
 import { useRouter } from 'vue-router'
 import AuthPage from "@/components/auth/AuthPage.vue";
+import {ToastService} from "@/services/toast.service";
+import {useToast} from "primevue/usetoast";
 
 const router = useRouter()
+const toastNotifications = new ToastService(useToast())
 
 function goToLogin() {
   router.push({ name: 'login' })
+  toastNotifications.showSuccess("Votre email a été vérifié avec succès !");
 }
 </script>
 

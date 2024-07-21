@@ -83,6 +83,7 @@ async function onSubmitRegisterForm() {
     }
   } finally {
     loading.value = false;
+    toastNotifications.showSuccess("Un mail de confirmation vous a été envoyé.");
   }
 }
 

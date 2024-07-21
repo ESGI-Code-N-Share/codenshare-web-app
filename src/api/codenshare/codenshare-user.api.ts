@@ -15,12 +15,13 @@ export class CodeNShareUserApi {
         return request({method: 'DELETE', url: `/users/${userId}`})
     }
 
-    static async update(userId: string, firstname: string, lastname: string, avatar: string): Promise<User> {
+    static async update(userId: string, firstname: string, lastname: string, avatar: string, overview: string): Promise<User> {
         return request({
             method: 'PATCH', url: `/users/${userId}`, body: {
                 firstname: firstname,
                 lastname: lastname,
                 avatar: avatar,
+                overview: overview
             }
         })
     }
