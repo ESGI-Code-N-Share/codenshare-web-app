@@ -122,9 +122,9 @@ async function onSubmitAdminLoginForm() {
               <Checkbox id="cgu" v-model="stayLogin" binary class="mr-2"/>
               <label class="text-sm" for="cgu">Rester connecté</label>
             </div>
-            <div class="text-sm text-blue-600" @click="openResetPasswordDialog = true">
-              Mot de passe oublié ?
-            </div>
+            <!--            <div class="text-sm text-blue-600" @click="openResetPasswordDialog = true">-->
+            <!--              Mot de passe oublié ?-->
+            <!--            </div>-->
           </div>
 
           <Button
