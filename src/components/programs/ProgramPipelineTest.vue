@@ -258,8 +258,8 @@ onUnmounted(() => {
               {{ $t('program.tests.step3.waiting') }}
             </InlineMessage>
 
-            <Button :label="$t('global.reset')" icon="pi pi-refresh" severity="danger" text
-                    @click="resetInstructions()"/>
+            <!--            <Button :label="$t('global.reset')" icon="pi pi-refresh" severity="danger" text-->
+            <!--                    @click="resetInstructions()"/>-->
           </div>
 
           <!-- Step 3 content   -->
