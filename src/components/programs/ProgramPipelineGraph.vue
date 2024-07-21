@@ -90,7 +90,7 @@ function setSelectedElementEventHandlers() {
 
   // handle selecting an element
   paper.value.on('element:pointerclick', function (cellView) {
-    if (cellView.model.attributes.type === 'standard.ImageRectangle') {
+    if (cellView.model.attributes.type === `standard.${ImageRectangle.name}`) {
       if (selectedElement.value?.model?.attributes?.attrs?.body) {
         selectedElement.value.model.attributes.attrs.body.stroke = 'black';
         selectedElement.value.model.attributes.attrs.body.strokeWidth = 1;
@@ -266,13 +266,13 @@ function initPaper() {
         return false;
       }
       //image "out" can be only connected to program "in"
-      if (cellViewS.model.attributes.type === 'standard.ImageRectangle' && cellViewT.model.attributes.type === `standard.${ProgramRectangle.name}`) {
+      if (cellViewS.model.attributes.type === `standard.${ImageRectangle.name}` && cellViewT.model.attributes.type === `standard.${ProgramRectangle.name}`) {
         if (portSource.includes('out') && portTarget.includes('in')) {
           return true;
         }
       }
       // image out can be connected to image in
-      if (cellViewS.model.attributes.type === 'standard.ImageRectangle' && cellViewT.model.attributes.type === 'standard.ImageRectangle') {
+      if (cellViewS.model.attributes.type === `standard.${ImageRectangle.name}` && cellViewT.model.attributes.type === `standard.${ImageRectangle.name}`) {
         if (portSource.includes('out') && portTarget.includes('in')) {
           return true;
         }
