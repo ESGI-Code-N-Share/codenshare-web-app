@@ -19,7 +19,7 @@ const selectedCodeHistory = ref<CodeHistory>()
 const layout = ref<'vertical' | 'horizontal'>('vertical')
 
 onMounted(() => {
-  codeHistories.value = props.program.codeHistories;
+  codeHistories.value = props.program.codeHistories.reverse();
   selectedCodeHistory.value = codeHistories.value[0];
 
   layout.value = window.innerWidth > 768 ? 'horizontal' : 'vertical'
@@ -32,11 +32,11 @@ onMounted(() => {
       <div class="flex flex-column gap-2 p-2">
         <div
             v-for="codeHistory in codeHistories"
-            :class="{'border-white': selectedCodeHistory?.codeHistoryId === codeHistory.codeHistoryId}"
+            :class="{'border-white border-1': selectedCodeHistory?.codeHistoryId === codeHistory.codeHistoryId}"
             class="p-2 bg-gray-800 hover:bg-gray-700 border-round cursor-pointer"
             @click="selectedCodeHistory = codeHistory"
         >
-          <div class="text-lg">{{ dayjs(codeHistory.createdAt).format('dddd MMMM YYYY HH:mm') }}</div>
+          <div class="text-lg">{{ dayjs(codeHistory.createdAt).format('DD/MM/YYYY HH:mm') }}</div>
         </div>
       </div>
     </SplitterPanel>
