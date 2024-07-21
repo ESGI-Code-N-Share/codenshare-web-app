@@ -38,7 +38,7 @@ export const request = async <T>({method, url, body}: Request) => {
             await userStore.logout();
             window.location.href = '/login';
         }
-        throw new Error(responseData.message);
+        throw new Error(responseData?.data?.message || responseData.message);
     }
     const responseData = await response.json();
     console.log(url, '=>', responseData)

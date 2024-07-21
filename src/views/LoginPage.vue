@@ -56,8 +56,10 @@ async function onSubmitLoginForm() {
       });
     } else if (e.response && e.response.status === 404) {
       toastNotifications.showError("Le compte n'existe pas.");
+    } else if (e.message === 'Email not verified') {
+      toastNotifications.showError("Veuillez vérifier votre email.");
     } else {
-      toastNotifications.showError(e.message);
+      toastNotifications.showError('Une erreur est survenue.');
     }
   } finally {
     loading.value = false;

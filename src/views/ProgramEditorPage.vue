@@ -162,9 +162,13 @@ const onSaveProgram = async () => {
       loadingUpdateProgram.value = true;
       await CodeNShareProgramApi.update(program.value);
       toastNotifications.showSuccess("Modifications enregistrées");
-    } catch (e) {
-      console.error(e);
-      toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
+    } catch (e: any) {
+      if (e.message === 'Validation failure') {
+        toastNotifications.showError("Veuillez vérifier les erreurs dans le formulaire");
+      } else {
+        console.error(e);
+        toastNotifications.showError("Une erreur s'est produite lors de la sauvegarde du programme");
+      }
     } finally {
       loadingUpdateProgram.value = false;
     }
