@@ -187,6 +187,7 @@ const onRunProgram = async () => {
     try {
       console.log(instructions)
       pipelineTest.value!.isPipelineRunning = true;
+      await cleanStorage(instructions);
       await runPipeline(instructions);
     } catch (e) {
       console.error(e)
@@ -199,6 +200,20 @@ const onRunProgram = async () => {
   }
 }
 
+const cleanStorage = async (instructions: {
+  program: Program,
+  inputs: IInput[],
+  outputs: IOutput[],
+  console?: string,
+  isProgramDone: boolean
+  isProgramError: boolean
+}[]) => {
+
+  for (const [_, instruction] of Object.entries(instructions)) {
+    await storageService.deleteFolder(instruction.program.programId);
+  }
+
+}
 const runPipeline = async (instructions: {
   program: Program,
   inputs: IInput[],
@@ -210,10 +225,8 @@ const runPipeline = async (instructions: {
   // for each instruction
   for (const [index, instruction] of Object.entries(instructions)) {
     console.log("current instruction to execute " + instruction.program.name)
-
     // prepare program's input
     for (const [i, input] of Object.entries<IInput>(instruction.inputs)) {
-
       if (input.file) {
         try {
           await storageService.upload(input.file, instruction.program.programId)

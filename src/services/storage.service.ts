@@ -1,4 +1,4 @@
-import {PutObjectCommand, S3Client} from "@aws-sdk/client-s3";
+import {PutObjectCommand, S3Client, ListObjectsV2Command, DeleteObjectCommand} from "@aws-sdk/client-s3";
 import axios, {AxiosError} from "axios";
 
 export class StorageService {
@@ -38,17 +38,27 @@ export class StorageService {
         return this.awsHost + folder + '/output/' + filename;
     }
 
-    // async getFileFromS3Url(s3Url: string): Promise<File> {
-    //     try {
-    //         const response = await axios.get(s3Url, { responseType: 'blob'});
-    //         const urlSegments = s3Url.split('/');
-    //         const fileName = urlSegments[urlSegments.length - 1];
-    //         return new File([response.data], fileName, {type: response.data.type});
-    //     } catch (error) {
-    //         console.error("Erreur lors de la récupération du fichier:", error);
-    //         throw new Error("Impossible de récupérer le fichier.");
-    //     }
-    // }
+    async getFiles(folder: string) {
+        const listObjects = {
+            Bucket: this.bucketName,
+            Prefix: folder + "/",
+        }
+
+        return this.s3Client.send(new ListObjectsV2Command(listObjects));
+    }
+
+    async deleteFolder(folder: string): Promise<void> {
+        const files = await this.getFiles(folder);
+        if(files.Contents && files.Contents.length > 0) {
+            for(const file of files.Contents) {
+                const deleteParams = {
+                    Bucket: this.bucketName,
+                    Key: file.Key,
+                };
+                this.s3Client.send(new DeleteObjectCommand(deleteParams));
+            }
+        }
+    }
 
     async getFileFromS3Url(s3Url: string): Promise<File> {
         const maxRetryAttempts = 5; // Nombre maximal de tentatives
