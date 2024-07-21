@@ -17,12 +17,14 @@ const toastNotifications = new ToastService(useToast())
 
 const loading = ref(false);
 
-const firstname = ref('bernard');
-const lastname = ref('lechene');
+const isProduction = import.meta.env.MODE === 'production';
+
+const firstname = ref(isProduction ? '' : 'John');
+const lastname = ref(isProduction ? '' : 'Doe');
 const birthDate = ref(new Date(new Date().getFullYear() - 18, 0, 1));
-const email = ref('b.lechene@gmail.com');
-const password = ref('adminfiters');
-const cgu = ref(true);
+const email = ref(isProduction ? '' : 'john.doe@email.fr');
+const password = ref(isProduction ? '' : 'admincns');
+const cgu = ref(!isProduction);
 
 const formErrors = ref({
   firstname: '',
