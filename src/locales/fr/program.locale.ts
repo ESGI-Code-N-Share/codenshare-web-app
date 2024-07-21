@@ -12,6 +12,8 @@ export const program = {
         title: "Fichiers de sortie",
         empty: "Aucun fichier de sortie",
         download: "Télécharger le fichier",
+        error_image: "Image invalide !",
+        error_file: "Fichier invalide !",
     },
     forms: {
         search: {
