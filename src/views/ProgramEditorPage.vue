@@ -526,7 +526,11 @@ async function preventRunning() {
               :placeholder="$t('program.forms.language.placeholder')"
               data-key="value"
               option-label="label"
-              @change="program.language = $event.value.value; program.version = $event.value.value === 'java' ? '8' : ''"
+              @change="
+                program.language = $event.value.value;
+                program.version = $event.value.value === 'java' ? '17' : '';
+                version = $event.value.value === 'java' ? versions[2] : null;
+              "
           />
           <Dropdown
               v-if="program.language === 'java'"
