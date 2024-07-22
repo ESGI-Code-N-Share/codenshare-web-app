@@ -49,6 +49,13 @@ onInit(() => {
 onEdgesChange((param) => {
   nodes.value = getNodes.value.filter((node) => node.type !== 'input' && node.type !== 'output')
   edges.value = getEdges.value.filter((edge) => edge.source !== 'input' && edge.target !== 'output')
+  // every edges set to animate
+  setEdges(getEdges.value.map(edge => {
+    return {
+      ...edge,
+      animated: false
+    }
+  }));
 })
 
 function initElements() {
@@ -294,7 +301,7 @@ function transformVueFlowObject(vueFlowObject: any): { id: string, inputs: IInpu
     position: {x: input1.position.x, y: input1.position.y - 100},
     deletable: false,
     data: {
-      label: 'Entrée'
+      label: 'Début'
     },
     style: {
       backgroundColor: '#14c82f',
@@ -324,7 +331,7 @@ function transformVueFlowObject(vueFlowObject: any): { id: string, inputs: IInpu
     position: {x: output1.position.x, y: output1.position.y + 100},
     deletable: false,
     data: {
-      label: 'Sortie'
+      label: 'Fin'
     },
     style: {
       backgroundColor: 'rgb(223,60,35)',
