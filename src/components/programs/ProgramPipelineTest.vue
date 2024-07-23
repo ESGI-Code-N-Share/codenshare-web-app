@@ -54,7 +54,9 @@ const fetchUserPrograms = async () => {
   try {
     if (!currentUser) return;
     const userPrograms = await CodeNShareProgramApi.getByUser(currentUser.userId);
-    const promises = userPrograms.map((program) => CodeNShareProgramApi.get(program.programId));
+    const promises = userPrograms
+        .filter((program) => program.hasInstructions)
+        .map((program) => CodeNShareProgramApi.get(program.programId));
     const allPrograms = await Promise.all(promises);
     const currentProgram = allPrograms.find(p => p.programId === props.program.programId);
     if (!currentProgram) return;

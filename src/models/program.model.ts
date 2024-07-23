@@ -22,6 +22,7 @@ export interface ProgramsRequest {
     imageURL: string
     visibility: string
     createdAt: string
+    hasInstructions: boolean
 }
 
 
