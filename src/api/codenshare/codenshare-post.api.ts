@@ -4,6 +4,10 @@ import {UserId} from "@/models";
 
 
 export class CodeNSharePostApi {
+    static async getById(postId: PostId): Promise<Post> {
+        return request<Post>({method: 'GET', url: `/posts/${postId}`})
+    }
+
     static async getLatestPosts(): Promise<Post[]> {
         return request<Post[]>({method: 'GET', url: '/posts'})
     }

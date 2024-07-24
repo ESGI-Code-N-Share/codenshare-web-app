@@ -3,18 +3,46 @@
 import {onMounted, ref} from "vue";
 import PostCard from "@/components/posts/PostCard.vue";
 import PostNew from "@/components/posts/PostNew.vue";
-import {Post} from "@/models";
-import {CodeNSharePostApi} from "@/api/codenshare";
+import {Post, Program} from "@/models";
+import {CodeNSharePostApi, CodeNShareProgramApi} from "@/api/codenshare";
 import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
+import {useRoute} from "vue-router";
+import ProgramCard from "@/components/programs/ProgramCard.vue";
 
-
+const route = useRoute();
 const toastNotifications = new ToastService(useToast());
 
 const posts = ref<Post[]>([]);
 const loading = ref({fetch: false})
 
+const post = ref<Post>();
+const openPostSharedModal = ref(false);
+
+const program = ref<Program>();
+const openProgramSharedModal = ref(false);
+
 onMounted(async () => {
+  if (route.query?.post) {
+    openPostSharedModal.value = true;
+    const postId = route.query.post as string;
+    try {
+      post.value = await CodeNSharePostApi.getById(postId);
+    } catch (e) {
+      console.error(e);
+      openPostSharedModal.value = false;
+    }
+  } else if (route.query?.program) {
+    openProgramSharedModal.value = true;
+    const programId = route.query.program as string;
+    try {
+      program.value = await CodeNShareProgramApi.get(programId);
+    } catch (e) {
+      console.error(e);
+      openProgramSharedModal.value = false;
+    }
+  }
+
   await fetchPosts();
 });
 
@@ -57,6 +85,14 @@ const fetchPosts = async () => {
         {{ $t('post.end_of_post') }}
       </div>
     </div>
+
+    <Dialog v-if="post" v-model:visible="openPostSharedModal" :style="{width: '50vw'}" header="Post" modal>
+      <PostCard :post="post"/>
+    </Dialog>
+
+    <Dialog v-if="program" v-model:visible="openProgramSharedModal" :style="{width: '50vw'}" header="Program" modal>
+      <ProgramCard :program="program"/>
+    </Dialog>
 
   </div>
 </template>

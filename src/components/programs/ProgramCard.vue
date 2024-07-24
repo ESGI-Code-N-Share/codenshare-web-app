@@ -61,7 +61,9 @@ onMounted(() => {
     },
 
     shareCommand: () => {
-      // router.push({name: 'share-program', params: {program: props.program.programId}});
+      const url = `${window.location.origin}/app/home?program=${props.program.programId}`;
+      navigator.clipboard.writeText(url);
+      toastNotifications.showSuccess('Lien copié');
       emit('onMenuClick')
     },
 

@@ -58,6 +58,12 @@ onMounted(async () => {
         .catch(() => programNotFound.value = true);
   }
 
+  const shareCommand = () => {
+    const url = `${window.location.origin}/app/home?post=${props.post.postId}`;
+    navigator.clipboard.writeText(url);
+    toastNotifications.showSuccess('Lien copié');
+  }
+
   const deleteCommand = async () => {
     try {
       await CodeNSharePostApi.delete(props.post.postId);
@@ -81,7 +87,8 @@ onMounted(async () => {
 
   editPostOptions.value = await getEditPostOptions(props.post, currentUser, {
     deleteCommand,
-    importProgramCommand
+    importProgramCommand,
+    shareCommand,
   });
 });
 
