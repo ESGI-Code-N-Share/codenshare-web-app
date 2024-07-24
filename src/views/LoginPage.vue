@@ -59,7 +59,7 @@ async function onSubmitLoginForm() {
     } else if (e.message === 'Email not verified') {
       toastNotifications.showError("Veuillez vérifier votre email.");
     } else {
-      toastNotifications.showError('Une erreur est survenue.');
+      toastNotifications.showError('Utilisateur ou mot de passe incorrect.');
     }
   } finally {
     loading.value = false;
