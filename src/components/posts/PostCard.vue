@@ -80,9 +80,13 @@ onMounted(async () => {
       if (!props.post.programId) return;
       await CodeNShareProgramApi.import(props.post.programId);
       toastNotifications.showSuccess('Programme importé');
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      toastNotifications.showError('Erreur lors de l\'importation du programme');
+      if (e.message) {
+        toastNotifications.showError(e.message);
+      } else {
+        toastNotifications.showError('Erreur lors de l\'importation du programme');
+      }
     }
   }
 

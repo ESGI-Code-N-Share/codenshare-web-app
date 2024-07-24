@@ -51,7 +51,11 @@ onMounted(() => {
         emit('onMenuClick')
       } catch (e) {
         console.error(e);
-        toastNotifications.showError("Une erreur s'est produite lors de l'importation du programme");
+        if (e.message) {
+          toastNotifications.showError(e.message);
+        } else {
+          toastNotifications.showError('Erreur lors de l\'importation du programme');
+        }
       }
     },
 
