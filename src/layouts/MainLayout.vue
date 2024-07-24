@@ -165,7 +165,7 @@ const openSearch = () => {
               </TabPanel>
 
               <!-- All result             -->
-              <TabPanel header="Utilisateurs">
+              <TabPanel :header="$t('profile.users')">
                 <ListView v-if="results" :items="results.filter(result => result.type === 'user')">
                   <template #default="{item: result}: {item: Result}">
                     <InfoCard
@@ -191,7 +191,7 @@ const openSearch = () => {
               </TabPanel>
 
               <!-- Programs             -->
-              <TabPanel header="Programmes">
+              <TabPanel :header="$t('global.pages.programs')">
                 <ListView v-if="results" :items="results.filter(result => result.type === 'program')">
                   <template #default="{item: result}: {item: Result}">
                     <ProgramCard

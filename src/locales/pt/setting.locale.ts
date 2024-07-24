@@ -1,33 +1,37 @@
 export const setting = {
-    account: 'Conta',
-    application: 'Aplicação',
-    forms: {
-        firstname: {
-            label: 'Primeiro nome',
-            placeholder: 'Digite seu primeiro nome',
+    "account": "Conta",
+    "application": "Aplicativo",
+    "forms": {
+        "firstname": {
+            "label": "Primeiro nome",
+            "placeholder": "Digite seu primeiro nome"
         },
-        lastname: {
-            label: 'Último nome',
-            placeholder: 'Digite seu último nome',
+        "lastname": {
+            "label": "Sobrenome",
+            "placeholder": "Digite seu sobrenome"
         },
-        email: {
-            label: 'E-mail',
-            placeholder: 'Digite seu e-mail',
+        "email": {
+            "label": "E-mail",
+            "placeholder": "Digite seu e-mail"
         },
-        role: {
-            label: 'Função',
-            placeholder: 'Escolha uma função',
+        "role": {
+            "label": "Papel",
+            "placeholder": "Escolha uma função"
+        },
+        "overview": {
+            "label": "Sobre mim",
+            "placeholder": "Insira sua descrição"
         }
     },
-    buttons: {
-        save: 'Salvar',
-        delete: 'Excluir',
+    "buttons": {
+        "save": "Salvar",
+        "delete": "EXCLUIR"
     },
-    errors: {
-        empty_fields: 'Por favor, preencha todos os campos',
-        save: "Erro ao salvar sua conta",
+    "errors": {
+        "empty_fields": "Por favor, preencha todos os campos",
+        "save": "Erro ao salvar sua conta"
     },
-    success: {
-        save: "Sua conta foi salva com sucesso",
+    "success": {
+        "save": "O backup da sua conta foi feito com sucesso"
     }
 }

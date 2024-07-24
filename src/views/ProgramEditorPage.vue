@@ -16,9 +16,11 @@ import ProgramPipelineGraph from "@/components/programs/ProgramPipelineGraph.vue
 import ProgramPipelineTest from "@/components/programs/ProgramPipelineTest.vue";
 import ProgramCodeHistory from "@/components/programs/ProgramCodeHistory.vue";
 import {IInput, IO, IOutput, isInput, isOutput} from "@/utils/dag.util";
+import {useI18n} from "vue-i18n";
 
 const route = useRoute();
 const router = useRouter();
+const {t: $t} = useI18n();
 const toastNotifications = new ToastService(useToast());
 const storageService = new StorageService();
 
@@ -31,12 +33,12 @@ const programItemOptions = ref([
     command: () => openPipelineGraph.value = true
   },
   {
-    label: 'Historique',
+    label: $t('program.code_history')?.split(' ')?.at(0),
     icon: 'pi pi-clock',
     command: () => openCodeHistory.value = true
   },
   {
-    label: 'Configurer',
+    label: $t('program.configure')?.split(' ')?.at(0),
     icon: 'pi pi-cog',
     command: () => sidebarProgramEditor.value = true
   },
@@ -44,7 +46,7 @@ const programItemOptions = ref([
     separator: true
   },
   {
-    label: 'Supprimer',
+    label: $t('program.code_history'),
     icon: 'pi pi-trash',
     command: async () => {
       try {

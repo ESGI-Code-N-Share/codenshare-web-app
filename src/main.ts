@@ -60,7 +60,7 @@ import Message from "primevue/message";
 import {createPinia} from "pinia";
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import {createI18n} from 'vue-i18n'
-import {fr, pt} from "@/locales";
+import {de, en, es, fr, pt, zh} from "@/locales";
 
 
 const currentLanguage = localStorage.getItem('language') || 'fr';
@@ -71,10 +71,10 @@ export const i18n = createI18n({
     messages: {
         fr: fr,
         pt: pt,
-        // en: en,
-        // zh: zh,
-        // es: es,
-        // de: de,
+        en: en,
+        zh: zh,
+        es: es,
+        de: de,
     },
     legacy: false
 })

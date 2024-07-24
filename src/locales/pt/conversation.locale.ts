@@ -1,25 +1,25 @@
 export const conversation = {
-    created: "Criado em",
-    new: "Nova conversa",
-    empty1: "Nenhuma conversa",
-    empty2: "Vazio",
-    forms: {
-        sendMessages: {
-            label: "Enviar uma mensagem",
-            placeholder: "Digite sua mensagem"
+    "created": "Criou o",
+    "new": "Nova conversa",
+    "empty1": "Sem conversa",
+    "empty2": "Vazio",
+    "forms": {
+        "sendMessages": {
+            "label": "Envie uma mensagem",
+            "placeholder": "Digite sua mensagem"
         },
-        friends: {
-            label: "Amigos",
-            placeholder: "Selecione amigos"
-        },
+        "friends": {
+            "label": "Amigos",
+            "placeholder": "Selecionar amigos"
+        }
     },
-    buttons: {
-        new: "Novo",
-        create: "Criar",
-        leave: "Sair",
+    "buttons": {
+        "new": "Novo",
+        "create": "Criar",
+        "leave": "Deixar"
     },
-    tooltips: {
-        send: "Enviar",
-        addFile: "Adicionar um arquivo",
-    },
+    "tooltips": {
+        "send": "Enviar",
+        "addFile": "Adicionar um arquivo"
+    }
 }
