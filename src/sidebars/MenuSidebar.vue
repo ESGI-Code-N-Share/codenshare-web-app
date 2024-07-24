@@ -43,13 +43,6 @@ const menus = ref([
     routeName: 'conversations',
     children: [],
     params: {}
-  },
-  {
-    icon: 'pi pi-cog',
-    label: 'settings',
-    routeName: 'settings',
-    children: [],
-    params: {}
   }
 ]);
 
@@ -109,7 +102,7 @@ async function onLogout() {
             class="w-full"
             icon="pi pi-search"
             severity="secondary"
-            @click="$router.push({ name: 'playground' })"
+            @click="$router.push({ name: 'settings' })"
         />
         <IconField v-else class="" iconPosition="left">
           <InputIcon class="pi pi-search"></InputIcon>
@@ -137,22 +130,22 @@ async function onLogout() {
 
       <Button
           v-if="collapsed"
-          :class="$route.name === 'playground' ? 'gradient-bg-primary text-black-alpha-90' : 'hover:surface-200'"
+          :class="$route.name === 'settings' ? 'gradient-bg-primary text-black-alpha-90' : 'hover:surface-200'"
           class="w-full"
           icon="pi pi-play"
           severity="secondary"
-          @click="$router.push({ name: 'playground' })"
+          @click="$router.push({ name: 'settings' })"
       />
 
       <Button
           v-else
-          :class="$route.name === 'playground' ? 'gradient-bg-primary text-black-alpha-90' : 'hover:surface-200'"
+          :class="$route.name === 'settings' ? 'gradient-bg-primary text-black-alpha-90' : 'hover:surface-200'"
           class="w-full"
           icon="pi pi-play"
           iconPos="right"
-          :label="$t('global.menubar.playground')"
+          :label="$t('global.menubar.settings')"
           severity="secondary"
-          @click="$router.push({ name: 'playground' })"
+          @click="$router.push({ name: 'settings' })"
       />
     </div>
   </div>
