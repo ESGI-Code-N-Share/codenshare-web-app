@@ -47,11 +47,6 @@ import AvatarGroup from "primevue/avatargroup";
 import MultiSelect from "primevue/multiselect";
 import ProgressSpinner from "primevue/progressspinner";
 import VirtualScroller from "primevue/virtualscroller";
-
-import {createPinia} from "pinia";
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
-import {createI18n} from 'vue-i18n'
-import {fr, pt} from "@/locales";
 import Splitter from "primevue/splitter";
 import SplitterPanel from "primevue/splitterpanel";
 import Stepper from "primevue/stepper";
@@ -61,6 +56,12 @@ import InputNumber from "primevue/inputnumber";
 import SelectButton from "primevue/selectbutton";
 import Chip from "primevue/chip";
 import Message from "primevue/message";
+
+import {createPinia} from "pinia";
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import {createI18n} from 'vue-i18n'
+import {fr, pt} from "@/locales";
+
 
 const currentLanguage = localStorage.getItem('language') || 'fr';
 

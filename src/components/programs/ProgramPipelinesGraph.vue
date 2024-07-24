@@ -9,7 +9,7 @@ import {ToastService} from "@/services/toast.service";
 import {useToast} from "primevue/usetoast";
 
 const programs = defineModel('programs', {type: Array as () => Program[], default: []})
-const props = defineProps()
+const props = defineProps<{ readonly?: boolean }>()
 const emit = defineEmits(['onInstructions', 'onBack'])
 
 const toastNotifications = new ToastService(useToast());
@@ -26,7 +26,7 @@ const {
   setEdges,
   addEdges,
   toObject,
-  removeNodes,
+  setCenter,
 } = useVueFlow()
 
 const nodes = ref<Node[]>([])
@@ -43,10 +43,18 @@ onInit(() => {
   fitViewOnInitDone.value = true
   initElements()
   fitView({padding: 100})
+
+  if (props.readonly) {
+    //center the graph
+    setCenter(100, 50, {zoom: 0.75})
+    logToObject()
+  }
 })
 
 
 onEdgesChange((param) => {
+  if (props.readonly) return;
+
   nodes.value = getNodes.value.filter((node) => node.type !== 'input' && node.type !== 'output')
   edges.value = getEdges.value.filter((edge) => edge.source !== 'input' && edge.target !== 'output')
   // every edges set to animate
@@ -441,7 +449,7 @@ function determineExecutionOrder(programs: Map<string, { inputs: IInput[], outpu
 
     <Controls position="top-left"/>
 
-    <Panel position="top-right">
+    <Panel v-if="!readonly" position="top-right">
       <Button class="z-5" icon="pi pi-save" @click="logToObject"/>
     </Panel>
   </VueFlow>

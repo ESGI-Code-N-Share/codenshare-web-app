@@ -16,6 +16,7 @@ import {VAceEditor} from "vue3-ace-editor";
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-monokai';
 import hljs from 'highlight.js';
+import ProgramPipelinesGraph from "@/components/programs/ProgramPipelinesGraph.vue";
 
 dayjs.locale(localStorage.getItem('language') || 'fr');
 
@@ -173,15 +174,21 @@ const likePost = async () => {
 
     <Dialog v-if="program" v-model:visible="openProgramModal" :header="program?.name" modal
             style="width: 80vw; height: 80vh;">
-      <div class="h-full">
-        <VAceEditor
-            v-model:value="program.code"
-            lang="javascript"
-            readonly
-            style="height: 43em; min-height: 100%;"
-            theme="monokai"
-        />
-      </div>
+      <Splitter class="h-full">
+        <SplitterPanel class="flex items-center justify-center">
+          <VAceEditor
+              v-model:value="program.code"
+              class="w-full"
+              lang="javascript"
+              readonly
+              style="height: 43em; min-height: 100%;"
+              theme="monokai"
+          />
+        </SplitterPanel>
+        <SplitterPanel class="flex items-center justify-center">
+          <ProgramPipelinesGraph :programs="[program]" readonly/>
+        </SplitterPanel>
+      </Splitter>
     </Dialog>
   </div>
 </template>
