@@ -132,7 +132,6 @@ async function onLogout() {
           v-if="collapsed"
           :class="$route.name === 'settings' ? 'gradient-bg-primary text-black-alpha-90' : 'hover:surface-200'"
           class="w-full"
-          icon="pi pi-play"
           severity="secondary"
           @click="$router.push({ name: 'settings' })"
       />
@@ -141,7 +140,6 @@ async function onLogout() {
           v-else
           :class="$route.name === 'settings' ? 'gradient-bg-primary text-black-alpha-90' : 'hover:surface-200'"
           class="w-full"
-          icon="pi pi-play"
           iconPos="right"
           :label="$t('global.menubar.settings')"
           severity="secondary"
