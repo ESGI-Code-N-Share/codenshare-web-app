@@ -1,16 +1,26 @@
-html {
-    height: 100vh;
-    width: 100vw;
+@import '@vue-flow/core/dist/style.css';
+@import '@vue-flow/controls/dist/style.css';
+@import '@vue-flow/core/dist/theme-default.css'; /* Réinitialisation du CSS */
+
+* {
+    box-sizing: border-box;
 }
 
-body, #app {
+html, body {
+    margin: 0;
+    padding: 0;
     height: 100%;
     width: 100%;
 }
 
 body {
-    margin: 0;
-    padding: 0;
+    display: flex;
+    flex-direction: column;
+    background-color: #121212;
+}
+
+#app {
+    flex: 1;
 }
 
 
@@ -22,4 +32,19 @@ body {
 
 .gradient-bg-primary {
     background: linear-gradient(to right, #eab308 15%, #FB923C 100%);
+}
+
+.vue-flow__controls {
+    border: 1px solid #FFFFFB
+}
+
+.basic-flow .vue-flow__controls .vue-flow__controls-button {
+    border: none;
+    border-right: 1px solid #eee
+}
+
+.basic-flow .vue-flow__controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center
 }
